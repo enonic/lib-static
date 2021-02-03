@@ -54,7 +54,7 @@ Can be used in three ways:
 #### Params:
 - `path` (string): path and full file name to an asset resource, relative to _build/resources/main_ in the [XP project structure](https://developer.enonic.com/docs/xp/stable/apps/projects#project_structure) after building (depending on specific build setups, this is somewhat equivalent to a path relative to _src/main/resources/_).
 - `options` (object, optional): add an [options object](#options) after `path` to control behavior for this specific response.
-- `optionsWithPath` (object): same as above, an [options object](#options) but when used as the first and only argument, this object _must_ include a `path: ...` attribute too - a path string same as above. 
+- `optionsWithPath` (object): same as above, an [options object](#options) but when used as the first and only argument, this object _must_ include a `path: ...` attribute too - a path string same as above. This is simply for convenience if you prefer named parameters instead of a positional `path` argument.
 
 #### Example:
 
@@ -90,7 +90,7 @@ The setup is analog to [get](#api-get):
 #### Params:
 - `root` (string): path to a root folder where resources are found. The root folder is relative to _build/resources/main_ in the [XP project structure](https://developer.enonic.com/docs/xp/stable/apps/projects#project_structure) after building (depending on specific build setups, this is somewhat equivalent to a path relative to _src/main/resources/_).
 - `options` (object, optional): add an [options object](#options) after `path` to control behavior for all responses from the returned getter function.
-- `optionsWithRoot` (object): same as above, an [options object](#options) but when used as the first and only argument, this object _must_ include a `root: ...` attribute too - a root string same as above.
+- `optionsWithRoot` (object): same as above, an [options object](#options) but when used as the first and only argument, this object _must_ include a `root: ...` attribute too - a root string same as above. This is simply for convenience if you prefer named parameters instead of a positional `path` argument.
 
 #### Example:
 
@@ -166,7 +166,7 @@ As described above, an object can be added with optional attributes to **overrid
 - `index` (string or array of strings): filename(s) (without path) to fall back to, look for and serve, in cases where the asset path requested is a folder. If not set, requesting a folder will yield an error.
 - `contentType` (string, optional): if set, assets will not be processed to try and find the MIME content type, instead this value will be preselected and returned.
 
-In addition, you may supply a `path` or `root` param ([.get](#api-get) or [.static](#api-static), respectively) if you prefer named parameters instead of a positional arguments. If a positional `path` or `root` argument is used and the options object is the second argument, then `path` or `root` parameters will be ignored in the options object. 
+In addition, you may supply a `path` or `root` param ([.get](#api-get) or [.static](#api-static), respectively). If a positional `path` or `root` argument is used and the options object is the second argument, then `path` or `root` parameters will be ignored in the options object. 
 
 <br/>
 <br/>
