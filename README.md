@@ -84,9 +84,11 @@ The getter function `getStatic` takes the [XP request object](https://developer.
 
 #### Example:
 
-_getAnotherStatic.es6_ returns any asset under _/my-resources_ in the application JAR (or _build/resources/main/my-resources_ in XP dev mode).
+_getAnyStatic.es6_ returns any asset under _/my-resources_ in the application JAR (or _build/resources/main/my-resources_ in XP dev mode).
 
 ```
+// getAnyStatic.es6:
+
 var libStatic = require('lib/enonic/static');
 
 var options = { ...some options, or not... }
@@ -97,7 +99,7 @@ exports.get = (request) => {
 };
 ```
 
-The path to the actual asset is determined by the URL path (in the `request` object). This relative to the access URL of the controller itself. In this example, _getAnotherStatic.es6_ is accessed at `https://someDomain.com/resources/public`. That means the URL `https://someDomain.com/resources/public/subfolder/another-resource.xml` will return the static resource _build/resources/main/my-resources/subfolder/another-resource.xml_.
+The path to the actual asset is determined by the URL path (in the `request` object). This relative to the access URL of the controller itself. In this example, _getAnyStatic.es6_ is accessed at `https://someDomain.com/resources/public`. That means the URL `https://someDomain.com/resources/public/subfolder/target-resource.xml` will return the static resource _/my-resources/subfolder/target-resource.xml_ from the JAR (a.k.a. _build/resources/main/my-resources/subfolder/target-resource.xml_ in dev mode).
 
 Same example as above, but simplified and without options:
 ```
@@ -131,14 +133,14 @@ Like [static](#api-static), it be used in three ways:
 
 #### Example:
 
-Accessing _getMyStaticAsset.es6_ on some URL where it replies to a GET request, **specifically** returns _/public/my-folder/my-static-asset.css_ from the JAR (or _build/resources/main/public/my-folder/my-static-asset.css_ in dev mode):
+Accessing _getSingleStatic.es6_ on some URL where it replies to a GET request, **specifically** returns _/public/my-folder/another-asset.css_ from the JAR (or _build/resources/main/public/my-folder/another-asset.css_ in dev mode):
 ```
-// getMyStaticAsset.es6:
+// getSingleStatic.es6:
 
 var libStatic = require('lib/enonic/static');
 
 exports.get = (request) => { 
-    return libStatic.get('public/my-folder/my-static-asset.css');
+    return libStatic.get('public/my-folder/another-asset.css');
 };
 ```
 
