@@ -4,12 +4,31 @@
 
 Intended and optimized for setting up endpoints that serve static cache optimised files, i.e. files whose content aren't meant to change. As such, developers must [version](https://cloud.google.com/cdn/docs/best-practices#versioned-urls) or [content-hash](https://survivejs.com/webpack/optimizing/adding-hashes-to-filenames/) the resource file names when updating them.
 
-The aim is "perfect client-side and network caching" via response headers (see for example [mozilla](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching), [imagekit](https://imagekit.io/blog/ultimate-guide-to-http-caching-for-static-assets/), [freecontent.manning.com](https://freecontent.manning.com/caching-assets/)).
+The aim is "perfect client-side and network caching" via response headers. Some relevant sources: [web.dev](https://web.dev/http-cache/), [facebook](https://engineering.fb.com/2017/01/26/web/this-browser-tweak-saved-60-of-requests-to-facebook/), [mozilla](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching), [imagekit](https://imagekit.io/blog/ultimate-guide-to-http-caching-for-static-assets/), [freecontent.manning.com](https://freecontent.manning.com/caching-assets/).
 
 Modeled akin to [serve-static](https://www.npmjs.com/package/serve-static), with a simple but configurable usage.
 
+
 <br/>
 
+## Contents
+
+- [Getting started](#get-started)
+  - [Install](#install)
+  - [Import](#import)
+- [API and examples](#api)
+  - [static](#api-static)
+  - [get](#api-get)
+- [Response: default behaviour](#behaviour)
+  - [status](#status)
+  - [body](#body)
+  - [contentType](#content-type)
+  - [headers](#headers)
+- [Overrides: the options object](#options)
+
+<br/>
+
+<a name="get-started"></a>
 ## Getting started
 
 ### Install
@@ -38,6 +57,8 @@ var libStatic = require('lib/enonic/static');
 
 <a name="api"></a>
 ## API
+
+The API consists of two controller functions. The first, [static](#api-static) is a broad configure-once/catch-all approach that's based on the relative path in the request. The second, [get](#api-get) specifically gets an asset based on a path string and options for each particular call.
 
 <a name="api-static"></a>
 ### .static
@@ -126,7 +147,7 @@ exports.get = (request) => {
 
 <a name="behavior"></a>
 <a name="behaviour"></a>
-## Default behaviour
+## Response: default behaviour
 Unless some of these aspects are overriden by an [options parameter](#options), the returned object  is a standard [XP response object](https://developer.enonic.com/docs/xp/stable/framework/http#http-response) ready to be returned from an XP controller:
 
 ```
@@ -164,7 +185,7 @@ Headers optimized for [private browser cached](https://developer.mozilla.org/en-
 <br/>
 
 <a name="options"></a>
-## Overrides: options object
+## Overrides: the options object
 
 As described above, an object can be added with optional attributes to **override** the [default behavior](#behaviour): 
 
