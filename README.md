@@ -188,11 +188,12 @@ In addition, you may supply a `path` or `root` param ([.get](#api-get) or [.stat
 <br/>
 <br/>
 
-## Later versions
+## TODO: Later versions
 
 ### Options params
-- `index` (string or array of strings): filename(s) (without path) to fall back to, look for and serve, in cases where the asset path requested is a folder. If not set, requesting a folder will yield an error.
+- `index` (string or array of strings): filename(s) (without path) to fall back to, look for and serve, in cases where the asset path requested is a folder. If not set, requesting a folder will yield an error. Implementaion: before throwing a 404, check if postfixing any of the chosen /index files (with the slash) resolves it. If so, return that.
+  The rest is up to the developer, and their responsibility how it's used: what htm/html/other they explicitly add in this parameter. And cache headers, just same as if they had asked directly for the index file.
 
 ### Response
 - `'Last-Modified'` header, determined on file modified date
-- `'Accept-Ranges': 'bytes'` header, handle ranges
+- `'Accept-Ranges': 'bytes'` header. Implement range handling.
