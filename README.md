@@ -73,7 +73,7 @@ Can be used in three ways:
 
 `var getStatic = libStatic.static(optionsWithRoot);`
 
-The getter function `getStatic` takes the [XP request object](https://developer.enonic.com/docs/xp/stable/framework/http#http-request) as argument, and determines the asset path from that (in practice: any path after the controller's own access path is postfixed after the `root` - see below).
+The getter function `getStatic` takes the [XP request object](https://developer.enonic.com/docs/xp/stable/framework/http#http-request) as argument, and determines the asset path from that (in practice: any path after the controller's own access path is postfixed after the `root` - see below). If the asset path contains `..` in such a way that it points outside of `root`, an error will occur.
 
 <a name="static-params"></a>
 #### Params:
@@ -125,7 +125,7 @@ Like [static](#api-static), it be used in three ways:
 `var response = libStatic.get(optionsWithPath);`
 
 #### Params:
-- `path` (string): path and full file name to an asset file, relative to the JAR root (or relative to _build/resources/main_ in XP dev mode, see [the 'root' param explanation](#static-params) above).
+- `path` (string): path and full file name to an asset file, relative to the JAR root (or relative to _build/resources/main_ in XP dev mode, see [the 'root' param explanation](#static-params) above. Difference: `path` is allowed to contain `..`, but not in such a way that it points directly to the JAR root or outside the JAR - then an error will occur).
 - `options` (object, optional): add an [options object](#options) after `path` to control behavior for this specific response.
 - `optionsWithPath` (object): same as above, an [options object](#options) but when used as the first and only argument, this object _must_ include a `{ path: ..., }` attribute too - a path string same as above. This is simply for convenience if you prefer named parameters instead of a positional `path` argument. If both are supplied, the positional `path` argument is used.
 
