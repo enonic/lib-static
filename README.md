@@ -50,7 +50,7 @@ repositories {
 In any XP controller, import the library:
 
 ```
-var libStatic = require('lib/enonic/static');
+const libStatic = require('lib/enonic/static');
 ```
 
 <br/>
@@ -67,11 +67,11 @@ Sets up and returns a resource-getter function.
 
 Can be used in three ways:
 
-`var getStatic = libStatic.static(root);`
+`const getStatic = libStatic.static(root);`
 
-`var getStatic = libStatic.static(root, options);`
+`const getStatic = libStatic.static(root, options);`
 
-`var getStatic = libStatic.static(optionsWithRoot);`
+`const getStatic = libStatic.static(optionsWithRoot);`
 
 The getter function `getStatic` takes the [XP request object](https://developer.enonic.com/docs/xp/stable/framework/http#http-request) as argument, determines the asset path from that, and returns a [response object](#behaviour) for the asset. In practice: any path after the controller's own access path is postfixed after the `root` - see below. If the asset path contains `..` in such a way that it points outside of `root`, an error will occur.
 
@@ -89,10 +89,10 @@ _getAnyStatic.es6_ returns any asset under _/my-resources_ in the application JA
 ```
 // getAnyStatic.es6:
 
-var libStatic = require('lib/enonic/static');
+const libStatic = require('lib/enonic/static');
 
-var options = { ...some options, or not... }
-var getStatic = libStatic.static('my-resources', options);
+const options = { ...some options, or not... }
+const getStatic = libStatic.static('my-resources', options);
 
 exports.get = (request) => {
     return getStatic(request);
@@ -103,7 +103,7 @@ The path to the actual asset is determined by the URL path (in the `request` obj
 
 Same example as above, but simplified and without options:
 ```
-var libStatic = require('lib/enonic/static');
+const libStatic = require('lib/enonic/static');
 exports.get = libStatic.static('my-resources');
 ```
 
@@ -120,11 +120,11 @@ Of course, you probably wouldn't normally hardcode a controller to return a part
 
 Like [static](#api-static), it be used in three ways:
 
-`var response = libStatic.get(path);`
+`const response = libStatic.get(path);`
 
-`var response = libStatic.get(path, options);`
+`const response = libStatic.get(path, options);`
 
-`var response = libStatic.get(optionsWithPath);`
+`const response = libStatic.get(optionsWithPath);`
 
 #### Params:
 - `path` (string): path and full file name to an asset file, relative to the JAR root (or relative to _build/resources/main_ in XP dev mode, see [the 'root' param explanation](#static-params) above. Difference: `path` is allowed to contain `..`, but not in such a way that it points directly to the JAR root or outside the JAR - then an error will occur).
@@ -137,7 +137,7 @@ Accessing _getSingleStatic.es6_ on some URL where it replies to a GET request, *
 ```
 // getSingleStatic.es6:
 
-var libStatic = require('lib/enonic/static');
+const libStatic = require('lib/enonic/static');
 
 exports.get = (request) => { 
     return libStatic.get('public/my-folder/another-asset.css');
@@ -182,8 +182,6 @@ Headers optimized for [private browser cached](https://developer.mozilla.org/en-
 }
 ```
 
-By default, the `ETag` header is skipped in XP dev mode.
-
 <br/>
 
 <a name="options"></a>
@@ -192,20 +190,20 @@ By default, the `ETag` header is skipped in XP dev mode.
 As described above, an object can be added with optional attributes to **override** the [default behaviour](#behaviour): 
 
 ```
-{ cacheControl, contentType, etagProd, etagDev }
+{ cacheControl, contentType, etag }
 ```
 
 ### Params:
 
-- `cacheControl` (string/function, optional): override the default header value (`'public, max-age=31536000, immutable'`) and return another `Cache-Control` header
-  - if set as a string, always use that value
+- `cacheControl` (boolean/string/function, optional): override the default header value (`'public, max-age=31536000, immutable'`) and return another `Cache-Control` header
+  - if set as a `false` boolean, no `Cache-Control` headers are sent. A `true` boolean is just ignored. 
+  - if set as a string, always use that value. An empty string will act as `false` and switch off cacheControl.
   - if set as a function: `(extension, content) => cacheControl`. Extension is the asset file name (lower-case, without dot) and content is the file content. File-by-file control. 
 - `contentType` (string/object/function, optional): override the built-in MIME type handling 
   - if set as a string, assets will not be processed to try and find the MIME content type, instead this value will always be preselected and returned.
   - if set as an object, keys are file types (the extensions of the asset file names _after compilation_, case-insensitive and will ignore dots), and values are Content-Type strings - for example, `{"json": "application/json", ".mp3": "audio/mpeg", "TTF": "font/ttf"}`. For files with extensions that are not among the keys in the object, the handling will fall back to the built-in handling.
   - if set as a function: `(extension, content) => contentType`. Extension is the asset file name (lower-case, without dot) and content is the file content. Completely overrides the library's built-in MIME type handling - no fallback.
-- `etagProd` (boolean, optional): if set to `false`, then the runtime content processing and `ETag` header are turned **off** in XP prod mode (default is `true`)
-- `etagDev` (boolean, optional): if set to `true`, then the runtime content processing and `ETag` header are turned **on** in XP dev mode (default is `false`)
+- `etag` (boolean, optional): if set to `false`, then the runtime content processing and `ETag` header are turned off. A `true` boolean is just ignored.
 
 In addition, you may supply a `path` or `root` param ([.get](#api-get) or [.static](#api-static), respectively). If a positional `path` or `root` argument is used and the options object is the second argument, then `path` or `root` parameters will be ignored in the options object. 
 
