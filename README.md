@@ -195,11 +195,11 @@ As described above, an object can be added with optional attributes to **overrid
 
 ### Params:
 
-- `cacheControl` (boolean/string/function, optional): override the default header value (`'public, max-age=31536000, immutable'`) and return another `Cache-Control` header
+- `cacheControl` (boolean/string/function, optional): override the default header value (`'public, max-age=31536000, immutable'`) and return another `Cache-Control` header.
   - if set as a `false` boolean, no `Cache-Control` headers are sent. A `true` boolean is just ignored. 
   - if set as a string, always use that value. An empty string will act as `false` and switch off cacheControl.
   - if set as a function: `(extension, content) => cacheControl`. Extension is the asset file name (lower-case, without dot) and content is the file content. File-by-file control. 
-- `contentType` (string/object/function, optional): override the built-in MIME type handling 
+- `contentType` (string/object/function, optional): override the built-in MIME type handling.
   - if set as a string, assets will not be processed to try and find the MIME content type, instead this value will always be preselected and returned.
   - if set as an object, keys are file types (the extensions of the asset file names _after compilation_, case-insensitive and will ignore dots), and values are Content-Type strings - for example, `{"json": "application/json", ".mp3": "audio/mpeg", "TTF": "font/ttf"}`. For files with extensions that are not among the keys in the object, the handling will fall back to the built-in handling.
   - if set as a function: `(extension, content) => contentType`. Extension is the asset file name (lower-case, without dot) and content is the file content. Completely overrides the library's built-in MIME type handling - no fallback.
