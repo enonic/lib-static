@@ -157,7 +157,7 @@ Unless some of these aspects are overriden by an [options parameter](#options), 
 <a name="status"></a>
 ### status
 
-Follows standard [HTTP error codes](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes), most often 200 and 404. On errors (all codes above 400), see error message in `body`.
+Follows standard [HTTP error codes](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes), most often 200, 304 and 404. On errors (all codes above 400), see error message in `body`.
 
 <a name="body"></a>
 ### body
