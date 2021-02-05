@@ -1,10 +1,10 @@
 # lib-static
 
-[Enonic XP](https://enonic.com/developer-tour) library for serving assets from a folder in the XP folder structure. 
+[Enonic XP](https://enonic.com/developer-tour) library for serving assets from a folder in the application resource structure. 
 
-Intended and optimized for setting up endpoints that serve completely static files, i.e. files whose content aren't meant to change. The intention is to more or less guarantee that the content will not change, so using some way to [version](https://cloud.google.com/cdn/docs/best-practices#versioned-urls) or [content-hash](https://survivejs.com/webpack/optimizing/adding-hashes-to-filenames/) the resource file names is recommended when updating them.
+Intended and optimized for setting up endpoints that serve static cache optimised files, i.e. files whose content aren't meant to change. As such, developers must [version](https://cloud.google.com/cdn/docs/best-practices#versioned-urls) or [content-hash](https://survivejs.com/webpack/optimizing/adding-hashes-to-filenames/) the resource file names when updating them.
 
-The aim is "perfect client-side caching" in response headers (see for example [mozilla](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching), [imagekit](https://imagekit.io/blog/ultimate-guide-to-http-caching-for-static-assets/), [freecontent.manning.com](https://freecontent.manning.com/caching-assets/)).
+The aim is "perfect client-side and network caching" via response headers (see for example [mozilla](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching), [imagekit](https://imagekit.io/blog/ultimate-guide-to-http-caching-for-static-assets/), [freecontent.manning.com](https://freecontent.manning.com/caching-assets/)).
 
 Modeled akin to [serve-static](https://www.npmjs.com/package/serve-static), with a simple but configurable usage.
 
@@ -13,7 +13,7 @@ Modeled akin to [serve-static](https://www.npmjs.com/package/serve-static), with
 ## Getting started
 
 ### Install
-Insert into `build.gradle` in your parent XP project, under `dependencies`, where `<version>` is the latest/requested version of this library - for example `1.0.0`:
+Insert into `build.gradle` of your XP project, under `dependencies`, where `<version>` is the latest/requested version of this library - for example `1.0.0`:
 ```groovy
 dependencies {
 	include 'com.enonic.lib:lib-static:<version>'
