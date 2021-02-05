@@ -6,7 +6,7 @@ Intended and optimized for setting up endpoints that serve static cache optimise
 
 The aim is "perfect client-side and network caching" via response headers. Some relevant sources: [web.dev](https://web.dev/http-cache/), [facebook](https://engineering.fb.com/2017/01/26/web/this-browser-tweak-saved-60-of-requests-to-facebook/), [mozilla](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching), [imagekit](https://imagekit.io/blog/ultimate-guide-to-http-caching-for-static-assets/), [freecontent.manning.com](https://freecontent.manning.com/caching-assets/).
 
-Modeled akin to [serve-static](https://www.npmjs.com/package/serve-static), with a simple but configurable usage.
+Modelled akin to [serve-static](https://www.npmjs.com/package/serve-static), with a simple but configurable usage.
 
 
 <br/>
@@ -73,13 +73,13 @@ Can be used in three ways:
 
 `var getStatic = libStatic.static(optionsWithRoot);`
 
-The getter function `getStatic` takes the [XP request object](https://developer.enonic.com/docs/xp/stable/framework/http#http-request) as argument, and determines the asset path from that (in practice: any path after the controller's own access path is postfixed after the `root` - see below). If the asset path contains `..` in such a way that it points outside of `root`, an error will occur.
+The getter function `getStatic` takes the [XP request object](https://developer.enonic.com/docs/xp/stable/framework/http#http-request) as argument, determines the asset path from that, and returns a [response object](#behaviour) for the asset. In practice: any path after the controller's own access path is postfixed after the `root` - see below. If the asset path contains `..` in such a way that it points outside of `root`, an error will occur.
 
 <a name="static-params"></a>
 #### Params:
 - `root` (string): path to a root folder where resources are found. This string points to a root folder in the built JAR. Using `..` in the `root` string will throw an error.
   - Note: _"a root folder in the built JAR"_ is accurate, but if you think JAR's can be a bit obscure here's an easier mental model: `root` points to a folder below and relative to the _build/resources/main_. This is where all assets are collected when building the JAR. And when running XP in [dev mode](https://developer.enonic.com/docs/enonic-cli/master/dev#start), it actually IS where assets are served from. Depending on specific build setups, you can also think of `root` as being relative to _src/main/resources/_.
-- `options` (object, optional): add an [options object](#options) after `path` to control behavior for all responses from the returned getter function.
+- `options` (object, optional): add an [options object](#options) after `path` to control behaviour for all responses from the returned getter function.
 - `optionsWithRoot` (object): same as above, an [options object](#options) but when used as the first and only argument, this object _must_ include a `{ root: ..., }` attribute too - a root string same as above. This is simply for convenience if you prefer named parameters instead of a positional `root` argument. If both are supplied, the positional `root` argument is used.
 
 #### Example:
@@ -109,9 +109,9 @@ exports.get = libStatic.static('my-resources');
 
 <a name="api-get"></a>
 ### .get
-A specific-recource getter method, returns a [response object](#behavior) for the asset that's named in the argument string. This is similar to the getter function made by [static](#api-static) above, but with two key differences:
+A specific-recource getter method, returns a [response object](#behaviour) for the asset that's named in the argument string. This is similar to the getter function made by [static](#api-static) above, but with two key differences:
 
-- There's no general behavior setup for all calls to it. There's no root folder setup, and `path` and `options` arguments apply only to each particular call.
+- There's no general behaviour setup for all calls to it. There's no root folder setup, and `path` and `options` arguments apply only to each particular call.
 - the `path` argument is an asset-path string instead of a request object. 
   
 Of course, you probably wouldn't normally hardcode a controller to return a particular asset like in the example below. The purpose here is closer control with each call: implement your own logic and send a resulting string to the argument.
@@ -126,7 +126,7 @@ Like [static](#api-static), it be used in three ways:
 
 #### Params:
 - `path` (string): path and full file name to an asset file, relative to the JAR root (or relative to _build/resources/main_ in XP dev mode, see [the 'root' param explanation](#static-params) above. Difference: `path` is allowed to contain `..`, but not in such a way that it points directly to the JAR root or outside the JAR - then an error will occur).
-- `options` (object, optional): add an [options object](#options) after `path` to control behavior for this specific response.
+- `options` (object, optional): add an [options object](#options) after `path` to control behaviour for this specific response.
 - `optionsWithPath` (object): same as above, an [options object](#options) but when used as the first and only argument, this object _must_ include a `{ path: ..., }` attribute too - a path string same as above. This is simply for convenience if you prefer named parameters instead of a positional `path` argument. If both are supplied, the positional `path` argument is used.
 
 #### Example:
@@ -145,7 +145,6 @@ exports.get = (request) => {
 
 <br/>
 
-<a name="behavior"></a>
 <a name="behaviour"></a>
 ## Response: default behaviour
 Unless some of these aspects are overriden by an [options parameter](#options), the returned object  is a standard [XP response object](https://developer.enonic.com/docs/xp/stable/framework/http#http-response) ready to be returned from an XP controller:
@@ -188,7 +187,7 @@ By default, the `ETag` header is skipped in XP dev mode.
 <a name="options"></a>
 ## Overrides: the options object
 
-As described above, an object can be added with optional attributes to **override** the [default behavior](#behaviour): 
+As described above, an object can be added with optional attributes to **override** the [default behaviour](#behaviour): 
 
 ```
 { cacheControl, contentType, etagProd, etagDev }
