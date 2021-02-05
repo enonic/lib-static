@@ -156,7 +156,6 @@ Headers optimized for [private browser cached](https://developer.mozilla.org/en-
 ```
 {
     'Cache-Control': 'public, max-age=31536000, immutable',
-    'Accept-Ranges': 'none',
     'etag': <etag_value>,
     'If-None-Match': '<etag_value>'
 }
