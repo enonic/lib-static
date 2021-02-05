@@ -41,7 +41,7 @@ var libStatic = require('lib/enonic/static');
 
 <a name="api-get"></a>
 ### .get
-Shorthand all-in-one method, returns a [response object](#behavior).
+Shorthand method, returns a [response object](#behavior) for asset that's named in the argument.
 
 Can be used in three ways:
 
@@ -99,9 +99,10 @@ _getAnotherStatic.es6_ returns any asset under _build/resources/main/my-resource
 ```
 var libStatic = require('lib/enonic/static');
 
-var getStatic = libStatic.static('my-resources');
+var options = { ...some options, or not... }
+var getStatic = libStatic.static('my-resources', options);
 
-exports.get = (request) => { 
+exports.get = (request) => {
     return getStatic(request);
 };
 ```
@@ -109,6 +110,14 @@ exports.get = (request) => {
 In this example, _getAnotherStatic.es6_ is accessed at `https://someDomain.com/resources/public`.
 
 That means the URL `https://someDomain.com/resources/public/subfolder/another-resource.xml` will return the static resource _build/resources/main/my-resources/subfolder/another-resource.xml_.
+
+Same example, simplified: 
+```
+var libStatic = require('lib/enonic/static');
+var options = { ...some options, or not... }
+exports.get = libStatic.static('my-resources', options);
+```
+
 
 
 <br/>
