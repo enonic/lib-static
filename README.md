@@ -203,7 +203,9 @@ As described above, an object can be added with optional attributes to **overrid
   - if set as a string, assets will not be processed to try and find the MIME content type, instead this value will always be preselected and returned.
   - if set as an object, keys are file types (the extensions of the asset file names _after compilation_, case-insensitive and will ignore dots), and values are Content-Type strings - for example, `{"json": "application/json", ".mp3": "audio/mpeg", "TTF": "font/ttf"}`. For files with extensions that are not among the keys in the object, the handling will fall back to the built-in handling.
   - if set as a function: `(extension, content) => contentType`. Extension is the asset file name (lower-case, without dot) and content is the file content. Completely overrides the library's built-in MIME type handling - no fallback.
-- `etag` (boolean, optional): if set to `false`, then the runtime content processing and `ETag` header are turned off. A `true` boolean is just ignored.
+- `etag` (boolean, optional): The default behavior of lib-static is to generate/handle ETag in prod, while skipping it entirely in dev mode. 
+  - Setting the etag parameter to `false` will turn **off** etag processing (runtime content processing, headers and handling) in **prod** too. 
+  - Setting it to `true` will turn it **on in dev mode** too. 
 
 In addition, you may supply a `path` or `root` param ([.get](#api-get) or [.static](#api-static), respectively). If a positional `path` or `root` argument is used and the options object is the second argument, then `path` or `root` parameters will be ignored in the options object. 
 
