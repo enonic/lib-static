@@ -19,6 +19,7 @@ Modelled akin to [serve-static](https://www.npmjs.com/package/serve-static), wit
 - [API and examples](#api)
   - [static](#api-static)
   - [get](#api-get)
+  - [url](#api-url)
 - [Response: default behaviour](#behaviour)
   - [status](#status)
   - [body](#body)
@@ -54,6 +55,7 @@ const libStatic = require('lib/enonic/static');
 ```
 
 <br/>
+<br/>
 
 <a name="api"></a>
 ## API
@@ -65,22 +67,26 @@ The API consists of two controller functions. The first, [static](#api-static) i
 
 Sets up and returns a resource-getter function.
 
-Can be used in three ways:
+Can be used in four ways:
+
+`const getStatic = libStatic.static();`
 
 `const getStatic = libStatic.static(root);`
 
 `const getStatic = libStatic.static(root, options);`
 
-`const getStatic = libStatic.static(optionsWithRoot);`
+`const getStatic = libStatic.static(optionsMaybeRoot);`
 
 The getter function `getStatic` takes the [XP request object](https://developer.enonic.com/docs/xp/stable/framework/http#http-request) as argument, determines the asset path from that, and returns a [response object](#behaviour) for the asset. In practice: any path after the controller's own access path is postfixed after the `root` - see below. If the asset path contains `..` in such a way that it points outside of `root`, an error will occur.
 
 <a name="static-params"></a>
 #### Params:
-- `root` (string): path to a root folder where resources are found. This string points to a root folder in the built JAR. Using `..` in the `root` string will throw an error.
-  - Note: _"a root folder in the built JAR"_ is accurate, but if you think JAR's can be a bit obscure here's an easier mental model: `root` points to a folder below and relative to the _build/resources/main_. This is where all assets are collected when building the JAR. And when running XP in [dev mode](https://developer.enonic.com/docs/enonic-cli/master/dev#start), it actually IS where assets are served from. Depending on specific build setups, you can also think of `root` as being relative to _src/main/resources/_.
+- `root` (string, optional): path to a root folder where resources are found. This string points to a root folder in the built JAR. Using `..` in the `root` string will throw an error. If `root` is missing (or an empty string) both as a string argument or as an attribute in a `options` object, the default behaviour is to point to a _/static_ folder (in the JAR, or _build/resources/main/static_ in dev mode) and serve assets from there.
+    - Note: _"a root folder in the built JAR"_ is accurate, but if you think JAR's can be a bit obscure here's an easier mental model: `root` points to a folder below and relative to the _build/resources/main_. This is where all assets are collected when building the JAR. And when running XP in [dev mode](https://developer.enonic.com/docs/enonic-cli/master/dev#start), it actually IS where assets are served from. Depending on specific build setups, you can also think of `root` as being relative to _src/main/resources/_.
 - `options` (object, optional): add an [options object](#options) after `path` to control behaviour for all responses from the returned getter function.
-- `optionsWithRoot` (object): same as above, an [options object](#options) but when used as the first and only argument, this object _must_ include a `{ root: ..., }` attribute too - a root string same as above. This is simply for convenience if you prefer named parameters instead of a positional `root` argument. If both are supplied, the positional `root` argument is used.
+- `optionsMaybeRoot` (object, optional): same as above, an [options object](#options). But when used as the first and only argument, this object _may_ also include a `{ root: ..., }` attribute too - a root string same as above. This is simply for convenience if you prefer named parameters instead of a positional `root` argument. If both are supplied, the positional `root` argument is used.
+
+
 
 #### Example:
 
@@ -147,9 +153,50 @@ exports.get = (request) => {
 
 <br/>
 
+<a name="api-url"></a>
+### .url
+A parallel to [portal.assetUrl](https://developer.enonic.com/docs/xp/stable/api/lib-portal#asseturl). Returns a URL string to a particular asset below the _/static_ directory (in the JAR. In XP dev mode that's _build/resources/main/static_), served by lib-static's built-in asset service.
+
+`const url = libStatic.url(path);`;
+
+NOTE: Before using `.url`, **make sure that your assets under _/static_ are [actually static](#dynamic-headers)!** The built-in asset service is rudimentary, non-configurable and meant for simple use cases. If you need more control, you should make your own service with `.static` or `.get`. 
+
+
+#### Params:
+- `path` (string): path and full file name to an asset file, relative to a _/static_ folder in the JAR root (or relative to _build/resources/main/static_ in XP dev mode, similar to [the 'root' param explanation](#static-params) above. `path` is allowed to contain `..`, but not in such a way that it points directly to the JAR root or outside the JAR - then an error will occur).
+
+#### Example:
+In this somewhat realistic example, useStaticUrl.es6 is a part controller that uses page contributions to add a static asset link to an output HTML: 
+
+```
+// useStaticUrl.es6:
+
+const thymeleafLib = require('/lib/thymeleaf');
+const libStatic = require('lib/enonic/static');
+
+const view = resolve('useStaticUrl.html');
+
+exports.get = (request) => { 
+    const model = {};
+    
+    return {
+        body: thymeleafLib.render(view, model),
+        pageContributions: {
+            bodyEnd: '<script src="' + libStatic.url('js/myAsset.12345678.js') + '">'
+    }
+};
+```
+
+The output URL will then fetch `js/myAsset.12345678.js` from the _/static_ folder, served as [described below](#behaviour). 
+
+
+
+<br/>
+<br/>
+
 <a name="behaviour"></a>
 ## Response: default behaviour
-Unless some of these aspects are overriden by an [options parameter](#options), the returned object  is a standard [XP response object](https://developer.enonic.com/docs/xp/stable/framework/http#http-response) ready to be returned from an XP controller:
+Unless some of these aspects are overriden by an [options parameter](#options), the returned object from `.get` and `.static` is a standard [XP response object](https://developer.enonic.com/docs/xp/stable/framework/http#http-response) ready to be returned from an XP controller. This is also the standard behavior of the built-in [static-asset service](#api-url).
 
 ```
 { status, body, contentType, headers }
@@ -212,6 +259,11 @@ In addition, you may supply a `path` or `root` param ([.get](#api-get) or [.stat
 <br/>
 
 ## TODO: Later versions
+
+### .url
+- It would be neat if the .url method could handle `*` wildcards for /a-zA-Z0-9/ (hashes) and just find the asset matching it (in dev mode: detects the most recent one, since build may contain multiple):
+
+`const upToDateAsset = staticLib.url('myAsset.*.js');'` --> Detects /static/myAsset.98f7a12b4.js, and that it's more recent than /static/myAsset.22b6e42c3.js, and returns some service-base url a la `"https://<domain>/_/static/myAsset.98f7a12b4.js"`.
 
 ### Options params
 - `index` (string or array of strings): filename(s) (without path) to fall back to, look for and serve, in cases where the asset path requested is a folder. If not set, requesting a folder will yield an error. Implementaion: before throwing a 404, check if postfixing any of the chosen /index files (with the slash) resolves it. If so, return that.
