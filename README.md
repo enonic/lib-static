@@ -19,7 +19,6 @@ Modelled akin to [serve-static](https://www.npmjs.com/package/serve-static), wit
 - [API and examples](#api)
   - [static](#api-static)
   - [get](#api-get)
-  - [url](#api-url)
 - [Response: default behaviour](#behaviour)
   - [status](#status)
   - [body](#body)
@@ -150,53 +149,12 @@ exports.get = (request) => {
 };
 ```
 
-
-<br/>
-
-<a name="api-url"></a>
-### .url
-A parallel to [portal.assetUrl](https://developer.enonic.com/docs/xp/stable/api/lib-portal#asseturl). Returns a URL string to a particular asset below the _/static_ directory (in the JAR. In XP dev mode that's _build/resources/main/static_), served by lib-static's built-in asset service.
-
-`const url = libStatic.url(path);`;
-
-NOTE: Before using `.url`, **make sure that your assets under _/static_ are [actually static](#dynamic-headers)!** The built-in asset service is rudimentary, non-configurable and meant for simple use cases. If you need more control, you should make your own service with `.static` or `.get`. 
-
-
-#### Params:
-- `path` (string): path and full file name to an asset file, relative to a _/static_ folder in the JAR root (or relative to _build/resources/main/static_ in XP dev mode, similar to [the 'root' param explanation](#static-params) above. `path` is allowed to contain `..`, but not in such a way that it points directly to the JAR root or outside the JAR - then an error will occur).
-
-#### Example:
-In this somewhat realistic example, useStaticUrl.es6 is a part controller that uses page contributions to add a static asset link to an output HTML: 
-
-```
-// useStaticUrl.es6:
-
-const thymeleafLib = require('/lib/thymeleaf');
-const libStatic = require('lib/enonic/static');
-
-const view = resolve('useStaticUrl.html');
-
-exports.get = (request) => { 
-    const model = {};
-    
-    return {
-        body: thymeleafLib.render(view, model),
-        pageContributions: {
-            bodyEnd: '<script src="' + libStatic.url('js/myAsset.12345678.js') + '">'
-    }
-};
-```
-
-The output URL will then fetch `js/myAsset.12345678.js` from the _/static_ folder, served as [described below](#behaviour). 
-
-
-
 <br/>
 <br/>
 
 <a name="behaviour"></a>
 ## Response: default behaviour
-Unless some of these aspects are overriden by an [options parameter](#options), the returned object from `.get` and `.static` is a standard [XP response object](https://developer.enonic.com/docs/xp/stable/framework/http#http-response) ready to be returned from an XP controller. This is also the standard behavior of the built-in [static-asset service](#api-url).
+Unless some of these aspects are overriden by an [options parameter](#options), the returned object from `.get` and `.static` is a standard [XP response object](https://developer.enonic.com/docs/xp/stable/framework/http#http-response) ready to be returned from an XP controller.
 
 ```
 { status, body, contentType, headers }
@@ -260,11 +218,6 @@ In addition, you may supply a `path` or `root` param ([.get](#api-get) or [.stat
 
 ## TODO: Later versions
 
-### .url
-- It would be neat if the .url method could handle `*` wildcards for /a-zA-Z0-9/ (hashes) and just find the asset matching it (in dev mode: detects the most recent one, since build may contain multiple):
-
-`const upToDateAsset = staticLib.url('myAsset.*.js');'` --> Detects /static/myAsset.98f7a12b4.js, and that it's more recent than /static/myAsset.22b6e42c3.js, and returns some service-base url a la `"https://<domain>/_/static/myAsset.98f7a12b4.js"`.
-
 ### Options params
 - `index` (string or array of strings): filename(s) (without path) to fall back to, look for and serve, in cases where the asset path requested is a folder. If not set, requesting a folder will yield an error. Implementaion: before throwing a 404, check if postfixing any of the chosen /index files (with the slash) resolves it. If so, return that.
   The rest is up to the developer, and their responsibility how it's used: what htm/html/other they explicitly add in this parameter. And cache headers, just same as if they had asked directly for the index file.
@@ -272,3 +225,17 @@ In addition, you may supply a `path` or `root` param ([.get](#api-get) or [.stat
 ### Response
 - `'Last-Modified'` header, determined on file modified date
 - `'Accept-Ranges': 'bytes'` header. Implement range handling.
+
+### .resolvePath(globPath, root)
+Probably not in this lib, but worth mentioning:
+
+To save huge complexity (detecting at buildtime what the output and unpredictable hash will be and hooking those references up to output), there should be a function that can resolve a fingerprinted asset filename at XP runtime: `resolvePath(globPath, root)`. 
+
+For example, if a fingerprinted asset _bundle.92d34fd72.js_ is built into _/static_, then resolvePath('bundle.*.js', 'static') will look for matching files within _/static_ and return the string `"bundle.92d34fd72.js"`. We can always later add the functionality that the `globPath` argument can also be a regex pattern.
+- `resolvePath` should *never* be part of an asset-serving endpoint service - i.e. it should not be possible to send a glob to the server and get a file response. Instead, it’s meant to be used in controllers to fetch the name of a required asset, e.g:
+    ```
+    pageContributions: <script src="${libStaticEndpoint}/${resolvePath('bundle.*.js', 'static')}">
+    ```
+- Besides, `resolvePath` can/should be part of a different library. Can be its own library (‘lib-resolvepath’?) or part of some other general-purpose lib, for example lib-util.
+- In dev mode, `resolvePath` will often find more than one match and select the most recently updated one (and should log it at least once if that’s the case). In prod mode, it should throw an error if more than one is found, and if only one is found, cache it internally.
+``
