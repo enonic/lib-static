@@ -72,7 +72,7 @@ Can be used in three ways:
 
 `const getStatic = libStatic.static(root, options);`
 
-`const getStatic = libStatic.static(optionsMaybeRoot);`
+`const getStatic = libStatic.static(optionsWithRoot);`
 
 The getter function `getStatic` takes the [XP request object](https://developer.enonic.com/docs/xp/stable/framework/http#http-request) as argument, determines the asset path from that, and returns a [response object](#behaviour) for the asset. In practice: any path after the controller's own access path is postfixed after the `root` - see below. If the asset path contains `..` in such a way that it points outside of `root`, an error will occur.
 
@@ -81,7 +81,7 @@ The getter function `getStatic` takes the [XP request object](https://developer.
 - `root` (string): path to a root folder where resources are found. This string points to a root folder in the built JAR.
     - Note: _"a root folder in the built JAR"_ is accurate, but if you think JAR's can be a bit obscure here's an easier mental model: `root` points to a folder below and relative to the _build/resources/main_. This is where all assets are collected when building the JAR. And when running XP in [dev mode](https://developer.enonic.com/docs/enonic-cli/master/dev#start), it actually IS where assets are served from. Depending on specific build setups, you can also think of `root` as being relative to _src/main/resources/_.
 - `options` (object): add an [options object](#options) after `path` to control behaviour for all responses from the returned getter function.
-- `optionsMaybeRoot` (object): same as above: an [options object](#options). But when used as the first and only argument, this object _must_ also include a `{ root: ..., }` attribute too - a root string same as above. This is simply for convenience if you prefer named parameters instead of a positional `root` argument. If both are supplied, the positional `root` argument is used.
+- `optionsWithRoot` (object): same as above: an [options object](#options). But when used as the first and only argument, this object _must_ also include a `{ root: ..., }` attribute too - a root string same as above. This is simply for convenience if you prefer named parameters instead of a positional `root` argument. If both are supplied, the positional `root` argument is used.
 
 If `root` (either as a string argument or as an attribute in a `options` object) contains `..`, or is missing (or just an empty string), an error is thrown.
 
