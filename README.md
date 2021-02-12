@@ -66,9 +66,7 @@ The API consists of two controller functions. The first, [static](#api-static) i
 
 Sets up and returns a resource-getter function.
 
-Can be used in four ways:
-
-`const getStatic = libStatic.static();`
+Can be used in three ways:
 
 `const getStatic = libStatic.static(root);`
 
@@ -80,12 +78,12 @@ The getter function `getStatic` takes the [XP request object](https://developer.
 
 <a name="static-params"></a>
 #### Params:
-- `root` (string, optional): path to a root folder where resources are found. This string points to a root folder in the built JAR. Using `..` in the `root` string will throw an error. If `root` is missing (or an empty string) both as a string argument or as an attribute in a `options` object, the default behaviour is to point to a _/static_ folder (in the JAR, or _build/resources/main/static_ in dev mode) and serve assets from there.
+- `root` (string): path to a root folder where resources are found. This string points to a root folder in the built JAR.
     - Note: _"a root folder in the built JAR"_ is accurate, but if you think JAR's can be a bit obscure here's an easier mental model: `root` points to a folder below and relative to the _build/resources/main_. This is where all assets are collected when building the JAR. And when running XP in [dev mode](https://developer.enonic.com/docs/enonic-cli/master/dev#start), it actually IS where assets are served from. Depending on specific build setups, you can also think of `root` as being relative to _src/main/resources/_.
-- `options` (object, optional): add an [options object](#options) after `path` to control behaviour for all responses from the returned getter function.
-- `optionsMaybeRoot` (object, optional): same as above, an [options object](#options). But when used as the first and only argument, this object _may_ also include a `{ root: ..., }` attribute too - a root string same as above. This is simply for convenience if you prefer named parameters instead of a positional `root` argument. If both are supplied, the positional `root` argument is used.
+- `options` (object): add an [options object](#options) after `path` to control behaviour for all responses from the returned getter function.
+- `optionsMaybeRoot` (object): same as above: an [options object](#options). But when used as the first and only argument, this object _must_ also include a `{ root: ..., }` attribute too - a root string same as above. This is simply for convenience if you prefer named parameters instead of a positional `root` argument. If both are supplied, the positional `root` argument is used.
 
-
+If `root` (either as a string argument or as an attribute in a `options` object) contains `..`, or is missing (or just an empty string), an error is thrown.
 
 #### Example:
 
