@@ -58,6 +58,7 @@ const libStatic = require('lib/enonic/static');
 ```
 
 <br/>
+<br/>
 
 <a name="api"></a>
 ## API
@@ -81,10 +82,12 @@ The getter function `getStatic` takes the [XP request object](https://developer.
 
 <a name="static-params"></a>
 #### Params:
-- `root` (string): path to a root folder where resources are found. This string points to a root folder in the built JAR. Using `..` in the `root` string will throw an error.
-  - Note: _"a root folder in the built JAR"_ is accurate, but if you think JAR's can be a bit obscure here's an easier mental model: `root` points to a folder below and relative to the _build/resources/main_. This is where all assets are collected when building the JAR. And when running XP in [dev mode](https://developer.enonic.com/docs/enonic-cli/master/dev#start), it actually IS where assets are served from. Depending on specific build setups, you can also think of `root` as being relative to _src/main/resources/_.
-- `options` (object, optional): add an [options object](#options) after `path` to control behaviour for all responses from the returned getter function.
-- `optionsWithRoot` (object): same as above, an [options object](#options) but when used as the first and only argument, this object _must_ include a `{ root: ..., }` attribute too - a root string same as above. This is simply for convenience if you prefer named parameters instead of a positional `root` argument. If both are supplied, the positional `root` argument is used.
+- `root` (string): path to a root folder where resources are found. This string points to a root folder in the built JAR.
+    - Note: _"a root folder in the built JAR"_ is accurate, but if you think JAR's can be a bit obscure here's an easier mental model: `root` points to a folder below and relative to the _build/resources/main_. This is where all assets are collected when building the JAR. And when running XP in [dev mode](https://developer.enonic.com/docs/enonic-cli/master/dev#start), it actually IS where assets are served from. Depending on specific build setups, you can also think of `root` as being relative to _src/main/resources/_.
+- `options` (object): add an [options object](#options) after `path` to control behaviour for all responses from the returned getter function.
+- `optionsWithRoot` (object): same as above: an [options object](#options). But when used as the first and only argument, this object _must_ also include a `{ root: ..., }` attribute too - a root string same as above. This is simply for convenience if you prefer named parameters instead of a positional `root` argument. If both are supplied, the positional `root` argument is used.
+
+If `root` (either as a string argument or as an attribute in a `options` object) contains `..`, or is missing (or just an empty string), an error is thrown.
 
 #### Example:
 
@@ -148,12 +151,12 @@ exports.get = (request) => {
 };
 ```
 
-
+<br/>
 <br/>
 
 <a name="behaviour"></a>
 ## Response: default behaviour
-Unless some of these aspects are overriden by an [options parameter](#options), the returned object  is a standard [XP response object](https://developer.enonic.com/docs/xp/stable/framework/http#http-response) ready to be returned from an XP controller:
+Unless some of these aspects are overriden by an [options parameter](#options), the returned object from `.get` and `.static` is a standard [XP response object](https://developer.enonic.com/docs/xp/stable/framework/http#http-response) ready to be returned from an XP controller.
 
 Response signature:
 
@@ -315,3 +318,17 @@ If you have mutable assets in your project, there are several ways you could imp
 ### Response
 - `'Last-Modified'` header, determined on file modified date
 - `'Accept-Ranges': 'bytes'` header. Implement range handling.
+
+### .resolvePath(globPath, root)
+Probably not in this lib, but worth mentioning:
+
+To save huge complexity (detecting at buildtime what the output and unpredictable hash will be and hooking those references up to output), there should be a function that can resolve a fingerprinted asset filename at XP runtime: `resolvePath(globPath, root)`. 
+
+For example, if a fingerprinted asset _bundle.92d34fd72.js_ is built into _/static_, then resolvePath('bundle.*.js', 'static') will look for matching files within _/static_ and return the string `"bundle.92d34fd72.js"`. We can always later add the functionality that the `globPath` argument can also be a regex pattern.
+- `resolvePath` should *never* be part of an asset-serving endpoint service - i.e. it should not be possible to send a glob to the server and get a file response. Instead, it’s meant to be used in controllers to fetch the name of a required asset, e.g:
+    ```
+    pageContributions: <script src="${libStaticEndpoint}/${resolvePath('bundle.*.js', 'static')}">
+    ```
+- Besides, `resolvePath` can/should be part of a different library. Can be its own library (‘lib-resolvepath’?) or part of some other general-purpose lib, for example lib-util.
+- In dev mode, `resolvePath` will often find more than one match and select the most recently updated one (and should log it at least once if that’s the case). In prod mode, it should throw an error if more than one is found, and if only one is found, cache it internally.
+``
