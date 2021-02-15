@@ -51,6 +51,7 @@ task compileXP(type: NodeTask) {
 compileXP.dependsOn += npmInstall
 jar.dependsOn += 'compileXP'
 
+
 task compileTest(type: NodeTask) {
     group 'enonic xp'
     description 'Babel-compile Enonic XP ES6 test files'
@@ -61,5 +62,6 @@ task compileTest(type: NodeTask) {
     inputs.dir 'src/test/resources'
     outputs.dir("build/resources/test")
 }
+
 compileTest.dependsOn += compileXP
 test.dependsOn += 'compileTest'
