@@ -43,7 +43,13 @@ task compileXP(type: NodeTask) {
     description 'Babel-compile Enonic XP ES6 source files'
 
     script = file('node_modules/@babel/cli/bin/babel.js')
-    args = ["src/main/resources", "--plugins", "@babel/plugin-transform-arrow-functions", "--out-dir", "build/resources/main"]
+    args = ["src/main/resources",
+            "--plugins", "@babel/plugin-transform-parameters",
+            "--plugins", "@babel/plugin-transform-destructuring",
+            "--plugins", "@babel/plugin-transform-spread",
+            "--plugins", "@babel/plugin-transform-arrow-functions",
+            "--plugins", "@babel/plugin-proposal-object-rest-spread",
+            "--out-dir", "build/resources/main"]
 
     inputs.dir 'src/main/resources'
     outputs.dir("build/resources/main")
@@ -57,7 +63,13 @@ task compileTest(type: NodeTask) {
     description 'Babel-compile Enonic XP ES6 test files'
 
     script = file('node_modules/@babel/cli/bin/babel.js')
-    args = ["src/test/resources", "--plugins", "@babel/plugin-transform-arrow-functions", "--out-dir", "build/resources/test"]
+    args = ["src/test/resources",
+            "--plugins", "@babel/plugin-transform-parameters",
+            "--plugins", "@babel/plugin-transform-destructuring",
+            "--plugins", "@babel/plugin-transform-spread",
+            "--plugins", "@babel/plugin-transform-arrow-functions",
+            "--plugins", "@babel/plugin-proposal-object-rest-spread",
+            "--out-dir", "build/resources/test"]
 
     inputs.dir 'src/test/resources'
     outputs.dir("build/resources/test")

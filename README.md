@@ -202,7 +202,7 @@ NOTE: mutable assets should not be served with this header! See [below](#mutable
 As described above, an object can be added with optional attributes to **override** the [default behaviour](#behaviour):
 
 ```
-{ cacheControl, contentType, etag }
+{ cacheControl, contentType, etag, throwErrors }
 ```
 
 ### Params:
@@ -218,6 +218,7 @@ As described above, an object can be added with optional attributes to **overrid
 - `etag` (boolean, optional): The default behavior of lib-static is to generate/handle ETag in prod, while skipping it entirely in dev mode.
     - Setting the etag parameter to `false` will turn **off** etag processing (runtime content processing, headers and handling) in **prod** too.
     - Setting it to `true` will turn it **on in dev mode** too.
+- `throwErrors` (boolean, default is `false`): by default, the `.get` method should not throw errors. Instead, it internally server-logs (and hash-ID-tags) errors and automatically outputs a 500 error response. Setting `throwErrors` to `true` overrides this: the 500-response generation is skipped, and the error is re-thrown down to the calling context, to be handled there. This does not apply to 404-not-found type "errors", they will always generate a 404-response either way. 
 
 In addition, you may supply a `path` or `root` param ([.get](#api-get) or [.static](#api-static), respectively). If a positional `path` or `root` argument is used and the options object is the second argument, then `path` or `root` parameters will be ignored in the options object.
 
