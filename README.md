@@ -2,7 +2,7 @@
 
 [Enonic XP](https://enonic.com/developer-tour) library for serving assets from a folder in the application resource structure. 
 
-Intended and optimized for setting up endpoints that serve static cache optimised files, i.e. files whose content aren't meant to change. As such, developers must [version](https://cloud.google.com/cdn/docs/best-practices#versioned-urls) or [content-hash](https://survivejs.com/webpack/optimizing/adding-hashes-to-filenames/) the resource file names when updating them.
+Intended for setting up endpoints that serve static files in a cache-optimized way, mainly **immutable files**: files whose content aren't meant to change (i.e. can be trusted to never change without changing the file name). As such, developers must [content-hash](https://survivejs.com/webpack/optimizing/adding-hashes-to-filenames/) (or at least [version](https://cloud.google.com/cdn/docs/best-practices#versioned-urls)) the resource file names when updating them. Many build toolchains can do this automatically, for example Webpack.
 
 The aim is "perfect client-side and network caching" via response headers. Some relevant sources: [web.dev](https://web.dev/http-cache/), [facebook](https://engineering.fb.com/2017/01/26/web/this-browser-tweak-saved-60-of-requests-to-facebook/), [mozilla](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching), [imagekit](https://imagekit.io/blog/ultimate-guide-to-http-caching-for-static-assets/), [freecontent.manning.com](https://freecontent.manning.com/caching-assets/).
 
@@ -25,7 +25,11 @@ Modelled akin to [serve-static](https://www.npmjs.com/package/serve-static), wit
   - [contentType](#content-type)
   - [headers](#headers)
 - [Overrides: the options object](#options)
+- [Important: mutable assets](#mutable-assets)
+  - [Headers](#mutable-headers)
+  - [Implementation tips](#mutable-implementation)
 
+<br/>
 <br/>
 
 <a name="get-started"></a>
@@ -151,6 +155,8 @@ exports.get = (request) => {
 ## Response: default behaviour
 Unless some of these aspects are overriden by an [options parameter](#options), the returned object  is a standard [XP response object](https://developer.enonic.com/docs/xp/stable/framework/http#http-response) ready to be returned from an XP controller:
 
+Response signature:
+
 ```
 { status, body, contentType, headers }
 ```
@@ -173,7 +179,7 @@ Content of the requested asset, or an error message.
 <a name="headers"></a>
 ### headers
 
-Headers optimized for [private browser cached](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching#private_browser_caches) resources:
+**Default headers** optimized for immutable and [browser cached](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching#private_browser_caches) resources:
 
 ```
 {
@@ -182,12 +188,15 @@ Headers optimized for [private browser cached](https://developer.mozilla.org/en-
 }
 ```
 
+NOTE: mutable assets should not be served with this header! See [below](#mutable-headers).
+
+<br/>
 <br/>
 
 <a name="options"></a>
 ## Overrides: the options object
 
-As described above, an object can be added with optional attributes to **override** the [default behaviour](#behaviour): 
+As described above, an object can be added with optional attributes to **override** the [default behaviour](#behaviour):
 
 ```
 { cacheControl, contentType, etag }
@@ -196,18 +205,102 @@ As described above, an object can be added with optional attributes to **overrid
 ### Params:
 
 - `cacheControl` (boolean/string/function, optional): override the default header value (`'public, max-age=31536000, immutable'`) and return another `Cache-Control` header.
-  - if set as a `false` boolean, no `Cache-Control` headers are sent. A `true` boolean is just ignored. 
-  - if set as a string, always use that value. An empty string will act as `false` and switch off cacheControl.
-  - if set as a function: `(extension, content) => cacheControl`. Extension is the asset file name (lower-case, without dot) and content is the file content. File-by-file control. 
+    - if set as a `false` boolean, no `Cache-Control` headers are sent. A `true` boolean is just ignored.
+    - if set as a string, always use that value. An empty string will act as `false` and switch off cacheControl.
+    - if set as a function: `(filePathAndName, content) => cacheControl`. filePathAndName is the asset's file path and name (relative to the JAR root, or `build/resources/main/` in dev mode) and content is the file content. File-by-file control.
 - `contentType` (string/object/function, optional): override the built-in MIME type handling.
-  - if set as a string, assets will not be processed to try and find the MIME content type, instead this value will always be preselected and returned.
-  - if set as an object, keys are file types (the extensions of the asset file names _after compilation_, case-insensitive and will ignore dots), and values are Content-Type strings - for example, `{"json": "application/json", ".mp3": "audio/mpeg", "TTF": "font/ttf"}`. For files with extensions that are not among the keys in the object, the handling will fall back to the built-in handling.
-  - if set as a function: `(extension, content) => contentType`. Extension is the asset file name (lower-case, without dot) and content is the file content. Completely overrides the library's built-in MIME type handling - no fallback.
-- `etag` (boolean, optional): The default behavior of lib-static is to generate/handle ETag in prod, while skipping it entirely in dev mode. 
-  - Setting the etag parameter to `false` will turn **off** etag processing (runtime content processing, headers and handling) in **prod** too. 
-  - Setting it to `true` will turn it **on in dev mode** too. 
+    - if set as a string, assets will not be processed to try and find the MIME content type, instead this value will always be preselected and returned.
+    - if set as an object, keys are file types (the extensions of the asset file names _after compilation_, case-insensitive and will ignore dots), and values are Content-Type strings - for example, `{"json": "application/json", ".mp3": "audio/mpeg", "TTF": "font/ttf"}`. For files with extensions that are not among the keys in the object, the handling will fall back to the built-in handling.
+    - if set as a function: `(filePathAndName, content) => contentType`. filePathAndName is the asset file path and name (relative to the JAR root, or `build/resources/main/` in dev mode) and content is the file content. Completely overrides the library's built-in MIME type handling - no fallback.
+- `etag` (boolean, optional): The default behavior of lib-static is to generate/handle ETag in prod, while skipping it entirely in dev mode.
+    - Setting the etag parameter to `false` will turn **off** etag processing (runtime content processing, headers and handling) in **prod** too.
+    - Setting it to `true` will turn it **on in dev mode** too.
 
-In addition, you may supply a `path` or `root` param ([.get](#api-get) or [.static](#api-static), respectively). If a positional `path` or `root` argument is used and the options object is the second argument, then `path` or `root` parameters will be ignored in the options object. 
+In addition, you may supply a `path` or `root` param ([.get](#api-get) or [.static](#api-static), respectively). If a positional `path` or `root` argument is used and the options object is the second argument, then `path` or `root` parameters will be ignored in the options object.
+
+<br/>
+<br/>
+
+<a name="mutable-assets"></a>
+## Important: mutable assets
+
+**Immutable assets**, in our context, are files whose content can be _trusted to never change_ without changing the file name. **Mutable assets** on the other hand are any files whose content _may_ change and still keep the same filename/path/URL. 
+
+<a name="mutable-headers"></a>
+### Headers
+**Mutable assets should never be served wtih the default header** `'Cache-Control': 'public, max-age=31536000, immutable'`. That header basically aims to make a browser never contact the server again for that asset, until the URL changes (although caveats exist to this). If an asset is served with that immutable header and later changes content but keeps its name/path, everyone who's downloaded it before will have - and to a large extent _keep_ - an outdated version of the asset! 
+
+Mutable assets _can_ be handled by this library (since ETag support is in place by default), but they **should be given a different Cache-Control header**. This is up to you:
+
+A balanced Cache-Control header, that still limits the number of requests to the server but also allows an asset to be stale for maximum an hour (3600 seconds) (remember that etag headers are still needed besides this):
+
+```
+{
+    'Cache-Control': 'public, max-age=3600',
+}
+```
+
+A more aggressive approach, that makes browsers check the asset's freshness with the server, could be: 
+
+```
+{
+    'Cache-Control': 'must-revalidate',
+}
+```
+
+In this last case, if the content hasn't changed, a simple 304 status code is returned by `.static` and `.get`, with nothing in the body - so nothing will be downloaded.
+
+<a name="mutable-implementation"></a>
+### Implementation
+If you have mutable assets in your project, there are several ways you could implement the appropriate `Cache-Control` header with the lib-static library. For example:
+1. **Fingerprint all your assets** so that that updated files get a new, uniquely _content-dependent filename_ - ensuring that are all actually immutable. 
+  - The most common way: set the build pipeline up so that the file name depends on the content. Webpack can fairly easily add a content hash to the file name, for example: _bundle.3a01c73e29.js_ etc. 
+  - Another (albeit less reliable) approach is to add version strings to file names, a timestamp etc. 
+2. Make your build separate between immutable (and fingerprinted) assets and mutable ones, in **two different directories**. Then you can set up asset serving separately. Immutable assets could use this library in the default ways. For the mutable assets...
+  - you can simply serve them from _/assets with [portal.assetUrl](https://developer.enonic.com/docs/xp/stable/api/lib-portal#asseturl),
+  - or you could serve mutable assets from any custom directory, with a _separate instance_ of lib-static:
+    ```
+    const libStatic = require('lib/enonic/static');
+    
+    // Root: /immutable folder. Only immutable assets there, since they are served with immutable-optimized header by default!
+    const getImmutableAsset = libStatic.static('immutable');      
+    
+    const getMutableAsset = libStatic.static(
+    
+        // Root: /mutable folder. Any assets can be under there...
+        'mutable',                            
+    
+        // ...because the options object overrides the Cache-Control header (and only that - etag is preserved, importantly):
+        {
+            cacheControl: 'must-revalidate'
+        }
+    );
+    ```
+3. It's also possible to handle them differently from the same directory, if you know you can distinguish immutable files from mutable ones by some pattern, by using a **function** for the `cacheControl` option. For example, if only immutable files are fingerprinted by the pattern `someName.[base-16-hash].ext` and others are not:
+    ```
+    const libStatic = require('lib/enonic/static');
+  
+    // Reliable static-filename regex pattern in this case:
+    const immutablePattern = /\w+\.[0-9a-fA-F].\w+$/;
+  
+    const getStaticAsset = libStatic.static(
+  
+        // Root: /static contains both immutable and mutable files: 
+        'static',
+  
+        {
+            cacheControl: (filePathAndName, content) => {
+                if (filePathAndName.match(immutablePattern)) {
+                    // fingerprinted file, ergo static:
+                    return 'public, max-age=31536000, immutable';
+                } else {
+                    // mutable file:
+                    return 'Cache-Control': 'public, max-age=3600';
+                }
+            }
+        }
+    );      
+    ```
 
 <br/>
 <br/>
