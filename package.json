@@ -1,0 +1,25 @@
+{
+  "name": "lib-static",
+  "version": "0.0.1-SNAPSHOT",
+  "description": "Enonic XP library for serving static assets (primarily immutable ones) from a folder in the application resource structure",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/enonic/lib-static.git"
+  },
+  "author": "Espen Norderud",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/enonic/lib-static/issues"
+  },
+  "homepage": "https://github.com/enonic/lib-static#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "@babel/cli": "^7.12.16",
+    "@babel/core": "^7.12.16",
+    "@babel/plugin-transform-arrow-functions": "^7.12.13"
+  }
+}

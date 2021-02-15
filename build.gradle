@@ -28,10 +28,10 @@ dependencies {
     testCompile "com.enonic.xp:testing:${xpVersion}"
 }
 
-node {
+/*node {
     download = true
     version = '9.7.0'
-}
+}*/
 
 repositories {
     mavenLocal()
@@ -43,3 +43,20 @@ def BUILD_ENV = "production"
 if (project.hasProperty("dev") || project.hasProperty("development")) {
     BUILD_ENV = "development"
 }
+
+// This task takes care of es6 under src/main/resources/site. You can replace it with build steps of your own if you want.
+// IMPORTANT: IF YOU DON'T USE THIS TASK TO COMPILE THE REGULAR XP JS (/ES6/TS etc),
+// MAKE SURE THAT YOUR OWN TASK/SCRIPT/LOGIC IGNORES .JSX FILES THAT ARE LOCATED UNDER src/main/resources/site !
+// It's safer to let React4xp's tasks (in react4xp.gradle) handle those.
+task compileXP(type: NodeTask) {
+    group 'enonic xp'
+    description 'Babel-compile Enonic XP ES6 source files (important: ignoring JSX components since they are left to react4xp)'
+
+    script = file('node_modules/@babel/cli/bin/babel.js')
+    args = ["src/main/resources", "--plugins", "@babel/plugin-transform-arrow-functions", "--out-dir", "build/resources/main", "--ignore", "**/*.jsx"]      // <-- Ignoring JSX in the XP structure is important!
+
+    inputs.dir 'src/main/resources'
+    outputs.dir("build/resources/main")
+}
+compileXP.dependsOn += npmInstall
+jar.dependsOn += 'compileXP'
