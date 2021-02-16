@@ -3,12 +3,6 @@ const ioLib = require('/lib/xp/io');
 const DEFAULT_CACHE_CONTROL = 'public, max-age=31536000, immutable';
 
 const getPathErrorMessage = path => {
-    log.info("path (" +
-    	(Array.isArray(path) ?
-    		("array[" + path.length + "]") :
-    		(typeof path + (path && typeof path === 'object' ? (" with keys: " + JSON.stringify(Object.keys(path))) : ""))
-    	) + "): " + JSON.stringify(path, null, 2)
-    );
     if (typeof path !== 'string') {
         if (path) {
             return `First argument (pathOrOptions), or the path attribute in it, is of unexpected type '${Array.isArray(path) ? "array" : typeof path}'. Expected: string or object.`;
