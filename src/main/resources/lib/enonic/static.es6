@@ -63,6 +63,7 @@ const parsePathAndOptions = (pathOrOptions, options) => {
  * @param contentType (string, boolean or function). See README for how the contentType option works.
  * */
 const getCacheControlFunc = (cacheControl) => {
+                                                                                                                        /*
                                                                                                                         if (cacheControl || cacheControl === false || cacheControl === '') {
                                                                                                                             log.info("cacheControl (" +
                                                                                                                                 (Array.isArray(cacheControl) ?
@@ -71,26 +72,35 @@ const getCacheControlFunc = (cacheControl) => {
                                                                                                                                 ) + "): " + JSON.stringify(cacheControl, null, 2)
                                                                                                                             );
                                                                                                                         }
+                                                                                                                        //*/
 
     if (cacheControl === false || cacheControl === '') {
+        // Override: explicitly switch off with false or empty string
         return () => undefined;
     }
 
-    if (cacheControl) {
-        const argType = typeof cacheControl;
-
-        if (argType === 'string') {
-            return () => cacheControl;
-        }
-
-        if (argType === 'function') {
-            return cacheControl;
-        }
-
-        throw Error(`Unexpected type for the 'cacheControl' option: ${Array.isArray(cacheControl) ? "array" : typeof cacheControl}. Expected: string, boolean or function.`);
+    if (cacheControl === undefined || cacheControl === true || cacheControl === null) {
+        // Ignoring other absent/no-override values
+        return () => DEFAULT_CACHE_CONTROL;
     }
 
-    return () => DEFAULT_CACHE_CONTROL;
+    const argType = typeof cacheControl;
+
+    if (argType === 'string') {
+        return () => cacheControl;
+    }
+
+    if (argType === 'function') {
+        return (path, content, mimeType) => {
+            const result = cacheControl(path, content, mimeType);
+            if (result === null) {
+                return DEFAULT_CACHE_CONTROL;
+            }
+            return result;
+        }
+    }
+
+    throw Error(`Unexpected type for the 'cacheControl' option: ${Array.isArray(cacheControl) ? "array" : typeof cacheControl}. Expected: string, boolean or function.`);
 }
 
 
@@ -105,12 +115,14 @@ const getCacheControlFunc = (cacheControl) => {
  * */
 const getContentTypeFunc = (contentType) => {
     if (contentType || contentType === '') {
+                                                                                                                        /*
                                                                                                                         log.info("contentType (" +
                                                                                                                             (Array.isArray(contentType) ?
                                                                                                                                 ("array[" + contentType.length + "]") :
                                                                                                                                 (typeof contentType + (contentType && typeof contentType === 'object' ? (" with keys: " + JSON.stringify(Object.keys(contentType))) : ""))
                                                                                                                             ) + "): " + JSON.stringify(contentType, null, 2)
                                                                                                                         );
+                                                                                                                        //*/
 
         const argType = typeof contentType;
 
@@ -163,12 +175,14 @@ const getEtagFlag = (etag) => {
             throw Error(`Unexpected type for the 'etag' option: ${Array.isArray(etag) ? "array" : typeof etag}. Expected: boolean.`);
         }
 
+                                                                                                                        /*
                                                                                                                         log.info("etag (" +
                                                                                                                             (Array.isArray(etag) ?
                                                                                                                                     ("array[" + etag.length + "]") :
                                                                                                                                     (typeof etag + (etag && typeof etag === 'object' ? (" with keys: " + JSON.stringify(Object.keys(etag))) : ""))
                                                                                                                             ) + "): " + JSON.stringify(etag, null, 2)
                                                                                                                         );
+                                                                                                                        //*/
         return etag
     }
 
@@ -209,13 +223,14 @@ exports.get = (pathOrOptions, options) => {
 
         if (exists) {
             const content = ioLib.readText(res.getStream());
+            const mimeType = contentTypeFunc(path, content);
 
             return {
                 status: 200,
                 headers: {
-                    'Cache-Control': cacheControlFunc(path, content)
+                    'Cache-Control': cacheControlFunc(path, content, mimeType)
                 },
-                contentType: contentTypeFunc(path, content),
+                contentType: mimeType,
                 body: content
             };
 

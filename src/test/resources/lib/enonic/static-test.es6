@@ -479,8 +479,166 @@ exports.testGet_fail_options_Number_should500 = () => {
 
 // Test option: cacheControl overrides (default behavior is `Cache-Control:`
 
+exports.testGet_option_cacheControl_False_thorough = () => {
+    let result = lib.get('/assets/asset-test-target.txt', {cacheControl: false});
+
+    t.assertEquals("I am a test asset\n", result.body);
+    t.assertEquals(200, result.status);
+    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(!result.headers['Cache-Control']);
+
+    result = lib.get({path: '/static/static-test-html.html', cacheControl: false});
+
+    t.assertEquals("<html><body><p>I am a test HTML</p></body></html>\n", result.body);
+    t.assertEquals(200, result.status);
+    t.assertTrue(!result.headers['Cache-Control']);
+};
+
+exports.testGet_option_cacheControl_EmptyString = () => {
+    let result = lib.get('/assets/asset-test-target.txt', {cacheControl: ""});
+
+    t.assertEquals(200, result.status);
+    t.assertTrue(!result.headers['Cache-Control']);
+
+    result = lib.get({path: '/static/static-test-html.html', cacheControl: ""});
+
+    t.assertEquals(200, result.status);
+    t.assertTrue(!result.headers['Cache-Control']);
+};
+
+exports.testGet_option_cacheControl_String_thorough = () => {
+    let result = lib.get('/assets/asset-test-target.txt', {cacheControl: "some custom string"});
+
+    t.assertEquals("I am a test asset\n", result.body);
+    t.assertEquals(200, result.status);
+    t.assertEquals("text/plain", result.contentType);
+    t.assertEquals("some custom string", result.headers['Cache-Control']);
+
+    result = lib.get({path: '/static/static-test-html.html', cacheControl: "some other custom string"});
+
+    t.assertEquals("<html><body><p>I am a test HTML</p></body></html>\n", result.body);
+    t.assertEquals(200, result.status);
+    t.assertEquals("some other custom string", result.headers['Cache-Control']);
+};
+
+exports.testGet_option_cacheControl_FunctionByPath = () => {
+    const pathFunction = (path, conten, mimeTypet) => {
+        if (path.endsWith('.jpg')) {
+            return "CacheControl header for JPEG";
+        }
+        if (path.endsWith('.html')) {
+            return "Expected cacheControl header for HTML";
+        }
+        if (path.endsWith('.txt')) {
+            return "Expected cacheControl header for text";
+        }
+    };
+
+    let htmlResult = lib.get('/static/static-test-html.html', {cacheControl: pathFunction});
+    let textResult = lib.get({path: '/assets/asset-test-target.txt', cacheControl: pathFunction});
+
+    t.assertEquals(200, htmlResult.status);
+    t.assertEquals("Expected cacheControl header for HTML", htmlResult.headers['Cache-Control']);
+    t.assertEquals(200, textResult.status);
+    t.assertEquals("Expected cacheControl header for text", textResult.headers['Cache-Control']);
+};
+
+exports.testGet_option_cacheControl_FunctionByContent = () => {
+    const contentFunction = (path, content, mimeType) => {
+        if (content.match(/test\s*asset/gi)) {
+            return "Expected header for any file that contains 'test asset'";
+        } else {
+            return "Expected header for any file that doesn't"
+        }
+    };
+
+    let textResult = lib.get('/assets/asset-test-target.txt', { cacheControl: contentFunction});
+    let htmlResult = lib.get({path: '/static/static-test-html.html', cacheControl: contentFunction});
+
+    t.assertEquals("I am a test asset\n", textResult.body);
+    t.assertEquals("Expected header for any file that contains 'test asset'", textResult.headers['Cache-Control']);
+    t.assertEquals(200, htmlResult.status);
+    t.assertEquals("Expected header for any file that doesn't", htmlResult.headers['Cache-Control']);
+};
 
 
+
+exports.testGet_option_cacheControl_FunctionByMIMEType = () => {
+    const mimeFunction = (path, conten, mimeType) => {
+        if (mimeType === 'image/jpeg') {
+            return "CacheControl header for JPEG";
+        }
+        if (mimeType === 'text/html') {
+            return "Expected cacheControl header for HTML";
+        }
+        if (mimeType === 'text/plain') {
+            return "Expected cacheControl header for text";
+        }
+    };
+
+    let htmlResult = lib.get('/static/static-test-html.html', {cacheControl: mimeFunction});
+    let textResult = lib.get({path: '/assets/asset-test-target.txt', cacheControl: mimeFunction});
+
+    t.assertEquals(200, htmlResult.status);
+    t.assertEquals("Expected cacheControl header for HTML", htmlResult.headers['Cache-Control']);
+    t.assertEquals(200, textResult.status);
+    t.assertEquals("Expected cacheControl header for text", textResult.headers['Cache-Control']);
+};
+
+exports.testGet_option_cacheControl_FunctionFallback = () => {
+    const contentFunction = (path, content, mimeType) => {
+        if (path.endsWith('.txt')) {
+            return "Expected header for .txt file";
+        } else {
+            return null
+        }
+    };
+
+    let textResult = lib.get({path: '/assets/asset-test-target.txt', cacheControl: contentFunction});
+    let htmlResult = lib.get('/static/static-test-html.html', {cacheControl: contentFunction});
+
+    t.assertEquals(200, textResult.status);
+    t.assertEquals("Expected header for .txt file", textResult.headers['Cache-Control']);
+    t.assertEquals(200, htmlResult.status);
+    verifyDefaultCacheControl(htmlResult);
+};
+
+
+exports.testGet_fail_option_cacheControl_WrongTypes = () => {
+    // Zero
+    let result = lib.get('/static/static-test-html.html', {cacheControl: 0});
+    t.assertEquals(500, result.status, "Should have failed #1. result = " + JSON.stringify(result));
+
+    // Number
+    result = lib.get('/static/static-test-html.html', {cacheControl: 42});
+    t.assertEquals(500, result.status, "Should have failed #2. result = " + JSON.stringify(result));
+
+    // Empty array
+    result = lib.get('/static/static-test-html.html', {cacheControl: []});
+    t.assertEquals(500, result.status, "Should have failed #3. result = " + JSON.stringify(result));
+
+    // Array
+    result = lib.get('/static/static-test-html.html', {cacheControl: ["I'm", "kind", "of", "an", "object"]});
+    t.assertEquals(500, result.status, "Should have failed #4. result = " + JSON.stringify(result));
+
+    // Empty object
+    result = lib.get('/static/static-test-html.html', {cacheControl: {}});
+    t.assertEquals(500, result.status, "Should have failed #5. result = " + JSON.stringify(result));
+
+    // Object
+    result = lib.get('/static/static-test-html.html', {cacheControl: {i: "am", an: "object"}});
+    t.assertEquals(500, result.status, "Should have failed #6. result = " + JSON.stringify(result));
+}
+
+exports.testGet_fail_option_cacheControl_IgnoredTypes = () => {
+    let result = lib.get('/static/static-test-html.html', {cacheControl: true});
+    t.assertEquals(200, result.status, "Should have ignored a true cacheControl param. result = " + JSON.stringify(result));
+    verifyDefaultCacheControl(result);
+
+    result = lib.get('/static/static-test-html.html', {cacheControl: null});
+    t.assertEquals(200, result.status, "Should have ignored a null cacheControl param. result = " + JSON.stringify(result));
+    verifyDefaultCacheControl(result);
+};
 
 
 
@@ -538,43 +696,32 @@ exports.testHelpers = () => {
     verifyDefaultCacheControl({headers: {'Cache-Control': "max-age=31536000, puBLic, immutable"}});
     verifyDefaultCacheControl({headers: {'Cache-Control': "max-age=31536000, public, immUTABLE"}});
 
-    let failed;
+    let failed = true;
 
-    failed = true;
     try {
         verifyDefaultCacheControl({headers: {'Cache-Control': "public, immutable"}});
         failed = false;
     } catch (e) { }
     t.assertTrue(failed, "Should have caught missing max-age");
 
-    failed = true;
     try {
         verifyDefaultCacheControl({headers: {'Cache-Control': "max-age=31536000, immutable"}});
         failed = false;
     } catch (e) { }
     t.assertTrue(failed, "Should have caught missing public");
 
-
-
-    failed = true;
     try {
         verifyDefaultCacheControl({headers: {'Cache-Control': "max-age=31536000, public"}});
         failed = false;
     } catch (e) { }
     t.assertTrue(failed, "Should have caught missing immutable");
 
-
-
-    failed = true;
     try {
         verifyDefaultCacheControl({headers: {'Cache-Control': "max-age=31536000, public, immutable, otherStuff"}});
         failed = false;
     } catch (e) { }
     t.assertTrue(failed, "Should have caught surplus item");
 
-
-
-    failed = true;
     try {
         verifyDefaultCacheControl({headers: {'Cache-Control': "max-age=31536000 public, immutable"}});
         failed = false;
