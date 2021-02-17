@@ -1,5 +1,9 @@
-const lib = require('./static');
+const lib = require('/lib/enonic/static');
 const t = require('/lib/xp/testing');
+
+t.mock('/lib/enonic/static/runmode.js', {
+    isProd: () => true
+});
 
 
 ////////////////////////////////////////////////////////////////// Helpers
@@ -639,6 +643,14 @@ exports.testGet_fail_option_cacheControl_IgnoredTypes = () => {
     t.assertEquals(200, result.status, "Should have ignored a null cacheControl param. result = " + JSON.stringify(result));
     verifyDefaultCacheControl(result);
 };
+
+
+
+// Test option: etag
+
+exports.testGet_option_etag_unsetProd = () => {
+
+}
 
 
 

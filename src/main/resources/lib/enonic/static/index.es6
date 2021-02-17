@@ -1,4 +1,6 @@
 const ioLib = require('/lib/xp/io');
+const runMode = require('./runmode');
+
 
 const DEFAULT_CACHE_CONTROL = 'public, max-age=31536000, immutable';
 
@@ -164,16 +166,20 @@ const getContentTypeFunc = (contentType) => {
 
 /**
  * Switch for etag functionality.
- * If etag is set changed, it will be true in XP prod mode and false in dev mode.
+ * If etag is not set, it will be true in XP prod mode and false in dev mode.
  * If overridden here with true, it will be true in both modes, and vice versa with false.
  * @param etag
  * @returns true, false or null - null will signify that it should dep
  */
 const getEtagFlag = (etag) => {
-    if (etag || etag === false) {
-        if (etag !== true && etag !== false) {
-            throw Error(`Unexpected type for the 'etag' option: ${Array.isArray(etag) ? "array" : typeof etag}. Expected: boolean.`);
-        }
+    if (etag === true || etag === false) {
+        return etag;
+    }
+
+    // Any other existent
+    if (etag !== undefined) {
+        throw Error(`Unexpected type for the 'etag' option ${JSON.stringify({etag})}: ${Array.isArray(etag) ? "array" : typeof etag}. Expected: boolean.`);
+    }
 
                                                                                                                         /*
                                                                                                                         log.info("etag (" +
@@ -183,11 +189,7 @@ const getEtagFlag = (etag) => {
                                                                                                                             ) + "): " + JSON.stringify(etag, null, 2)
                                                                                                                         );
                                                                                                                         //*/
-        return etag
-    }
-
-    // TODO: Detect prod mode and use that here. See the README.
-    return false;
+    return runMode.isProd();
 };
 
 
