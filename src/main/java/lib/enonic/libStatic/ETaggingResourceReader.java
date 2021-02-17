@@ -63,10 +63,13 @@ public class ETaggingResourceReader implements ScriptBean {
      * @return (String array) [statusCode, contentOrErrorMessage, etag]
      */
     public String[] read(String path, Boolean etagOverride) {
+        LOG.info("path: " + path);
         LOG.info("etagOverride: " + etagOverride);
 
         Resource resource;
         byte[] contentBytes;
+
+        LOG.info("A");
 
         synchronized (resourceService) {
             try {
@@ -85,6 +88,8 @@ public class ETaggingResourceReader implements ScriptBean {
                 return new String[]{"500", "Couldn't read resource: '" + path + "'"};
             }
         }
+
+        LOG.info("B");
 
         boolean reCache = false;
         if (isProd) {
@@ -106,7 +111,13 @@ public class ETaggingResourceReader implements ScriptBean {
             }
         }
 
+        LOG.info("C");
+
         String etag = getEtag(path, contentBytes, reCache);
+
+
+        LOG.info("D");
+
         String content = null;
         try {
             content = resource.readString();
@@ -117,6 +128,8 @@ public class ETaggingResourceReader implements ScriptBean {
             }
             return new String[]{"500", "Couldn't read resource: '" + path + "'"};
         }
+
+        LOG.info("E");
 
         return new String[]{"200", content, etag};
     }

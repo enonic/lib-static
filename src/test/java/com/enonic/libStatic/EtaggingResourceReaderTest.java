@@ -2,12 +2,12 @@ package com.enonic.libStatic;
 
 import com.enonic.xp.testing.ScriptRunnerSupport;
 
-public class StaticTest
+public class EtaggingResourceReaderTest
         extends ScriptRunnerSupport
 {
     @Override
     public String getScriptTestFile()
     {
-        return "/lib/enonic/static-test.js";
+        return "/lib/enonic/etaggingResourceReader-test.js";
     }
 }

@@ -8,6 +8,21 @@ const etaggingResourceReader = __.newBean('lib.enonic.libStatic.ETaggingResource
  * @param isProd (boolean) true for XP prod mode, false for dev mode
  * @return (object) {content, etag}
  */
-exports.getContentAndEtag = (path, etagOverrideOption) => {
-    const [ status, body, etag] = __.toNativeObject(etaggingResourceReader.read(path, etagOverrideOption));
+exports.read = (path, etagOverrideOption) => {
+    const output = __.toNativeObject(etaggingResourceReader.read(path, etagOverrideOption));
+
+    log.info(".read output (" +
+    	(Array.isArray(output) ?
+    		("array[" + output.length + "]") :
+    		(typeof output + (output && typeof output === 'object' ? (" with keys: " + JSON.stringify(Object.keys(output))) : ""))
+    	) + "): " + JSON.stringify(output, null, 2)
+    );
+
+    const[ status, body, etag] = output;
+
+    return {
+        status: parseInt(status),
+        body,
+        etag: etag ? etag : undefined
+    }
 };
