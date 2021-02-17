@@ -12,7 +12,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 public class ETaggingResourceReader implements ScriptBean {
     private final static Logger LOG = LoggerFactory.getLogger( ETaggingResourceReader.class );
@@ -54,29 +56,31 @@ public class ETaggingResourceReader implements ScriptBean {
      *
      *
      * @param path (string) Absolute (i.e. JAR-root-relative) path, name and extension to the file
-     * @param etagOverride (boolean) if null, default mode which depends on XP run mode: true in prod mode, false in dev mode.
-     *                     Setting to true or false overrides this.
-     *                     * If true: processes and caches etags.
+     * @param etagOverrideMode (int) if 0, default handling: in XP prod mode do cached processing without lastModified-checking, and in dev mode skip all etag processing
+     *                     Setting to -1 or 1 overrides this:
+     *                     * If 1: process and cache etags, even in dev mode.
      *                       - In prod mode: cache the etag by file path only.
      *                       - In dev mode, check file's last-modified date. If newer than cached version, re-hash the etag and replace it in the cache.
-     *                     * If false: skips all etag processing and returns no etag string.
+     *                     * If -1: skips all etag processing and returns no etag string, even in prod.
      * @return (String array) [statusCode, contentOrErrorMessage, etag]
      */
-    public String[] read(String path, Boolean etagOverride) {
-        LOG.info("path: " + path);
-        LOG.info("etagOverride: " + etagOverride);
+    public List<String> read(String path, Integer etagOverrideMode) {
+        if (path.endsWith(":")) {
+            return Arrays.asList("500", "Empty path not allowed.");
+        }
+        if (etagOverrideMode < -1 || etagOverrideMode > 1) {
+            return Arrays.asList("500", "Expected etag override mode between -1 and 1. Found: " + etagOverrideMode);
+        }
 
         Resource resource;
         byte[] contentBytes;
-
-        LOG.info("A");
 
         synchronized (resourceService) {
             try {
                 resource = resourceService.getResource(ResourceKey.from(path));
                 if (!resource.exists()) {
                     // TODO: Fallback to index etc?
-                    return new String[]{"404", "Resource not found: '" + path + "'"};
+                    return Arrays.asList("404", "Resource not found: '" + path + "'");
                 }
                 contentBytes = resource.getBytes().read();
 
@@ -85,17 +89,16 @@ public class ETaggingResourceReader implements ScriptBean {
                 if (!isProd) {
                     e.printStackTrace();
                 }
-                return new String[]{"500", "Couldn't read resource: '" + path + "'"};
+                return Arrays.asList("500", "Couldn't read resource: '" + path + "'");
             }
         }
 
-        LOG.info("B");
-
         boolean reCache = false;
-        if (isProd) {
-            reCache = (etagOverride != false); // etagOverride: null value should be ignored, i.e: recache should be true.
 
-        } else if (etagOverride) {
+        if (isProd) {
+            reCache = (etagOverrideMode > -1);
+
+        } else if (etagOverrideMode == 1) {
             Long lastModified = null;
             try {
                 lastModified = resource.getTimestamp();
@@ -111,12 +114,7 @@ public class ETaggingResourceReader implements ScriptBean {
             }
         }
 
-        LOG.info("C");
-
         String etag = getEtag(path, contentBytes, reCache);
-
-
-        LOG.info("D");
 
         String content = null;
         try {
@@ -126,12 +124,10 @@ public class ETaggingResourceReader implements ScriptBean {
             if (!isProd) {
                 e.printStackTrace();
             }
-            return new String[]{"500", "Couldn't read resource: '" + path + "'"};
+            return Arrays.asList("500", "Couldn't read resource: '" + path + "'");
         }
 
-        LOG.info("E");
-
-        return new String[]{"200", content, etag};
+        return Arrays.asList("200", content, etag);
     }
 
     @Override
