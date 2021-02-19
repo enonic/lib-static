@@ -214,7 +214,7 @@ As described above, an object can be added with optional attributes to **overrid
 - `contentType` (string/object/function, optional): override the built-in MIME type handling.
     - if set as a string, assets will not be processed to try and find the MIME content type, instead this value will always be preselected and returned.
     - if set as an object, keys are file types (the extensions of the asset file names _after compilation_, case-insensitive and will ignore dots), and values are Content-Type strings - for example, `{"json": "application/json", ".mp3": "audio/mpeg", "TTF": "font/ttf"}`. For files with extensions that are not among the keys in the object, the handling will fall back to the built-in handling.
-    - if set as a function: `(filePathAndName, content) => contentType`. filePathAndName is the asset file path and name (relative to the JAR root, or `build/resources/main/` in dev mode) and content is the file content. Completely overrides the library's built-in MIME type handling - no fallback.
+    - if set as a function: `(filePathAndName) => contentType`. filePathAndName is the asset file path and name (relative to the JAR root, or `build/resources/main/` in dev mode) and content is the file content. In cases where this function returns `null`, the processing falls back to the built-in contentType detection.
 - `etag` (boolean, optional): The default behavior of lib-static is to generate/handle ETag in prod, while skipping it entirely in dev mode.
     - Setting the etag parameter to `false` will turn **off** etag processing (runtime content processing, headers and handling) in **prod** too.
     - Setting it to `true` will turn it **on in dev mode** too.

@@ -1,56 +1,7 @@
 const lib = require('/lib/enonic/static');
 const t = require('/lib/xp/testing');
 
-t.mock('/lib/enonic/static/runmode.js', {
-    isProd: () => true
-});
 
-
-////////////////////////////////////////////////////////////////// Helpers
-
-
-// Verifying cache-control headers unrestricted to the literal string (order, case, spaces)
-const DEFAULT_MAX_AGE = 31536000;
-const DEFAULT_CACHE_CONTROL = [
-    "public",
-    "max-age=" + DEFAULT_MAX_AGE,
-    "immutable"
-];
-// Turning the strings to regex patterns
-const DEFAULT_CACHE_CONTROL_PATTERNS = DEFAULT_CACHE_CONTROL.map(item => {
-    const replacedItem = item
-        .replace(/\s*([=])\s*/g,"\\s*$1\\s*");
-    return new RegExp("(" +
-        "(^\\s*,?\\s*\\b" + replacedItem + "\\b\\s*,?\\s*$)|" +
-        "(\\s*,\\s*\\b" + replacedItem + "\\b\\s*,?\\s*)|" +
-        "(\\s*,?\\s*\\b" + replacedItem + "\\b\\s*,\\s*)" +
-        ")",
-        "gi");
-});
-
-const verifyDefaultCacheControl = (result) => {
-    t.assertTrue(result.headers && typeof result.headers === 'object' && typeof result.headers['Cache-Control'] === 'string', "The result should contain a 'headers' attribute with a 'Cache-Control' key under it. Result=" + JSON.stringify(result));
-
-    // Verify: can find all the default headers
-    DEFAULT_CACHE_CONTROL_PATTERNS.forEach((pattern, i) => {
-        t.assertTrue(
-            !!result.headers['Cache-Control'].match(pattern),
-            "Couldn't find the expecteed item '" + DEFAULT_CACHE_CONTROL[i] + "' in the result's 'Cache-Control' header: " + JSON.stringify(result.headers['Cache-Control']) + ". Should be something like " + JSON.stringify(DEFAULT_CACHE_CONTROL.join(", ")))
-    });
-
-    // Verify: find only the default headers
-    result.headers['Cache-Control']
-        .split(/\s*,\s*/g)
-        .forEach(ccHeader => {
-            if (ccHeader.trim()) {
-                let ccFound = false;
-                DEFAULT_CACHE_CONTROL_PATTERNS.forEach(ccPattern => {
-                    ccFound = ccFound || ccHeader.match(ccPattern);
-                });
-                t.assertTrue(ccFound, "Unexpected item '" + ccHeader + "' found in the result's 'Cache-Control' header. Should only be something like: " + JSON.stringify(DEFAULT_CACHE_CONTROL.join(", ")))
-            }
-        });
-}
 
 //////////////////////////////////////////////////////////////////  TEST .get
 
@@ -62,8 +13,7 @@ exports.testGet_path_Asset_FullDefaultResponse = () => {
     t.assertEquals("I am a test asset\n", result.body);
     t.assertEquals(200, result.status);
     t.assertEquals("text/plain", result.contentType);
-    verifyDefaultCacheControl(result);
-};
+    };
 
 exports.testGet_path_HTML_FullDefaultResponse = () => {
     const result = lib.get('/static/static-test-html.html');
@@ -71,8 +21,7 @@ exports.testGet_path_HTML_FullDefaultResponse = () => {
     t.assertEquals("<html><body><p>I am a test HTML</p></body></html>\n", result.body);
     t.assertEquals(200, result.status);
     t.assertEquals("text/html", result.contentType);
-    verifyDefaultCacheControl(result);
-};
+    };
 
 exports.testGet_path_Css = () => {
     const result = lib.get('/static/static-test-css.css');
@@ -258,8 +207,7 @@ exports.testGet_objPath_Css_Thorough = () => {
     t.assertEquals(".i.am.a.test.css {\n\n}\n", result.body);
     t.assertEquals(200, result.status);
     t.assertEquals("text/css", result.contentType);
-    verifyDefaultCacheControl(result);
-};
+    };
 
 exports.testGet_objPath_JS_Thorough = () => {
     const result = lib.get({path: '/static/static-test-js.js'});
@@ -267,8 +215,7 @@ exports.testGet_objPath_JS_Thorough = () => {
     t.assertEquals("console.log(\"I am a test js\");\n", result.body);
     t.assertEquals(200, result.status);
     t.assertEquals("application/javascript", result.contentType);
-    verifyDefaultCacheControl(result);
-};
+    };
 
 exports.testGet_objPath_JSON = () => {
     const result = lib.get({path: '/static/static-test-json.json'});
@@ -408,8 +355,7 @@ exports.testGet_options_Undef_thorough = () => {
     t.assertEquals("I am a test asset\n", result.body);
     t.assertEquals(200, result.status);
     t.assertEquals("text/plain", result.contentType);
-    verifyDefaultCacheControl(result);
-};
+    };
 
 exports.testGet_options_Null = () => {
     // Tolerated and ignored, since obviously falsy/empty
@@ -434,8 +380,7 @@ exports.testGet_options_EmptyObject_thorough = () => {
     t.assertEquals("I am a test asset\n", result.body);
     t.assertEquals(200, result.status);
     t.assertEquals("text/plain", result.contentType);
-    verifyDefaultCacheControl(result);
-};
+    };
 
 exports.testGet_options_Zero = () => {
     // Tolerated and ignored, since obviously empty/falsy
@@ -604,7 +549,6 @@ exports.testGet_option_cacheControl_FunctionFallback = () => {
     t.assertEquals(200, textResult.status);
     t.assertEquals("Expected header for .txt file", textResult.headers['Cache-Control']);
     t.assertEquals(200, htmlResult.status);
-    verifyDefaultCacheControl(htmlResult);
 };
 
 
@@ -637,12 +581,10 @@ exports.testGet_fail_option_cacheControl_WrongTypes = () => {
 exports.testGet_fail_option_cacheControl_IgnoredTypes = () => {
     let result = lib.get('/static/static-test-html.html', {cacheControl: true});
     t.assertEquals(200, result.status, "Should have ignored a true cacheControl param. result = " + JSON.stringify(result));
-    verifyDefaultCacheControl(result);
 
     result = lib.get('/static/static-test-html.html', {cacheControl: null});
     t.assertEquals(200, result.status, "Should have ignored a null cacheControl param. result = " + JSON.stringify(result));
-    verifyDefaultCacheControl(result);
-};
+    };
 
 
 
@@ -687,58 +629,3 @@ exports.testGet_fail_option_throwError_WrongObjPathType = () => {
 
 
 
-
-
-// Test the helpers:
-
-/*
-
-exports.testHelpers = () => {
-    verifyDefaultCacheControl({headers: {'Cache-Control': "max-age=31536000, public, immutable"}});
-    verifyDefaultCacheControl({headers: {'Cache-Control': "max-age = 31536000 , public , immutable"}});
-    verifyDefaultCacheControl({headers: {'Cache-Control': "max-age=31536000 ,public ,immutable"}});
-    verifyDefaultCacheControl({headers: {'Cache-Control': "max-age=31536000,public,immutable"}});
-    verifyDefaultCacheControl({headers: {'Cache-Control': "max-age=31536000, immutable, public"}});
-    verifyDefaultCacheControl({headers: {'Cache-Control': "public, immutable, max-age=31536000"}});
-    verifyDefaultCacheControl({headers: {'Cache-Control': ", max-age=31536000, public, immutable"}});
-    verifyDefaultCacheControl({headers: {'Cache-Control': "max-age=31536000, public, immutable, "}});
-    verifyDefaultCacheControl({headers: {'Cache-Control': "max-age=31536000, public, immutable, ,"}});
-    verifyDefaultCacheControl({headers: {'Cache-Control': "max-age=31536000, public, , immutable"}});
-    verifyDefaultCacheControl({headers: {'Cache-Control': "mAX-age=31536000, public, immutable"}});
-    verifyDefaultCacheControl({headers: {'Cache-Control': "max-age=31536000, puBLic, immutable"}});
-    verifyDefaultCacheControl({headers: {'Cache-Control': "max-age=31536000, public, immUTABLE"}});
-
-    let failed = true;
-
-    try {
-        verifyDefaultCacheControl({headers: {'Cache-Control': "public, immutable"}});
-        failed = false;
-    } catch (e) { }
-    t.assertTrue(failed, "Should have caught missing max-age");
-
-    try {
-        verifyDefaultCacheControl({headers: {'Cache-Control': "max-age=31536000, immutable"}});
-        failed = false;
-    } catch (e) { }
-    t.assertTrue(failed, "Should have caught missing public");
-
-    try {
-        verifyDefaultCacheControl({headers: {'Cache-Control': "max-age=31536000, public"}});
-        failed = false;
-    } catch (e) { }
-    t.assertTrue(failed, "Should have caught missing immutable");
-
-    try {
-        verifyDefaultCacheControl({headers: {'Cache-Control': "max-age=31536000, public, immutable, otherStuff"}});
-        failed = false;
-    } catch (e) { }
-    t.assertTrue(failed, "Should have caught surplus item");
-
-    try {
-        verifyDefaultCacheControl({headers: {'Cache-Control': "max-age=31536000 public, immutable"}});
-        failed = false;
-    } catch (e) { }
-    t.assertTrue(failed, "Should have caught missing comma");
-};
-
-*/

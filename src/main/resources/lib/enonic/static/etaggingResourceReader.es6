@@ -10,6 +10,7 @@ const etaggingResourceReader = __.newBean('lib.enonic.libStatic.ETaggingResource
  * @return (object) {content, etag}
  */
 exports.read = (path, etagOverrideOption) => {
+    // true: 1, false: -1, other: 0
     const etagOverride = (etagOverrideOption)
         ? 1
         : etagOverrideOption === false
@@ -21,6 +22,6 @@ exports.read = (path, etagOverrideOption) => {
     return {
         status: parseInt(status),
         body,
-        etag: etag ? etag : undefined
+        etagValue: etag || undefined
     }
 };
