@@ -32,11 +32,11 @@ const overrideOptionsParserResult = (params) => {
     const PARSER = '/lib/enonic/static/options.js';
     if (
         params.path &&
-            params.cacheControlFunc &&
-            params.contentTypeFunc &&
-            params.etagOverride &&
-            params.throwErrors &&
-            params.errorMessage
+        params.cacheControlFunc &&
+        params.contentTypeFunc &&
+        params.etagOverride &&
+        params.throwErrors &&
+        params.errorMessage
     ) {
         t.mock(PARSER, {
             read: () => params
