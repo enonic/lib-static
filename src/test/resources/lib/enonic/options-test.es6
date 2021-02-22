@@ -1083,6 +1083,52 @@ exports.testParsePathAndOptions_cacheControl_optionsArg1_failingFunc_throwsError
     t.assertTrue(failed, "Should have failed");
 }
 
+exports.testParsePathAndOptions_cacheControl_optionsArg2_failingFunc_stillRetainsThrowErrorsParam = () => {
+    const ccFunc = (path, content, mimeType) => {
+        if (mimeType === undefined) {
+            throw Error("Demonstrating a particular cacheControl function that fails if no mimeTypeis provided");
+        }
+    };
+
+    const { cacheControlFunc, errorMessage, throwErrors } = lib.parsePathAndOptions("no/mime/type/so/testfunc/will/crash", {
+        cacheControl: ccFunc,
+        throwErrors: true
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    let failed = true;
+    try {
+        log.error(cacheControlFunc("no/mime/type/so/testfunc/will/crash", "I am some content"));
+        failed = false;
+    } catch (e) { }
+
+    t.assertTrue(failed, "Should have failed");
+    t.assertTrue(throwErrors);
+}
+exports.testParsePathAndOptions_cacheControl_optionsArg1_failingFunc_stillRetainsThrowErrorsParam = () => {
+    const ccFunc = (path, content, mimeType) => {
+        if (mimeType === undefined) {
+            throw Error("Demonstrating a particular cacheControl function that fails if no mimeTypeis provided");
+        }
+    };
+
+    const { cacheControlFunc, errorMessage, throwErrors } = lib.parsePathAndOptions({
+        path: "no/mime/type/so/testfunc/will/crash",
+        cacheControl: ccFunc,
+        throwErrors: true
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    let failed = true;
+    try {
+        log.error(cacheControlFunc("no/mime/type/so/testfunc/will/crash", "I am some content"));
+        failed = false;
+    } catch (e) { }
+
+    t.assertTrue(failed, "Should have failed");
+    t.assertTrue(throwErrors);
+}
+
 exports.testParsePathAndOptions_cacheControl_optionsArg2_func_returnedUndefinedProducesNoCachecontrolHeader = () => {
     const ccFunc = (path, content, mimeType) => {
         if (mimeType.trim() === '') {
@@ -1316,4 +1362,283 @@ exports.testParsePathAndOptions_contentType_optionsArg1_array_shouldFail = () =>
     t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
     t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
     t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+
+
+
+// Test etag options
+
+exports.testParsePathAndOptions_etag_optionsArg2_true_returnsTrue = () => {
+    const {
+        path,
+        cacheControlFunc,
+        contentTypeFunc,
+        etagOverride,
+        throwErrors,
+        errorMessage
+    } = lib.parsePathAndOptions("i/am/a/path.txt", {
+        etag: true
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals(true, etagOverride);
+}
+exports.testParsePathAndOptions_etag_optionsArg1_true_returnsTrue = () => {
+    const { etagOverride, errorMessage } = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        etag: true
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals(true, etagOverride);
+}
+
+exports.testParsePathAndOptions_etag_optionsArg2_false_returnsFalse = () => {
+    const {
+        path,
+        cacheControlFunc,
+        contentTypeFunc,
+        etagOverride,
+        throwErrors,
+        errorMessage
+    } = lib.parsePathAndOptions("i/am/a/path.txt", {
+        etag: false
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals(false, etagOverride);
+}
+exports.testParsePathAndOptions_etag_optionsArg1_false_returnsFalse = () => {
+    const { etagOverride, errorMessage } = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        etag: false
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals(false, etagOverride);
+}
+
+exports.testParsePathAndOptions_etag_optionsArg2_undefined_returnsUndefined = () => {
+    const {
+        path,
+        cacheControlFunc,
+        contentTypeFunc,
+        etagOverride,
+        throwErrors,
+        errorMessage
+    } = lib.parsePathAndOptions("i/am/a/path.txt", {
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals(undefined, etagOverride);
+}
+exports.testParsePathAndOptions_etag_optionsArg1_undefined_returnsUndefined = () => {
+    const { etagOverride, errorMessage } = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        etag: undefined
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals(undefined, etagOverride);
+}
+
+
+// Test etag override error handling
+exports.testParsePathAndOptions_etag_optionsArg2_null_shouldFail = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt",{
+        etag: null
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+}
+exports.testParsePathAndOptions_etag_optionsArg1_null_shouldFail = () => {
+    const result = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        etag: null
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+}
+exports.testParsePathAndOptions_etag_optionsArg2_null_failingShouldStillReturnThrowErrors = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt",{
+        etag: null,
+        throwErrors: true
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(result.throwErrors);
+}
+exports.testParsePathAndOptions_etag_optionsArg1_null_failingShouldStillReturnThrowErrors = () => {
+    const result = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        etag: null,
+        throwErrors: true
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(result.throwErrors);
+}
+
+exports.testParsePathAndOptions_etag_optionsArg2_zero_shouldFail = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt",{
+        etag: 0
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+}
+exports.testParsePathAndOptions_etag_optionsArg1_zero_shouldFail = () => {
+    const result = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        etag: 0
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+}
+
+exports.testParsePathAndOptions_etag_optionsArg2_number_shouldFail = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt",{
+        etag: 42
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+}
+exports.testParsePathAndOptions_etag_optionsArg1_number_shouldFail = () => {
+    const result = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        etag: 42
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+}
+
+exports.testParsePathAndOptions_etag_optionsArg2_emptyObject_shouldFail = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt",{
+        etag: {}
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+}
+exports.testParsePathAndOptions_etag_optionsArg1_emptyObject_shouldFail = () => {
+    const result = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        etag: {}
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+}
+
+exports.testParsePathAndOptions_etag_optionsArg2_object_shouldFail = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt",{
+        etag: {i: "object"}
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+}
+exports.testParsePathAndOptions_etag_optionsArg1_object_shouldFail = () => {
+    const result = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        etag: {i: "object"}
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+}
+
+exports.testParsePathAndOptions_etag_optionsArg2_emptyString_shouldFail = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt",{
+        etag: ""
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+}
+exports.testParsePathAndOptions_etag_optionsArg1_emptyString_shouldFail = () => {
+    const result = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        etag: ""
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+}
+
+exports.testParsePathAndOptions_etag_optionsArg2_string_shouldFail = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt",{
+        etag: "I'm a string"
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+}
+exports.testParsePathAndOptions_etag_optionsArg1_string_shouldFail = () => {
+    const result = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        etag: "I'm a string"
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+}
+
+exports.testParsePathAndOptions_etag_optionsArg2_allSpaceString_shouldFail = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt",{
+        etag: "  "
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+}
+exports.testParsePathAndOptions_etag_optionsArg1_allSpaceString_shouldFail = () => {
+    const result = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        etag: "  "
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+}
+
+exports.testParsePathAndOptions_etag_optionsArg2_emptyArray_shouldFail = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt",{
+        etag: []
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+}
+exports.testParsePathAndOptions_etag_optionsArg1_emptyArray_shouldFail = () => {
+    const result = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        etag: []
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+}
+
+exports.testParsePathAndOptions_etag_optionsArg2_array_shouldFail = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt",{
+        etag: ["me", "array"]
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+}
+exports.testParsePathAndOptions_etag_optionsArg1_array_shouldFail = () => {
+    const result = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        etag: ["you", "jane"]
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
 }
