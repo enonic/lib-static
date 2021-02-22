@@ -975,6 +975,174 @@ exports.testParsePathAndOptions_cacheControl_optionsArg1_allSpaceString_produces
     t.assertEquals(undefined, cacheControlFunc("i/am/a/path.json", "I am some content", "application.json"));
 }
 
+const TEST_CACHECONTROL_FUNC = (path, content, mimeType) => {
+    if (content.indexOf("override") !== -1) {
+        return "Special OVERRIDE text cacheControl header";
+    }
+    if (path.endsWith(".txt")) {
+        return "Special text cacheControl header";
+    }
+    if (mimeType === "application/json") {
+        return "Special text JSON header"
+    }
+    if (mimeType.trim() === '') {
+        return undefined; // All-space / emptystring mimeTypes
+    }
+    if (mimeType === undefined) {
+        throw Error("Demonstrating a particular cacheControl function that fails if no mimeTypeis provided");
+    }
+    // Fallback: null means use default cachecontrol header.
+    return null;
+};
+
+exports.testParsePathAndOptions_cacheControl_optionsArg2_func_usesFunction = () => {
+    const ccFunc = (path, content, mimeType) => {
+        if (content.indexOf("override") !== -1) {
+            return "Special OVERRIDE text cacheControl header";
+        }
+        if (path.endsWith(".txt")) {
+            return "Special text cacheControl header";
+        }
+        if (mimeType === "application/json") {
+            return "Special text JSON header"
+        }
+    }
+
+    const { cacheControlFunc, errorMessage } = lib.parsePathAndOptions("i/am/a/path.txt", {
+        cacheControl: ccFunc
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals("Special text cacheControl header", cacheControlFunc("i/am/a/path.txt", "I am some content", "text/plain"));
+    t.assertEquals("Special OVERRIDE text cacheControl header", cacheControlFunc("i/am/a/path.txt", "I am some override text content", "text/plain"));
+    t.assertEquals("Special text JSON header", cacheControlFunc("i/am/a/path.json", "I am some content", "application/json"));
+}
+exports.testParsePathAndOptions_cacheControl_optionsArg1_func_usesFunction = () => {
+    const ccFunc = (path, content, mimeType) => {
+        if (content.indexOf("override") !== -1) {
+            return "Special OVERRIDE text cacheControl header";
+        }
+        if (path.endsWith(".txt")) {
+            return "Special text cacheControl header";
+        }
+        if (mimeType === "application/json") {
+            return "Special text JSON header"
+        }
+    }
+
+    const { cacheControlFunc, errorMessage } = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        cacheControl: ccFunc
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals("Special text cacheControl header", cacheControlFunc("i/am/a/path.txt", "I am some content", "text/plain"));
+    t.assertEquals("Special OVERRIDE text cacheControl header", cacheControlFunc("i/am/a/path.txt", "I am some override text content", "text/plain"));
+    t.assertEquals("Special text JSON header", cacheControlFunc("i/am/a/path.json", "I am some content", "application/json"));
+}
+
+exports.testParsePathAndOptions_cacheControl_optionsArg2_failingFunc_throwsErrorInsteadOfReturningErrorMessage = () => {
+    const ccFunc = (path, content, mimeType) => {
+        if (mimeType === undefined) {
+            throw Error("Demonstrating a particular cacheControl function that fails if no mimeTypeis provided");
+        }
+    };
+
+    const { cacheControlFunc, errorMessage } = lib.parsePathAndOptions("no/mime/type/so/testfunc/will/crash", {
+        cacheControl: ccFunc
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    let failed = true;
+    try {
+        log.error(cacheControlFunc("no/mime/type/so/testfunc/will/crash", "I am some content"));
+        failed = false;
+    } catch (e) { }
+
+    t.assertTrue(failed, "Should have failed");
+}
+exports.testParsePathAndOptions_cacheControl_optionsArg1_failingFunc_throwsErrorInsteadOfReturningErrorMessage = () => {
+    const ccFunc = (path, content, mimeType) => {
+        if (mimeType === undefined) {
+            throw Error("Demonstrating a particular cacheControl function that fails if no mimeTypeis provided");
+        }
+    };
+
+    const { cacheControlFunc, errorMessage } = lib.parsePathAndOptions({
+        path: "no/mime/type/so/testfunc/will/crash",
+        cacheControl: ccFunc
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    let failed = true;
+    try {
+        log.error(cacheControlFunc("no/mime/type/so/testfunc/will/crash", "I am some content"));
+        failed = false;
+    } catch (e) { }
+
+    t.assertTrue(failed, "Should have failed");
+}
+
+exports.testParsePathAndOptions_cacheControl_optionsArg2_func_returnedUndefinedProducesNoCachecontrolHeader = () => {
+    const ccFunc = (path, content, mimeType) => {
+        if (mimeType.trim() === '') {
+            return undefined; // All-space / emptystring mimeTypes
+        }
+    };
+
+    const { cacheControlFunc, errorMessage } = lib.parsePathAndOptions("empty/mime/type/so/testfunc/returns/undefined", {
+        cacheControl: ccFunc
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals(undefined, cacheControlFunc("empty/mime/type/so/testfunc/returns/undefined", "I am some content", ""));
+}
+exports.testParsePathAndOptions_cacheControl_optionsArg1_func_returnedUndefinedProducesNoCachecontrolHeader = () => {
+    const ccFunc = (path, content, mimeType) => {
+        if (mimeType.trim() === '') {
+            return undefined; // All-space / emptystring mimeTypes
+        }
+    };
+
+    const { cacheControlFunc, errorMessage } = lib.parsePathAndOptions({
+        path: "empty/mime/type/so/testfunc/returns/undefined",
+        cacheControl: ccFunc
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals(undefined, cacheControlFunc("empty/mime/type/so/testfunc/returns/undefined", "I am some content", "  "));
+}
+
+exports.testParsePathAndOptions_cacheControl_optionsArg2_func_returnedNullFallsBackToDefaultCachecontrol = () => {
+    const ccFunc = (path, content, mimeType) => {
+        if (mimeType.trim() === '') {
+            return null; // All-space / emptystring mimeTypes
+        }
+    };
+
+    const { cacheControlFunc, errorMessage } = lib.parsePathAndOptions("empty/mime/type/so/testfunc/returns/null", {
+        cacheControl: ccFunc
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    assertCacheControlIsDefault(cacheControlFunc("empty/mime/type/so/testfunc/returns/null", "I am some content", "  "));
+}
+exports.testParsePathAndOptions_cacheControl_optionsArg1_func_returnedNullFallsBackToDefaultCachecontrol = () => {
+    const ccFunc = (path, content, mimeType) => {
+        if (mimeType.trim() === '') {
+            return null; // All-space / emptystring mimeTypes
+        }
+    };
+
+    const { cacheControlFunc, errorMessage } = lib.parsePathAndOptions({
+        path: "empty/mime/type/so/testfunc/returns/null",
+        cacheControl: ccFunc
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    assertCacheControlIsDefault(cacheControlFunc("no/mime/type/so/testfunc/returns/null", "I am some content", ""));
+}
+
 
 
 // Test invalid cacheControl params, should produce error message but still keep throwErrors argument
