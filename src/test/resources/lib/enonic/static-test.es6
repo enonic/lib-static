@@ -1,7 +1,60 @@
 const lib = require('/lib/enonic/static');
 const t = require('/lib/xp/testing');
 
+const taggingReader = require('./etaggingResourceReader');
+const optionsParser = require('./options');
 
+const overrideReaderResult = (params) => {
+    const READER = '/lib/enonic/static/etaggingResourceReader.js';
+    if (
+        params.status &&
+        params.body &&
+        params.etagValue
+    ) {
+        t.mock(READER, {
+            read: () => params
+        });
+
+    } else {
+        t.mock(READER, {
+            read: (path, etagOverride) => {
+                const readout = taggingReader.read(path, etagOverride);
+                return {
+                    ...readout,
+                    ...params
+                }
+            }
+        });
+    }
+};
+
+const overrideOptionsParserResult = (params) => {
+    const PARSER = '/lib/enonic/static/options.js';
+    if (
+        params.path &&
+            params.cacheControlFunc &&
+            params.contentTypeFunc &&
+            params.etagOverride &&
+            params.throwErrors &&
+            params.errorMessage
+    ) {
+        t.mock(PARSER, {
+            read: () => params
+        });
+
+    } else {
+        t.mock(PARSER, {
+            read: (path, etagOverride) => {
+                const readout = optionsParser.parsePathAndOptions(path, etagOverride);
+                return {
+                    ...readout,
+                    ...params
+                }
+            }
+        });
+    }
+
+}
 
 //////////////////////////////////////////////////////////////////  TEST .get
 
@@ -13,7 +66,7 @@ exports.testGet_path_Asset_FullDefaultResponse = () => {
     t.assertEquals("I am a test asset\n", result.body);
     t.assertEquals(200, result.status);
     t.assertEquals("text/plain", result.contentType);
-    };
+};
 
 exports.testGet_path_HTML_FullDefaultResponse = () => {
     const result = lib.get('/static/static-test-html.html');
@@ -21,7 +74,7 @@ exports.testGet_path_HTML_FullDefaultResponse = () => {
     t.assertEquals("<html><body><p>I am a test HTML</p></body></html>\n", result.body);
     t.assertEquals(200, result.status);
     t.assertEquals("text/html", result.contentType);
-    };
+};
 
 exports.testGet_path_Css = () => {
     const result = lib.get('/static/static-test-css.css');
