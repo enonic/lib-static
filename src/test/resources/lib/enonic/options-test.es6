@@ -17,18 +17,24 @@ const DEFAULT_CACHE_CONTROL_PATTERNS = lib.DEFAULT_CACHE_CONTROL_FIELDS.map(item
 });
 
 // Verify cache-control headers unrestricted to the literal string (order, case, spaces)
-const assertCacheControlIsDefault = (result) => {
-    t.assertTrue(result.headers && typeof result.headers === 'object' && typeof result.headers['Cache-Control'] === 'string', "The result should contain a 'headers' attribute with a 'Cache-Control' key under it. Result=" + JSON.stringify(result));
+const assertCacheControlIsDefault = (cacheControl) => {
+    t.assertTrue(typeof cacheControl === 'string',
+        "Unexpected Cache-Control header value produced (" +
+    	(Array.isArray(cacheControl) ?
+    		("array[" + cacheControl.length + "]") :
+    		(typeof cacheControl + (cacheControl && typeof cacheControl === 'object' ? (" with keys: " + JSON.stringify(Object.keys(cacheControl))) : ""))
+    	) + "): " + JSON.stringify(cacheControl, null, 2)
+    );
 
     // Verify: can find all the default headers
     DEFAULT_CACHE_CONTROL_PATTERNS.forEach((pattern, i) => {
         t.assertTrue(
-            !!result.headers['Cache-Control'].match(pattern),
-            "Couldn't find the expected item '" + lib.DEFAULT_CACHE_CONTROL_FIELDS[i] + "' in the result's 'Cache-Control' header: " + JSON.stringify(result.headers['Cache-Control']) + ". Should be something like " + JSON.stringify(lib.DEFAULT_CACHE_CONTROL))
+            !!cacheControl.match(pattern),
+            "Couldn't find the expected item '" + lib.DEFAULT_CACHE_CONTROL_FIELDS[i] + "' in the produced 'Cache-Control' header value: " + JSON.stringify(cacheControl) + ". Should be something like " + JSON.stringify(lib.DEFAULT_CACHE_CONTROL));
     });
 
     // Verify: find only the default headers
-    result.headers['Cache-Control']
+    cacheControl
         .split(/\s*,\s*/g)
         .forEach(ccHeader => {
             if (ccHeader.trim()) {
@@ -36,7 +42,7 @@ const assertCacheControlIsDefault = (result) => {
                 DEFAULT_CACHE_CONTROL_PATTERNS.forEach(ccPattern => {
                     ccFound = ccFound || ccHeader.match(ccPattern);
                 });
-                t.assertTrue(ccFound, "Unexpected item '" + ccHeader + "' found in the result's 'Cache-Control' header. Should only be something like: " + JSON.stringify(lib.DEFAULT_CACHE_CONTROL))
+                t.assertTrue(ccFound, "Unexpected item '" + ccHeader + "' found in the produced 'Cache-Control' header value: " + JSON.stringify(cacheControl)  + ". Should be something like " + JSON.stringify(lib.DEFAULT_CACHE_CONTROL));
             }
         });
 }
@@ -46,48 +52,48 @@ const assertCacheControlIsDefault = (result) => {
 // Test the helpers:
 
 exports.testHelpers = () => {
-    assertCacheControlIsDefault({headers: {'Cache-Control': "max-age=31536000, public, immutable"}});
-    assertCacheControlIsDefault({headers: {'Cache-Control': "max-age = 31536000 , public , immutable"}});
-    assertCacheControlIsDefault({headers: {'Cache-Control': "max-age=31536000 ,public ,immutable"}});
-    assertCacheControlIsDefault({headers: {'Cache-Control': "max-age=31536000,public,immutable"}});
-    assertCacheControlIsDefault({headers: {'Cache-Control': "max-age=31536000, immutable, public"}});
-    assertCacheControlIsDefault({headers: {'Cache-Control': "public, immutable, max-age=31536000"}});
-    assertCacheControlIsDefault({headers: {'Cache-Control': ", max-age=31536000, public, immutable"}});
-    assertCacheControlIsDefault({headers: {'Cache-Control': "max-age=31536000, public, immutable, "}});
-    assertCacheControlIsDefault({headers: {'Cache-Control': "max-age=31536000, public, immutable, ,"}});
-    assertCacheControlIsDefault({headers: {'Cache-Control': "max-age=31536000, public, , immutable"}});
-    assertCacheControlIsDefault({headers: {'Cache-Control': "mAX-age=31536000, public, immutable"}});
-    assertCacheControlIsDefault({headers: {'Cache-Control': "max-age=31536000, puBLic, immutable"}});
-    assertCacheControlIsDefault({headers: {'Cache-Control': "max-age=31536000, public, immUTABLE"}});
+    assertCacheControlIsDefault("max-age=31536000, public, immutable");
+    assertCacheControlIsDefault("max-age = 31536000 , public , immutable");
+    assertCacheControlIsDefault("max-age=31536000 ,public ,immutable");
+    assertCacheControlIsDefault("max-age=31536000,public,immutable");
+    assertCacheControlIsDefault("max-age=31536000, immutable, public");
+    assertCacheControlIsDefault("public, immutable, max-age=31536000");
+    assertCacheControlIsDefault(", max-age=31536000, public, immutable");
+    assertCacheControlIsDefault("max-age=31536000, public, immutable, ");
+    assertCacheControlIsDefault("max-age=31536000, public, immutable, ,");
+    assertCacheControlIsDefault("max-age=31536000, public, , immutable");
+    assertCacheControlIsDefault("mAX-age=31536000, public, immutable");
+    assertCacheControlIsDefault("max-age=31536000, puBLic, immutable");
+    assertCacheControlIsDefault("max-age=31536000, public, immUTABLE");
 
     let failed = true;
 
     try {
-        assertCacheControlIsDefault({headers: {'Cache-Control': "public, immutable"}});
+        assertCacheControlIsDefault("public, immutable");
         failed = false;
     } catch (e) { }
     t.assertTrue(failed, "Should have caught missing max-age");
 
     try {
-        assertCacheControlIsDefault({headers: {'Cache-Control': "max-age=31536000, immutable"}});
+        assertCacheControlIsDefault("max-age=31536000, immutable");
         failed = false;
     } catch (e) { }
     t.assertTrue(failed, "Should have caught missing public");
 
     try {
-        assertCacheControlIsDefault({headers: {'Cache-Control': "max-age=31536000, public"}});
+        assertCacheControlIsDefault("max-age=31536000, public");
         failed = false;
     } catch (e) { }
     t.assertTrue(failed, "Should have caught missing immutable");
 
     try {
-        assertCacheControlIsDefault({headers: {'Cache-Control': "max-age=31536000, public, immutable, otherStuff"}});
+        assertCacheControlIsDefault("max-age=31536000, public, immutable, otherStuff");
         failed = false;
     } catch (e) { }
     t.assertTrue(failed, "Should have caught surplus item");
 
     try {
-        assertCacheControlIsDefault({headers: {'Cache-Control': "max-age=31536000 public, immutable"}});
+        assertCacheControlIsDefault("max-age=31536000 public, immutable");
         failed = false;
     } catch (e) { }
     t.assertTrue(failed, "Should have caught missing comma");
@@ -113,32 +119,32 @@ exports.testParsePathAndOptions_path_validStringOnly_extractsPath = () => {
         etagOverride,
         throwErrors,
         errorMessage
-    } = lib.parsePathAndOptions("i/am/a/path.txt"); // This is a one-liner below
+    } = lib.parsePathAndOptions("i/am/a/path.txt"); // Full field output. Only writing necessary fields below.
 
     t.assertEquals("i/am/a/path.txt", path);
 }
 
 exports.testParsePathAndOptions_path_validStringOnly_noEtagOverride = () => {
-    const { path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage } = lib.parsePathAndOptions("i/am/a/path.txt");
+    const { etagOverride } = lib.parsePathAndOptions("i/am/a/path.txt");
 
     t.assertEquals(undefined, etagOverride);
 }
 
 exports.testParsePathAndOptions_path_validStringOnly_noErrorOverride = () => {
-    const { path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage } = lib.parsePathAndOptions("i/am/a/path.txt");
+    const { throwErrors } = lib.parsePathAndOptions("i/am/a/path.txt");
 
     t.assertFalse(!!throwErrors);
 }
 
 exports.testParsePathAndOptions_path_validStringOnly_noErrorsHappened = () => {
-    const { path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage } = lib.parsePathAndOptions("i/am/a/path.txt");
+    const { errorMessage } = lib.parsePathAndOptions("i/am/a/path.txt");
 
     t.assertFalse(!!errorMessage); // A-OK, no errors should have been thrown, so errorMessage is falsy.
 }
 
 
 exports.testParsePathAndOptions_path_validStringOnly_producesDefaultMimeDetectingFunction = () => {
-    const { path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage } = lib.parsePathAndOptions("i/am/a/path.txt");
+    const { contentTypeFunc } = lib.parsePathAndOptions("i/am/a/path.txt");
 
     t.assertEquals("text/plain", contentTypeFunc("i/am/a/path.txt"));
     t.assertEquals("application/javascript", contentTypeFunc("i/am/a/path.js"));
@@ -151,7 +157,7 @@ exports.testParsePathAndOptions_path_validStringOnly_producesDefaultMimeDetectin
 
 
 exports.testParsePathAndOptions_path_validStringOnly_producesDefaultCacheControlFunction = () => {
-    const { path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage } = lib.parsePathAndOptions("i/am/a/path.txt");
+    const { cacheControlFunc } = lib.parsePathAndOptions("i/am/a/path.txt");
 
     t.assertEquals(lib.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.txt", "Some random content", "text/plain"));
     t.assertEquals(lib.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.js", "Some random content", "application/javascript"));
@@ -171,32 +177,32 @@ exports.testParsePathAndOptions_optionsWithPath_validObj_extractsPath = () => {
         etagOverride,
         throwErrors,
         errorMessage
-    } = lib.parsePathAndOptions({path: "i/am/a/path.txt"}); // This is a one-liner below
+    } = lib.parsePathAndOptions({path: "i/am/a/path.txt"}); // Only necessary fields below
 
     t.assertEquals("i/am/a/path.txt", path);
 }
 
 exports.testParsePathAndOptions_optionsWithPath_validObj_noEtagOverride = () => {
-    const { path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage } = lib.parsePathAndOptions({path: "i/am/a/path.txt"});
+    const { etagOverride } = lib.parsePathAndOptions({path: "i/am/a/path.txt"});
 
     t.assertEquals(undefined, etagOverride);
 }
 
 exports.testParsePathAndOptions_optionsWithPath_validObj_noErrorOverride = () => {
-    const { path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage } = lib.parsePathAndOptions({path: "i/am/a/path.txt"});
+    const { throwErrors } = lib.parsePathAndOptions({path: "i/am/a/path.txt"});
 
     t.assertFalse(!!throwErrors);
 }
 
 exports.testParsePathAndOptions_optionsWithPath_validObj_noErrorsHappened = () => {
-    const { path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage } = lib.parsePathAndOptions({path: "i/am/a/path.txt"});
+    const { errorMessage } = lib.parsePathAndOptions({path: "i/am/a/path.txt"});
 
     t.assertFalse(!!errorMessage); // A-OK, no errors should have been thrown, so errorMessage is falsy.
 }
 
 
 exports.testParsePathAndOptions_optionsWithPath_validObj_producesDefaultMimeDetectingFunction = () => {
-    const { path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage } = lib.parsePathAndOptions({path: "i/am/a/path.txt"});
+    const { contentTypeFunc } = lib.parsePathAndOptions({path: "i/am/a/path.txt"});
 
     t.assertEquals("text/plain", contentTypeFunc("i/am/a/path.txt"));
     t.assertEquals("application/javascript", contentTypeFunc("i/am/a/path.js"));
@@ -209,7 +215,7 @@ exports.testParsePathAndOptions_optionsWithPath_validObj_producesDefaultMimeDete
 
 
 exports.testParsePathAndOptions_optionsWithPath_validObj_producesDefaultCacheControlFunction = () => {
-    const { path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage } = lib.parsePathAndOptions({path: "i/am/a/path.txt"});
+    const { cacheControlFunc } = lib.parsePathAndOptions({path: "i/am/a/path.txt"});
 
     t.assertEquals(lib.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.txt", "Some random content", "text/plain"));
     t.assertEquals(lib.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.js", "Some random content", "application/javascript"));
@@ -229,7 +235,7 @@ exports.testParsePathAndOptions_fail_shouldYieldErrorMessage = () => {
         etagOverride,
         throwErrors,
         errorMessage
-    } = lib.parsePathAndOptions(); // Missing args causes error. This is a one-liner below.
+    } = lib.parsePathAndOptions(); // Missing args should cause error message. Only necessary fields below.
 
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
@@ -237,13 +243,13 @@ exports.testParsePathAndOptions_fail_shouldYieldErrorMessage = () => {
 }
 
 exports.testParsePathAndOptions_fail_shouldKeepDefaultThrowErrors = () => {
-    const { path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage } = lib.parsePathAndOptions();
+    const { throwErrors, } = lib.parsePathAndOptions();
 
     t.assertFalse(!!throwErrors);
 }
 
 exports.testParsePathAndOptions_fail_shouldEliminateOtherOutputFields = () => {
-    const { path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage } = lib.parsePathAndOptions();
+    const { path, cacheControlFunc, contentTypeFunc, etagOverride } = lib.parsePathAndOptions();
 
     t.assertEquals(undefined, path);
     t.assertEquals(undefined, cacheControlFunc);
@@ -252,14 +258,7 @@ exports.testParsePathAndOptions_fail_shouldEliminateOtherOutputFields = () => {
 }
 
 exports.testParsePathAndOptions_fail_path_emptyString_shouldYieldErrorMessage = () => {
-    const {
-        path,
-        cacheControlFunc,
-        contentTypeFunc,
-        etagOverride,
-        throwErrors,
-        errorMessage
-    } = lib.parsePathAndOptions("");
+    const { errorMessage } = lib.parsePathAndOptions("");
 
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
@@ -268,14 +267,7 @@ exports.testParsePathAndOptions_fail_path_emptyString_shouldYieldErrorMessage = 
 }
 
 exports.testParsePathAndOptions_fail_path_spacesString_shouldYieldErrorMessage = () => {
-    const {
-        path,
-        cacheControlFunc,
-        contentTypeFunc,
-        etagOverride,
-        throwErrors,
-        errorMessage
-    } = lib.parsePathAndOptions("   ");
+    const { errorMessage } = lib.parsePathAndOptions("   ");
 
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
@@ -284,14 +276,7 @@ exports.testParsePathAndOptions_fail_path_spacesString_shouldYieldErrorMessage =
 }
 
 exports.testParsePathAndOptions_fail_path_array_shouldYieldErrorMessage = () => {
-    const {
-        path,
-        cacheControlFunc,
-        contentTypeFunc,
-        etagOverride,
-        throwErrors,
-        errorMessage
-    } = lib.parsePathAndOptions(["my", "spoon", "is", "too", "big"]);
+    const { errorMessage } = lib.parsePathAndOptions(["my", "spoon", "is", "too", "big"]);
 
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
@@ -300,14 +285,7 @@ exports.testParsePathAndOptions_fail_path_array_shouldYieldErrorMessage = () => 
 }
 
 exports.testParsePathAndOptions_fail_path_emptyArray_shouldYieldErrorMessage = () => {
-    const {
-        path,
-        cacheControlFunc,
-        contentTypeFunc,
-        etagOverride,
-        throwErrors,
-        errorMessage
-    } = lib.parsePathAndOptions([]);
+    const { errorMessage } = lib.parsePathAndOptions([]);
 
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
@@ -316,14 +294,7 @@ exports.testParsePathAndOptions_fail_path_emptyArray_shouldYieldErrorMessage = (
 }
 
 exports.testParsePathAndOptions_fail_path_boolean_shouldYieldErrorMessage = () => {
-    const {
-        path,
-        cacheControlFunc,
-        contentTypeFunc,
-        etagOverride,
-        throwErrors,
-        errorMessage
-    } = lib.parsePathAndOptions(true);
+    const { errorMessage } = lib.parsePathAndOptions(true);
 
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
@@ -332,14 +303,7 @@ exports.testParsePathAndOptions_fail_path_boolean_shouldYieldErrorMessage = () =
 }
 
 exports.testParsePathAndOptions_fail_path_number_shouldYieldErrorMessage = () => {
-    const {
-        path,
-        cacheControlFunc,
-        contentTypeFunc,
-        etagOverride,
-        throwErrors,
-        errorMessage
-    } = lib.parsePathAndOptions(42);
+    const { errorMessage } = lib.parsePathAndOptions(42);
 
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
@@ -348,14 +312,7 @@ exports.testParsePathAndOptions_fail_path_number_shouldYieldErrorMessage = () =>
 }
 
 exports.testParsePathAndOptions_fail_path_zero_shouldYieldErrorMessage = () => {
-    const {
-        path,
-        cacheControlFunc,
-        contentTypeFunc,
-        etagOverride,
-        throwErrors,
-        errorMessage
-    } = lib.parsePathAndOptions(0);
+    const { errorMessage } = lib.parsePathAndOptions(0);
 
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
@@ -364,14 +321,7 @@ exports.testParsePathAndOptions_fail_path_zero_shouldYieldErrorMessage = () => {
 }
 
 exports.testParsePathAndOptions_fail_path_null_shouldYieldErrorMessage = () => {
-    const {
-        path,
-        cacheControlFunc,
-        contentTypeFunc,
-        etagOverride,
-        throwErrors,
-        errorMessage
-    } = lib.parsePathAndOptions(null);
+    const { errorMessage } = lib.parsePathAndOptions(null);
 
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
@@ -389,7 +339,7 @@ exports.testParsePathAndOptions_fail_pathAttribute_missing_shouldYieldErrorMessa
         etagOverride,
         throwErrors,
         errorMessage
-    } = lib.parsePathAndOptions({});
+    } = lib.parsePathAndOptions({});  // Only necessary fields below
 
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
@@ -399,7 +349,7 @@ exports.testParsePathAndOptions_fail_pathAttribute_missing_shouldYieldErrorMessa
 
 
 exports.testParsePathAndOptions_fail_pathAttribute_missing_shouldKeepDefaultThrowErrors = () => {
-    const { path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage } = lib.parsePathAndOptions({});
+    const { throwErrors } = lib.parsePathAndOptions({});
 
     t.assertFalse(!!throwErrors);
 }
@@ -414,14 +364,7 @@ exports.testParsePathAndOptions_fail_pathAttribute_missing_shouldEliminateOtherO
 }
 
 exports.testParsePathAndOptions_fail_pathAttribute_emptyString_shouldYieldErrorMessage = () => {
-    const {
-        path,
-        cacheControlFunc,
-        contentTypeFunc,
-        etagOverride,
-        throwErrors,
-        errorMessage
-    } = lib.parsePathAndOptions({path: ""});
+    const { errorMessage } = lib.parsePathAndOptions({path: ""});
 
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
@@ -430,14 +373,7 @@ exports.testParsePathAndOptions_fail_pathAttribute_emptyString_shouldYieldErrorM
 }
 
 exports.testParsePathAndOptions_fail_pathAttribute_spacesString_shouldYieldErrorMessage = () => {
-    const {
-        path,
-        cacheControlFunc,
-        contentTypeFunc,
-        etagOverride,
-        throwErrors,
-        errorMessage
-    } = lib.parsePathAndOptions({path: "    "});
+    const { errorMessage } = lib.parsePathAndOptions({path: "    "});
 
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
@@ -446,14 +382,7 @@ exports.testParsePathAndOptions_fail_pathAttribute_spacesString_shouldYieldError
 }
 
 exports.testParsePathAndOptions_fail_pathAttribute_array_shouldYieldErrorMessage = () => {
-    const {
-        path,
-        cacheControlFunc,
-        contentTypeFunc,
-        etagOverride,
-        throwErrors,
-        errorMessage
-    } = lib.parsePathAndOptions({path: ["my", "spoon", "is", "too", "big"]});
+    const { errorMessage } = lib.parsePathAndOptions({path: ["my", "spoon", "is", "too", "big"]});
 
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
@@ -462,14 +391,7 @@ exports.testParsePathAndOptions_fail_pathAttribute_array_shouldYieldErrorMessage
 }
 
 exports.testParsePathAndOptions_fail_pathAttribute_emptyArray_shouldYieldErrorMessage = () => {
-    const {
-        path,
-        cacheControlFunc,
-        contentTypeFunc,
-        etagOverride,
-        throwErrors,
-        errorMessage
-    } = lib.parsePathAndOptions({path: []});
+    const { errorMessage } = lib.parsePathAndOptions({path: []});
 
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
@@ -478,14 +400,7 @@ exports.testParsePathAndOptions_fail_pathAttribute_emptyArray_shouldYieldErrorMe
 }
 
 exports.testParsePathAndOptions_fail_pathAttribute_boolean_shouldYieldErrorMessage = () => {
-    const {
-        path,
-        cacheControlFunc,
-        contentTypeFunc,
-        etagOverride,
-        throwErrors,
-        errorMessage
-    } = lib.parsePathAndOptions({path: true});
+    const { errorMessage } = lib.parsePathAndOptions({path: true});
 
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
@@ -494,14 +409,7 @@ exports.testParsePathAndOptions_fail_pathAttribute_boolean_shouldYieldErrorMessa
 }
 
 exports.testParsePathAndOptions_fail_pathAttribute_number_shouldYieldErrorMessage = () => {
-    const {
-        path,
-        cacheControlFunc,
-        contentTypeFunc,
-        etagOverride,
-        throwErrors,
-        errorMessage
-    } = lib.parsePathAndOptions({path: 42});
+    const { errorMessage } = lib.parsePathAndOptions({path: 42});
 
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
@@ -510,14 +418,7 @@ exports.testParsePathAndOptions_fail_pathAttribute_number_shouldYieldErrorMessag
 }
 
 exports.testParsePathAndOptions_fail_pathAttribute_zero_shouldYieldErrorMessage = () => {
-    const {
-        path,
-        cacheControlFunc,
-        contentTypeFunc,
-        etagOverride,
-        throwErrors,
-        errorMessage
-    } = lib.parsePathAndOptions({path: 0});
+    const { errorMessage } = lib.parsePathAndOptions({path: 0});
 
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
@@ -526,14 +427,7 @@ exports.testParsePathAndOptions_fail_pathAttribute_zero_shouldYieldErrorMessage 
 }
 
 exports.testParsePathAndOptions_fail_pathAttribute_null_shouldYieldErrorMessage = () => {
-    const {
-        path,
-        cacheControlFunc,
-        contentTypeFunc,
-        etagOverride,
-        throwErrors,
-        errorMessage
-    } = lib.parsePathAndOptions({path: null});
+    const { errorMessage } = lib.parsePathAndOptions({path: null});
 
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
@@ -542,12 +436,13 @@ exports.testParsePathAndOptions_fail_pathAttribute_null_shouldYieldErrorMessage 
 }
 
 
+
+
+
 // Test contentType override option
 
 exports.testParsePathAndOptions_contentType_optionsArg2_string_producesFixedMimeDetectingFunction = () => {
-    const {
-        path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage
-    } = lib.parsePathAndOptions("i/am/a/path.txt", { contentType: "fixed content type"});
+    const { contentTypeFunc, errorMessage } = lib.parsePathAndOptions("i/am/a/path.txt", { contentType: "fixed content type"});
 
     t.assertEquals(undefined, errorMessage);
     t.assertEquals("fixed content type", contentTypeFunc("i/am/a/path.txt"));
@@ -560,9 +455,7 @@ exports.testParsePathAndOptions_contentType_optionsArg2_string_producesFixedMime
 }
 
 exports.testParsePathAndOptions_contentType_optionsArg1_string_producesFixedMimeDetectingFunction = () => {
-    const {
-        path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage
-    } = lib.parsePathAndOptions({path: "i/am/a/path.txt",  contentType: "fixed content type"});
+    const { contentTypeFunc, errorMessage } = lib.parsePathAndOptions({path: "i/am/a/path.txt",  contentType: "fixed content type"});
 
     t.assertEquals(undefined, errorMessage);
     t.assertEquals("fixed content type", contentTypeFunc("i/am/a/path.txt"));
@@ -575,9 +468,7 @@ exports.testParsePathAndOptions_contentType_optionsArg1_string_producesFixedMime
 }
 
 exports.testParsePathAndOptions_contentType_optionsArg2_emptyString_disablesContentType = () => {
-    const {
-        path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage
-    } = lib.parsePathAndOptions("i/am/a/path.txt",  {contentType: ""});
+    const { contentTypeFunc, errorMessage } = lib.parsePathAndOptions("i/am/a/path.txt",  {contentType: ""});
 
     t.assertEquals(undefined, errorMessage);
     t.assertEquals(undefined, contentTypeFunc("i/am/a/path.txt"));
@@ -589,9 +480,7 @@ exports.testParsePathAndOptions_contentType_optionsArg2_emptyString_disablesCont
     t.assertEquals(undefined, contentTypeFunc("i/am/a/path.css"));
 }
 exports.testParsePathAndOptions_contentType_optionsArg1_emptyString_disablesContentType = () => {
-    const {
-        path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage
-    } = lib.parsePathAndOptions({path: "i/am/a/path.txt",  contentType: ""});
+    const { contentTypeFunc, errorMessage } = lib.parsePathAndOptions({path: "i/am/a/path.txt",  contentType: ""});
 
     t.assertEquals(undefined, errorMessage);
     t.assertEquals(undefined, contentTypeFunc("i/am/a/path.txt"));
@@ -603,9 +492,7 @@ exports.testParsePathAndOptions_contentType_optionsArg1_emptyString_disablesCont
     t.assertEquals(undefined, contentTypeFunc("i/am/a/path.css"));
 }
 exports.testParsePathAndOptions_contentType_optionsArg2_allSpaceString_disablesContentType = () => {
-    const {
-        path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage
-    } = lib.parsePathAndOptions("i/am/a/path.txt",  {contentType: "  "});
+    const { contentTypeFunc, errorMessage } = lib.parsePathAndOptions("i/am/a/path.txt",  {contentType: "  "});
 
     t.assertEquals(undefined, errorMessage);
     t.assertEquals(undefined, contentTypeFunc("i/am/a/path.txt"));
@@ -617,9 +504,7 @@ exports.testParsePathAndOptions_contentType_optionsArg2_allSpaceString_disablesC
     t.assertEquals(undefined, contentTypeFunc("i/am/a/path.css"));
 }
 exports.testParsePathAndOptions_contentType_optionsArg1_allSpaceString_disablesContentType = () => {
-    const {
-        path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage
-    } = lib.parsePathAndOptions({path: "i/am/a/path.txt",  contentType: "  "});
+    const { contentTypeFunc, errorMessage } = lib.parsePathAndOptions({path: "i/am/a/path.txt",  contentType: "  "});
 
     t.assertEquals(undefined, errorMessage);
     t.assertEquals(undefined, contentTypeFunc("i/am/a/path.txt"));
@@ -632,9 +517,7 @@ exports.testParsePathAndOptions_contentType_optionsArg1_allSpaceString_disablesC
 }
 
 exports.testParsePathAndOptions_contentType_optionsArg2_object_producesLookupMimeDetectingFunctionWithFallback = () => {
-    const {
-        path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage
-    } = lib.parsePathAndOptions(
+    const { contentTypeFunc, errorMessage } = lib.parsePathAndOptions(
         "i/am/a/path.txt",
         {
             contentType: {
@@ -660,9 +543,7 @@ exports.testParsePathAndOptions_contentType_optionsArg2_object_producesLookupMim
 
 
 exports.testParsePathAndOptions_contentType_optionsArg1_object_producesLookupMimeDetectingFunctionWithFallback = () => {
-    const {
-        path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage
-    } = lib.parsePathAndOptions({
+    const { contentTypeFunc, errorMessage } = lib.parsePathAndOptions({
             path: "i/am/a/path.txt",
             contentType: {
                 // Case or dot shouldn't matter
@@ -685,9 +566,7 @@ exports.testParsePathAndOptions_contentType_optionsArg1_object_producesLookupMim
     t.assertEquals("image/jpeg", contentTypeFunc("i/am/a/path.jpg"));
 }
 exports.testParsePathAndOptions_contentType_optionsArg2_emptyObject_producesDefaultFunction = () => {
-    const {
-        path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage
-    } = lib.parsePathAndOptions("i/am/a/path.txt", {
+    const { contentTypeFunc, errorMessage } = lib.parsePathAndOptions("i/am/a/path.txt", {
         contentType: {}
     });
 
@@ -701,9 +580,7 @@ exports.testParsePathAndOptions_contentType_optionsArg2_emptyObject_producesDefa
     t.assertEquals("text/css", contentTypeFunc("i/am/a/path.css"));
 }
 exports.testParsePathAndOptions_contentType_optionsArg1_emptyObject_producesDefaultFunction = () => {
-    const {
-        path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage
-    } = lib.parsePathAndOptions({
+    const { contentTypeFunc, errorMessage }  = lib.parsePathAndOptions({
         path: "i/am/a/path.txt",
         contentType: {}
     });
@@ -718,9 +595,7 @@ exports.testParsePathAndOptions_contentType_optionsArg1_emptyObject_producesDefa
     t.assertEquals("text/css", contentTypeFunc("i/am/a/path.css"));
 }
 exports.testParsePathAndOptions_contentType_optionsArg2_true_producesDefaultFunction = () => {
-    const {
-        path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage
-    } = lib.parsePathAndOptions("i/am/a/path.txt", {
+    const { contentTypeFunc, errorMessage }  = lib.parsePathAndOptions("i/am/a/path.txt", {
         contentType: true
     });
 
@@ -734,9 +609,7 @@ exports.testParsePathAndOptions_contentType_optionsArg2_true_producesDefaultFunc
     t.assertEquals("text/css", contentTypeFunc("i/am/a/path.css"));
 }
 exports.testParsePathAndOptions_contentType_optionsArg1_true_producesDefaultFunction = () => {
-    const {
-        path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage
-    } = lib.parsePathAndOptions({
+    const { contentTypeFunc, errorMessage }  = lib.parsePathAndOptions({
         path: "i/am/a/path.txt",
         contentType: true
     });
@@ -754,9 +627,7 @@ exports.testParsePathAndOptions_contentType_optionsArg1_true_producesDefaultFunc
 
 
 exports.testParsePathAndOptions_contentType_optionsArg2_func_replacesMimeDetectingFunctionKeepsFallback = () => {
-    const {
-        path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage
-    } = lib.parsePathAndOptions(
+    const { contentTypeFunc, errorMessage } = lib.parsePathAndOptions(
         "i/am/a/path.txt",
         {
             contentType: (path) => {
@@ -789,9 +660,7 @@ exports.testParsePathAndOptions_contentType_optionsArg2_func_replacesMimeDetecti
     t.assertEquals("text/css", contentTypeFunc("i/am/a/path.css"));
 }
 exports.testParsePathAndOptions_contentType_optionsArg1_func_replacesMimeDetectingFunctionKeepsFallback = () => {
-    const {
-        path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage
-    } = lib.parsePathAndOptions({
+    const { contentTypeFunc, errorMessage } = lib.parsePathAndOptions({
             path: "i/am/a/path.txt",
             contentType: (path) => {
                 // Override for one particular gif
@@ -931,6 +800,349 @@ exports.testParsePathAndOptions_contentType_optionsArg1_array_shouldFail = () =>
     const result = lib.parsePathAndOptions({
         path: "i/am/a/path.txt",
         contentType: ["i", "am", "kloot"]
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+
+
+exports.testParsePathAndOptions_contentType_optionsArg2_null_shouldFail = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt", {
+        contentType: null
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+exports.testParsePathAndOptions_contentType_optionsArg1_null_shouldFail = () => {
+    const result = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        contentType: null
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+
+
+
+
+
+// Test cacheControl override option
+
+exports.testParsePathAndOptions_cacheControl_optionsArg2_string_producesFixedValueFunction = () => {
+    const {
+        path,
+        cacheControlFunc,
+        contentTypeFunc,
+        etagOverride,
+        throwErrors,
+        errorMessage
+    } = lib.parsePathAndOptions("i/am/a/path.txt", {
+        cacheControl: "fixed cache control"
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals("fixed cache control", cacheControlFunc("i/am/a/path.txt"));
+    t.assertEquals("fixed cache control", cacheControlFunc("i/am/a/path.js"));
+    t.assertEquals("fixed cache control", cacheControlFunc("i/am/a/path.json"));
+    t.assertEquals("fixed cache control", cacheControlFunc("i/am/a/path.jpg"));
+}
+exports.testParsePathAndOptions_cacheControl_optionsArg1_string_producesFixedValueFunction = () => {
+    const { cacheControlFunc, errorMessage } = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        cacheControl: "fixed cache control"
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals("fixed cache control", cacheControlFunc("i/am/a/path.txt"));
+    t.assertEquals("fixed cache control", cacheControlFunc("i/am/a/path.js"));
+    t.assertEquals("fixed cache control", cacheControlFunc("i/am/a/path.json"));
+    t.assertEquals("fixed cache control", cacheControlFunc("i/am/a/path.jpg"));
+}
+
+exports.testParsePathAndOptions_cacheControl_optionsArg2_undefined_producesDefaultValueFunction = () => {
+    const { cacheControlFunc, errorMessage } = lib.parsePathAndOptions("i/am/a/path.txt", {
+        cacheControl: undefined
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    assertCacheControlIsDefault(cacheControlFunc("i/am/a/path.txt", "I am some content", "text/plain"));
+    assertCacheControlIsDefault(cacheControlFunc("i/am/a/path.gif", "I am some content", "image/gif"));
+    assertCacheControlIsDefault(cacheControlFunc("i/am/a/path.json", "I am some content", "application.json"));
+}
+exports.testParsePathAndOptions_cacheControl_optionsArg1_undefined_producesDefaultValueFunction = () => {
+    const { cacheControlFunc, errorMessage } = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt"
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    assertCacheControlIsDefault(cacheControlFunc("i/am/a/path.txt", "I am some content", "text/plain"));
+    assertCacheControlIsDefault(cacheControlFunc("i/am/a/path.gif", "I am some content", "image/gif"));
+    assertCacheControlIsDefault(cacheControlFunc("i/am/a/path.json", "I am some content", "application.json"));
+}
+
+exports.testParsePathAndOptions_cacheControl_optionsArg2_true_producesDefaultValueFunction = () => {
+    const { cacheControlFunc, errorMessage } = lib.parsePathAndOptions("i/am/a/path.txt", {
+        cacheControl: true
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    assertCacheControlIsDefault(cacheControlFunc("i/am/a/path.txt", "I am some content", "text/plain"));
+    assertCacheControlIsDefault(cacheControlFunc("i/am/a/path.gif", "I am some content", "image/gif"));
+    assertCacheControlIsDefault(cacheControlFunc("i/am/a/path.json", "I am some content", "application.json"));
+}
+exports.testParsePathAndOptions_cacheControl_optionsArg1_true_producesDefaultValueFunction = () => {
+    const { cacheControlFunc, errorMessage } = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        cacheControl: true
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    assertCacheControlIsDefault(cacheControlFunc("i/am/a/path.txt", "I am some content", "text/plain"));
+    assertCacheControlIsDefault(cacheControlFunc("i/am/a/path.gif", "I am some content", "image/gif"));
+    assertCacheControlIsDefault(cacheControlFunc("i/am/a/path.json", "I am some content", "application.json"));
+}
+
+exports.testParsePathAndOptions_cacheControl_optionsArg2_false_producesDefaultValueFunction = () => {
+    const { cacheControlFunc, errorMessage } = lib.parsePathAndOptions("i/am/a/path.txt",{
+        cacheControl: false
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals(undefined, cacheControlFunc("i/am/a/path.txt", "I am some content", "text/plain"));
+    t.assertEquals(undefined, cacheControlFunc("i/am/a/path.gif", "I am some content", "image/gif"));
+    t.assertEquals(undefined, cacheControlFunc("i/am/a/path.json", "I am some content", "application.json"));
+}
+exports.testParsePathAndOptions_cacheControl_optionsArg1_false_producesDefaultValueFunction = () => {
+    const { cacheControlFunc, errorMessage } = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        cacheControl: false
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals(undefined, cacheControlFunc("i/am/a/path.txt", "I am some content", "text/plain"));
+    t.assertEquals(undefined, cacheControlFunc("i/am/a/path.gif", "I am some content", "image/gif"));
+    t.assertEquals(undefined, cacheControlFunc("i/am/a/path.json", "I am some content", "application.json"));
+}
+
+exports.testParsePathAndOptions_cacheControl_optionsArg2_emptyString_producesDefaultValueFunction = () => {
+    const { cacheControlFunc, errorMessage } = lib.parsePathAndOptions("i/am/a/path.txt",{
+        cacheControl: ''
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals(undefined, cacheControlFunc("i/am/a/path.txt", "I am some content", "text/plain"));
+    t.assertEquals(undefined, cacheControlFunc("i/am/a/path.gif", "I am some content", "image/gif"));
+    t.assertEquals(undefined, cacheControlFunc("i/am/a/path.json", "I am some content", "application.json"));
+}
+exports.testParsePathAndOptions_cacheControl_optionsArg1_emptyString_producesDefaultValueFunction = () => {
+    const { cacheControlFunc, errorMessage } = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        cacheControl: ''
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals(undefined, cacheControlFunc("i/am/a/path.txt", "I am some content", "text/plain"));
+    t.assertEquals(undefined, cacheControlFunc("i/am/a/path.gif", "I am some content", "image/gif"));
+    t.assertEquals(undefined, cacheControlFunc("i/am/a/path.json", "I am some content", "application.json"));
+}
+
+exports.testParsePathAndOptions_cacheControl_optionsArg1_allSpaceString_producesDefaultValueFunction = () => {
+    const { cacheControlFunc, errorMessage } = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        cacheControl: '  '
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals(undefined, cacheControlFunc("i/am/a/path.txt", "I am some content", "text/plain"));
+    t.assertEquals(undefined, cacheControlFunc("i/am/a/path.gif", "I am some content", "image/gif"));
+    t.assertEquals(undefined, cacheControlFunc("i/am/a/path.json", "I am some content", "application.json"));
+}
+exports.testParsePathAndOptions_cacheControl_optionsArg1_allSpaceString_producesDefaultValueFunction = () => {
+    const { cacheControlFunc, errorMessage } = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        cacheControl: '  '
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals(undefined, cacheControlFunc("i/am/a/path.txt", "I am some content", "text/plain"));
+    t.assertEquals(undefined, cacheControlFunc("i/am/a/path.gif", "I am some content", "image/gif"));
+    t.assertEquals(undefined, cacheControlFunc("i/am/a/path.json", "I am some content", "application.json"));
+}
+
+
+
+// Test invalid cacheControl params, should produce error message but still keep throwErrors argument
+
+exports.testParsePathAndOptions_contentType_optionsArg2_failingShouldParseTrueThrowErrorsArg = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt", {
+        cacheControl: {},
+        throwErrors: true
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+exports.testParsePathAndOptions_contentType_optionsArg2_failingShouldParseFalseThrowErrorsArg = () => {
+    const  result = lib.parsePathAndOptions("i/am/a/path.txt", {
+        cacheControl: {},
+        throwErrors: false
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+exports.testParsePathAndOptions_contentType_optionsArg1_failingShouldParseTrueThrowErrorsArg = () => {
+    const  result = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        cacheControl: {},
+        throwErrors: true
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+
+
+exports.testParsePathAndOptions_contentType_optionsArg2_emptyObj_shouldFail = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt",{
+        cacheControl: {},
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+exports.testParsePathAndOptions_contentType_optionsArg1_emptyObj_shouldFail = () => {
+    const result = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        cacheControl: {},
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+
+
+exports.testParsePathAndOptions_contentType_optionsArg2_obj_shouldFail = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt",{
+        cacheControl: {i: "object", your: "honor"},
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+exports.testParsePathAndOptions_contentType_optionsArg1_obj_shouldFail = () => {
+    const result = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        cacheControl: {i: "object", your: "honor"},
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+
+exports.testParsePathAndOptions_contentType_optionsArg2_zero_shouldFail = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt",{
+        cacheControl: 0,
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+exports.testParsePathAndOptions_contentType_optionsArg1_zero_shouldFail = () => {
+    const result = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        cacheControl: 0,
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+
+exports.testParsePathAndOptions_contentType_optionsArg2_number_shouldFail = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt",{
+        cacheControl: 42,
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+exports.testParsePathAndOptions_contentType_optionsArg1_number_shouldFail = () => {
+    const result = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        cacheControl: 42,
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+
+exports.testParsePathAndOptions_contentType_optionsArg2_null_shouldFail = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt",{
+        cacheControl: null,
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+exports.testParsePathAndOptions_contentType_optionsArg1_null_shouldFail = () => {
+    const result = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        cacheControl: null,
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+
+exports.testParsePathAndOptions_contentType_optionsArg2_emptyArray_shouldFail = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt",{
+        cacheControl: [],
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+exports.testParsePathAndOptions_contentType_optionsArg1_emptyArray_shouldFail = () => {
+    const result = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        cacheControl: [],
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+
+exports.testParsePathAndOptions_contentType_optionsArg2_array_shouldFail = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt",{
+        cacheControl: ["i", "pretend", "to", "be", "an", "object"],
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+exports.testParsePathAndOptions_contentType_optionsArg1_array_shouldFail = () => {
+    const result = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        cacheControl: ["i", "pretend", "to", "be", "an", "object"],
     });
 
     t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));

@@ -61,7 +61,7 @@ const getCacheControlFunc = (cacheControl) => {
         return () => undefined;
     }
 
-    if (cacheControl === undefined || cacheControl === true || cacheControl === null) {
+    if (cacheControl === undefined || cacheControl === true) {
         // Ignoring other absent/no-override values
         return () => DEFAULT_CACHE_CONTROL;
     }
@@ -69,7 +69,7 @@ const getCacheControlFunc = (cacheControl) => {
     const argType = typeof cacheControl;
 
     if (argType === 'string') {
-        return () => cacheControl;
+        return () => cacheControl.trim() || undefined;
     }
 
     if (argType === 'function') {

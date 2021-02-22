@@ -578,13 +578,6 @@ exports.testGet_fail_option_cacheControl_WrongTypes = () => {
     t.assertEquals(500, result.status, "Should have failed #6. result = " + JSON.stringify(result));
 }
 
-exports.testGet_fail_option_cacheControl_IgnoredTypes = () => {
-    let result = lib.get('/static/static-test-html.html', {cacheControl: true});
-    t.assertEquals(200, result.status, "Should have ignored a true cacheControl param. result = " + JSON.stringify(result));
-
-    result = lib.get('/static/static-test-html.html', {cacheControl: null});
-    t.assertEquals(200, result.status, "Should have ignored a null cacheControl param. result = " + JSON.stringify(result));
-    };
 
 
 
