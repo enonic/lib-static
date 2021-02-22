@@ -559,7 +559,6 @@ exports.testParsePathAndOptions_contentType_optionsArg2_string_producesFixedMime
     t.assertEquals("fixed content type", contentTypeFunc("i/am/a/path.css"));
 }
 
-
 exports.testParsePathAndOptions_contentType_optionsArg1_string_producesFixedMimeDetectingFunction = () => {
     const {
         path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage
@@ -573,6 +572,63 @@ exports.testParsePathAndOptions_contentType_optionsArg1_string_producesFixedMime
     t.assertEquals("fixed content type", contentTypeFunc("i/am/a/path.gif"));
     t.assertEquals("fixed content type", contentTypeFunc("i/am/a/path.html"));
     t.assertEquals("fixed content type", contentTypeFunc("i/am/a/path.css"));
+}
+
+exports.testParsePathAndOptions_contentType_optionsArg2_emptyString_disablesContentType = () => {
+    const {
+        path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage
+    } = lib.parsePathAndOptions("i/am/a/path.txt",  {contentType: ""});
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.txt"));
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.js"));
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.json"));
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.jpg"));
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.gif"));
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.html"));
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.css"));
+}
+exports.testParsePathAndOptions_contentType_optionsArg1_emptyString_disablesContentType = () => {
+    const {
+        path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage
+    } = lib.parsePathAndOptions({path: "i/am/a/path.txt",  contentType: ""});
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.txt"));
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.js"));
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.json"));
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.jpg"));
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.gif"));
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.html"));
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.css"));
+}
+exports.testParsePathAndOptions_contentType_optionsArg2_allSpaceString_disablesContentType = () => {
+    const {
+        path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage
+    } = lib.parsePathAndOptions("i/am/a/path.txt",  {contentType: "  "});
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.txt"));
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.js"));
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.json"));
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.jpg"));
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.gif"));
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.html"));
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.css"));
+}
+exports.testParsePathAndOptions_contentType_optionsArg1_allSpaceString_disablesContentType = () => {
+    const {
+        path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage
+    } = lib.parsePathAndOptions({path: "i/am/a/path.txt",  contentType: "  "});
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.txt"));
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.js"));
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.json"));
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.jpg"));
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.gif"));
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.html"));
+    t.assertEquals(undefined, contentTypeFunc("i/am/a/path.css"));
 }
 
 exports.testParsePathAndOptions_contentType_optionsArg2_object_producesLookupMimeDetectingFunctionWithFallback = () => {
@@ -627,6 +683,72 @@ exports.testParsePathAndOptions_contentType_optionsArg1_object_producesLookupMim
     t.assertEquals("text/plain", contentTypeFunc("i/am/a/path.txt"));
     t.assertEquals("application/javascript", contentTypeFunc("i/am/a/path.js"));
     t.assertEquals("image/jpeg", contentTypeFunc("i/am/a/path.jpg"));
+}
+exports.testParsePathAndOptions_contentType_optionsArg2_emptyObject_producesDefaultFunction = () => {
+    const {
+        path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage
+    } = lib.parsePathAndOptions("i/am/a/path.txt", {
+        contentType: {}
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals("text/plain", contentTypeFunc("i/am/a/path.txt"));
+    t.assertEquals("application/javascript", contentTypeFunc("i/am/a/path.js"));
+    t.assertEquals("application/json", contentTypeFunc("i/am/a/path.json"));
+    t.assertEquals("image/jpeg", contentTypeFunc("i/am/a/path.jpg"));
+    t.assertEquals("image/gif", contentTypeFunc("i/am/a/path.gif"));
+    t.assertEquals("text/html", contentTypeFunc("i/am/a/path.html"));
+    t.assertEquals("text/css", contentTypeFunc("i/am/a/path.css"));
+}
+exports.testParsePathAndOptions_contentType_optionsArg1_emptyObject_producesDefaultFunction = () => {
+    const {
+        path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage
+    } = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        contentType: {}
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals("text/plain", contentTypeFunc("i/am/a/path.txt"));
+    t.assertEquals("application/javascript", contentTypeFunc("i/am/a/path.js"));
+    t.assertEquals("application/json", contentTypeFunc("i/am/a/path.json"));
+    t.assertEquals("image/jpeg", contentTypeFunc("i/am/a/path.jpg"));
+    t.assertEquals("image/gif", contentTypeFunc("i/am/a/path.gif"));
+    t.assertEquals("text/html", contentTypeFunc("i/am/a/path.html"));
+    t.assertEquals("text/css", contentTypeFunc("i/am/a/path.css"));
+}
+exports.testParsePathAndOptions_contentType_optionsArg2_true_producesDefaultFunction = () => {
+    const {
+        path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage
+    } = lib.parsePathAndOptions("i/am/a/path.txt", {
+        contentType: true
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals("text/plain", contentTypeFunc("i/am/a/path.txt"));
+    t.assertEquals("application/javascript", contentTypeFunc("i/am/a/path.js"));
+    t.assertEquals("application/json", contentTypeFunc("i/am/a/path.json"));
+    t.assertEquals("image/jpeg", contentTypeFunc("i/am/a/path.jpg"));
+    t.assertEquals("image/gif", contentTypeFunc("i/am/a/path.gif"));
+    t.assertEquals("text/html", contentTypeFunc("i/am/a/path.html"));
+    t.assertEquals("text/css", contentTypeFunc("i/am/a/path.css"));
+}
+exports.testParsePathAndOptions_contentType_optionsArg1_true_producesDefaultFunction = () => {
+    const {
+        path, cacheControlFunc, contentTypeFunc, etagOverride, throwErrors, errorMessage
+    } = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        contentType: true
+    });
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals("text/plain", contentTypeFunc("i/am/a/path.txt"));
+    t.assertEquals("application/javascript", contentTypeFunc("i/am/a/path.js"));
+    t.assertEquals("application/json", contentTypeFunc("i/am/a/path.json"));
+    t.assertEquals("image/jpeg", contentTypeFunc("i/am/a/path.jpg"));
+    t.assertEquals("image/gif", contentTypeFunc("i/am/a/path.gif"));
+    t.assertEquals("text/html", contentTypeFunc("i/am/a/path.html"));
+    t.assertEquals("text/css", contentTypeFunc("i/am/a/path.css"));
 }
 
 
@@ -699,4 +821,119 @@ exports.testParsePathAndOptions_contentType_optionsArg1_func_replacesMimeDetecti
     t.assertEquals("image/jpeg", contentTypeFunc("i/am/a/path.jpg"));
     t.assertEquals("application/json", contentTypeFunc("i/am/a/path.json"));
     t.assertEquals("text/css", contentTypeFunc("i/am/a/path.css"));
+}
+
+// Test invalid contentTypes, should produce error message but still keep throwErrors argument
+
+exports.testParsePathAndOptions_contentType_optionsArg2_failingShouldParseTrueThrowErrorsArg = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt", {
+        contentType: 0,
+        throwErrors: true
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+exports.testParsePathAndOptions_contentType_optionsArg2_failingShouldParseFalseThrowErrorsArg = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt", {
+        contentType: 0,
+        throwErrors: false
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+exports.testParsePathAndOptions_contentType_optionsArg1_failingShouldParseTrueThrowErrorsArg = () => {
+    const result = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        contentType: 0,
+        throwErrors: true
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+
+
+exports.testParsePathAndOptions_contentType_optionsArg2_zero_shouldFail = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt",{
+        contentType: 0
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+exports.testParsePathAndOptions_contentType_optionsArg1_zero_shouldFail = () => {
+    const result = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        contentType: 0
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+
+
+exports.testParsePathAndOptions_contentType_optionsArg2_number_shouldFail = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt",{
+        contentType: 42
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+exports.testParsePathAndOptions_contentType_optionsArg1_number_shouldFail = () => {
+    const result = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        contentType: 42
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+
+
+exports.testParsePathAndOptions_contentType_optionsArg2_emptyArray_shouldFail = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt", {
+        contentType: []
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+exports.testParsePathAndOptions_contentType_optionsArg1_emptyArray_shouldFail = () => {
+    const result = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        contentType: []
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+
+
+exports.testParsePathAndOptions_contentType_optionsArg2_array_shouldFail = () => {
+    const result = lib.parsePathAndOptions("i/am/a/path.txt", {
+        contentType: ["i", "am", "groot"]
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
+}
+exports.testParsePathAndOptions_contentType_optionsArg1_array_shouldFail = () => {
+    const result = lib.parsePathAndOptions({
+        path: "i/am/a/path.txt",
+        contentType: ["i", "am", "kloot"]
+    });
+
+    t.assertTrue(!!result.errorMessage, "Expected to produce an errorMessage, but appears to be completed. Result: " + JSON.stringify(result));
+    t.assertTrue(!result.path && !result.cacheControlFunc && !result.contentTypeFunc && !result.etagOverride, "Result only expected to contain errorMessage (and throwErrors, if given). Result: " + JSON.stringify(result));
+    t.assertFalse(result.throwErrors, "Expected to fail but still keep throwErrors");
 }

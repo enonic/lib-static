@@ -93,24 +93,22 @@ const getCacheControlFunc = (cacheControl) => {
  * Override-able MIME-type function creator:
  * Returns a function that takes a path argument and returns a mime type.
  *
- * @param contentType (string, function or object). See README for how the contentType option works.
+ * @param contentType (string, boolean, function or object). See README for how the contentType option works.
  * */
 const getContentTypeFunc = (contentType) => {
+    if (contentType === false) {
+        return () => undefined;
+    }
+    if (contentType === true || contentType === undefined) {
+        return ioLib.getMimeType;
+    }
     if (contentType || contentType === '') {
-        /*
-        log.info("contentType (" +
-            (Array.isArray(contentType) ?
-                ("array[" + contentType.length + "]") :
-                (typeof contentType + (contentType && typeof contentType === 'object' ? (" with keys: " + JSON.stringify(Object.keys(contentType))) : ""))
-            ) + "): " + JSON.stringify(contentType, null, 2)
-        );
-        //*/
-
         const argType = typeof contentType;
 
         if (argType === 'string') {
-            return () => contentType || undefined;
+            return () => contentType.trim() || undefined;
         }
+
         if (argType === 'function') {
             return (path) => {
                 const result = contentType(path);
@@ -139,11 +137,9 @@ const getContentTypeFunc = (contentType) => {
                 return ioLib.getMimeType(path);
             }
         }
-
-        throw Error(`Unexpected type for the 'contentType' option: '${Array.isArray(contentType) ? "array" : typeof contentType}'. Expected: string, object or function.`);
     }
 
-    return ioLib.getMimeType;
+    throw Error(`Unexpected type for the 'contentType' option: '${Array.isArray(contentType) ? "array" : typeof contentType}'. Expected: string, object or function.`);
 }
 
 
@@ -161,7 +157,7 @@ const getContentTypeFunc = (contentType) => {
  *
  * @param pathOrOptions {string|object} Path string, or an object that contains at least a path attribute and may contain other options - same as next parameter below.
  * @param options {{
- *                  contentType: (string|object|function(path): string)?,
+ *                  contentType: (string|boolean|object|function(path): string)?,
  *                  cacheControl: (string|boolean|function(path, content, mimeType): string)?,
  *                  etag: (boolean?),
  *                  throwErrors: (boolean?)
