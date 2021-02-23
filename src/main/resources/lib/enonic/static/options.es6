@@ -185,6 +185,7 @@ exports.parsePathAndOptions = (pathOrOptions, options) => {
         // attribute must be included in it. If it is an object, then any other arguments after that are irrelevant:
         if (pathOrOptions && typeof pathOrOptions === 'object') {
             if (Array.isArray(pathOrOptions)) {
+                throwErrors = !!(options || {}).throwErrors;
                 throw Error("First argument (pathOrOptions) is of unexpected type 'array'. Expected: string or object.");
             }
             throwErrors = !!pathOrOptions.throwErrors;

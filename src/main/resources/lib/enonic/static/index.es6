@@ -1,5 +1,5 @@
-const taggingReader = require('./etaggingResourceReader');
-const optionsParser = require('./options');
+const taggingReader = require('/lib/enonic/static/etaggingResourceReader');
+const optionsParser = require('/lib/enonic/static/options');
 
 exports.get = (pathOrOptions, options) => {
     const {

@@ -6,6 +6,6 @@ public class OptionsTest
     @Override
     public String getScriptTestFile()
     {
-        return "/lib/enonic/options-test.js";
+        return "/lib/enonic/static/options-test.js";
     }
 }

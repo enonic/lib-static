@@ -48,9 +48,9 @@ exports.testHelper_OK = () => {
 }
 
 exports.testHelper_ETag_collision = () => {
-    verifyEtagAndContent("a", "who mama");
-    verifyEtagAndContent("b", "whoa hell yes");
-    verifyEtagAndContent("c", "you gotta put on the party dress");
+    verifyEtagAndContent("a", "any");
+    verifyEtagAndContent("b", "second");
+    verifyEtagAndContent("c", "now");
 
     let failed = true;
 

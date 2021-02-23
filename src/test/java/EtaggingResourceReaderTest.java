@@ -6,6 +6,6 @@ public class EtaggingResourceReaderTest
     @Override
     public String getScriptTestFile()
     {
-        return "/lib/enonic/etaggingResourceReader-test.js";
+        return "/lib/enonic/static/etaggingResourceReader-test.js";
     }
 }

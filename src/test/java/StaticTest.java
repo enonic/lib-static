@@ -6,6 +6,6 @@ public class StaticTest
     @Override
     public String getScriptTestFile()
     {
-        return "/lib/enonic/static-test.js";
+        return "/lib/enonic/static/static-test.js";
     }
 }
