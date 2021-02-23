@@ -19,16 +19,12 @@ import java.util.List;
 public class ETaggingResourceReader implements ScriptBean {
     private final static Logger LOG = LoggerFactory.getLogger( ETaggingResourceReader.class );
 
-    private final boolean isDev = RunMode.get() != RunMode.PROD;
+    protected boolean isDev = RunMode.get() != RunMode.PROD;
 
     private final HashMap<String, Long> lastModifiedCache = new HashMap<>();
     private final HashMap<String, String> etagCache = new HashMap<>();
 
     private ResourceService resourceService;
-
-    protected boolean isDev() {
-        return isDev;
-    }
 
     private String getEtag(String path, byte[] contentBytes, boolean reCache) {
         synchronized (etagCache) {
@@ -42,13 +38,13 @@ public class ETaggingResourceReader implements ScriptBean {
                     etagCache.put(path, etag);
 
                     return etag;
-                }
 
+                }
                 return etagCache.get(path);
 
             } catch (Exception e) {
                 LOG.error("Couldn't generate ETag from resource '" + path + "'", e);
-                if (isDev()) {
+                if (isDev) {
                     e.printStackTrace();
                 }
                 return null;
@@ -90,7 +86,7 @@ public class ETaggingResourceReader implements ScriptBean {
 
             } catch (IOException e) {
                 LOG.error("Couldn't read resource: '" + path + "'", e);
-                if (isDev()) {
+                if (isDev) {
                     e.printStackTrace();
                 }
                 return Arrays.asList("500", "Couldn't read resource: '" + path + "'");
@@ -99,7 +95,8 @@ public class ETaggingResourceReader implements ScriptBean {
 
         boolean reCache = false;
 
-        if (isDev()) {
+
+        if (!isDev) {
             reCache = (etagOverrideMode > -1);
 
         } else if (etagOverrideMode == 1) {
@@ -118,15 +115,23 @@ public class ETaggingResourceReader implements ScriptBean {
             }
         }
 
-        String etag = getEtag(path, contentBytes, reCache);
+        boolean processEtag = etagOverrideMode > (isDev ? 0 : -1); // 0: true in prod, false in dev. 1 forces true in dev, -1 forces false in prod.
+        System.out.println("\tprocessEtag: " + processEtag);
+        System.out.println("\trecache:   " + reCache+"\n");
 
         try {
             String content = resource.readString();
-            return Arrays.asList("200", content, etag);
+
+            if (processEtag) {
+                String etag = getEtag(path, contentBytes, reCache);
+                return Arrays.asList("200", content, etag);
+            } else {
+                return Arrays.asList("200", content);
+            }
 
         } catch (Exception e) {
             LOG.error("Couldn't read resource to string: '" + path + "'", e);
-            if (isDev()) {
+            if (isDev) {
                 e.printStackTrace();
             }
             return Arrays.asList("500", "Couldn't read resource: '" + path + "'");
