@@ -19,12 +19,16 @@ import java.util.List;
 public class ETaggingResourceReader implements ScriptBean {
     private final static Logger LOG = LoggerFactory.getLogger( ETaggingResourceReader.class );
 
-    private final boolean isProd = RunMode.get() == RunMode.PROD;
+    private final boolean isDev = RunMode.get() != RunMode.PROD;
 
-    private static final HashMap<String, Long> lastModifiedCache = new HashMap<>();
-    private static final HashMap<String, String> etagCache = new HashMap<>();
+    private final HashMap<String, Long> lastModifiedCache = new HashMap<>();
+    private final HashMap<String, String> etagCache = new HashMap<>();
 
-    private static ResourceService resourceService;
+    private ResourceService resourceService;
+
+    protected boolean isDev() {
+        return isDev;
+    }
 
     private String getEtag(String path, byte[] contentBytes, boolean reCache) {
         synchronized (etagCache) {
@@ -44,7 +48,7 @@ public class ETaggingResourceReader implements ScriptBean {
 
             } catch (Exception e) {
                 LOG.error("Couldn't generate ETag from resource '" + path + "'", e);
-                if (!isProd) {
+                if (isDev()) {
                     e.printStackTrace();
                 }
                 return null;
@@ -86,7 +90,7 @@ public class ETaggingResourceReader implements ScriptBean {
 
             } catch (IOException e) {
                 LOG.error("Couldn't read resource: '" + path + "'", e);
-                if (!isProd) {
+                if (isDev()) {
                     e.printStackTrace();
                 }
                 return Arrays.asList("500", "Couldn't read resource: '" + path + "'");
@@ -95,7 +99,7 @@ public class ETaggingResourceReader implements ScriptBean {
 
         boolean reCache = false;
 
-        if (isProd) {
+        if (isDev()) {
             reCache = (etagOverrideMode > -1);
 
         } else if (etagOverrideMode == 1) {
@@ -116,18 +120,17 @@ public class ETaggingResourceReader implements ScriptBean {
 
         String etag = getEtag(path, contentBytes, reCache);
 
-        String content = null;
         try {
-            content = resource.readString();
+            String content = resource.readString();
+            return Arrays.asList("200", content, etag);
+
         } catch (Exception e) {
             LOG.error("Couldn't read resource to string: '" + path + "'", e);
-            if (!isProd) {
+            if (isDev()) {
                 e.printStackTrace();
             }
             return Arrays.asList("500", "Couldn't read resource: '" + path + "'");
         }
-
-        return Arrays.asList("200", content, etag);
     }
 
     @Override
