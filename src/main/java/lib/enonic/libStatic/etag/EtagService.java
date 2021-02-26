@@ -15,7 +15,7 @@ public class EtagService implements ScriptBean {
     private final static Logger LOG = LoggerFactory.getLogger( EtagService.class );
 
     protected static boolean isDev = RunMode.get() != RunMode.PROD;
-    protected CachedHasher cachedHasher = new CachedHasher(isDev);
+    protected CachedHasher cachedHasher = new CachedHasher();
     protected ForceRecacheDecider forceRecacheDecider = new ForceRecacheDecider(isDev);
 
     protected ResourceService resourceService;
@@ -23,6 +23,12 @@ public class EtagService implements ScriptBean {
     public static final String STATUS_KEY = "status";
     public static final String ERROR_KEY = "error";
     public static final String ETAG_KEY = "etag";
+
+
+    public Map<String, String> getEtag(String path) {
+        return getEtag(path, 0);
+    }
+
 
     /** Gets a content string and MD5-contenthash etag string.
      *
@@ -49,7 +55,6 @@ public class EtagService implements ScriptBean {
         }
 
         Resource resource;
-        boolean forceReCache, doProcessEtag;
 
         try {
             synchronized (resourceService) {
@@ -62,36 +67,16 @@ public class EtagService implements ScriptBean {
                 }
             }
 
-        } catch (Exception e) {
-            LOG.error("Couldn't process resource: '" + path + "'", e);
-            if (isDev) {
-                e.printStackTrace();
-            }
-            return Map.of(
-                    STATUS_KEY, "500",
-                    ERROR_KEY,  "Couldn't process resource: '" + path + "'"
-            );
-        }
-
-        // TODO: Will this prevent simultaneous access to the same resource? Is it necessary?
-        synchronized (resource) {
-            forceReCache = forceRecacheDecider.shouldReCache(path, etagOverrideMode, resource);
-            doProcessEtag = etagOverrideMode > (isDev ? 0 : -1); // 0: true in prod, false in dev. 1 forces true in dev, -1 forces false in prod.
-
-
-            try {
-                // FIXME: readString doesn't seem cached under the hood???
-                // Long t0 = System.nanoTime();
-                // String content = resource.readString();
-                // Long t1 = System.nanoTime();
-                // LOG.info("Read string in nanos: " + ((t1 - t0) / 1000000000F) + "\n---");
+            // TODO: Will this prevent simultaneous access to the same resource? Is it necessary?
+            synchronized (resource) {
+                boolean forceReCache = forceRecacheDecider.shouldReCache(path, etagOverrideMode, resource);
+                boolean doProcessEtag = etagOverrideMode > (isDev ? 0 : -1); // 0: true in prod, false in dev. 1 forces true in dev, -1 forces false in prod.
 
                 if (doProcessEtag) {
-                    // System.out.println("\tforceReCache:   " + forceReCache + "\n");
                     String etag = cachedHasher.getCachedHash(path, resource, forceReCache);
                     return Map.of(
                             STATUS_KEY, "200",
-                            ETAG_KEY,  etag
+                            ETAG_KEY, etag
                     );
 
                 } else {
@@ -99,17 +84,16 @@ public class EtagService implements ScriptBean {
                             STATUS_KEY, "200"
                     );
                 }
-
-            } catch (Exception e) {
-                LOG.error("Couldn't read resource to string: '" + path + "'", e);
-                if (isDev) {
-                    e.printStackTrace();
-                }
-                return Map.of(
-                        STATUS_KEY, "500",
-                        ERROR_KEY,  "Couldn't read resource: '" + path + "'"
-                );
             }
+
+        } catch (Exception e) {
+            Long errorRnd = (long)(Math.random() * Long.MAX_VALUE);
+            String errorId = Long.toString(errorRnd, 36);
+            LOG.error("Couldn't process resource: '" + path + "' (error ID: " + errorId + ")", e);
+            return Map.of(
+                    STATUS_KEY, "500",
+                    ERROR_KEY,  "Couldn't process resource: '" + path + "' (error ID: " + errorId + ")"
+            );
         }
     }
 

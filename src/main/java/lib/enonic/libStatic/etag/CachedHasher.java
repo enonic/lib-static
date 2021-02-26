@@ -11,13 +11,9 @@ import java.util.HashMap;
 public class CachedHasher {
     private final static Logger LOG = LoggerFactory.getLogger( CachedHasher.class );
 
-    private final boolean isDev;
     protected HashMap<String, String> cache = new HashMap<>();
     protected Hasher hasher = new Hasher();
 
-    public CachedHasher(boolean isDev) {
-        this.isDev = isDev;
-    }
 
     protected String getCachedHash(String path, Resource resource, boolean forceReCache) {
         synchronized (cache) {
@@ -37,10 +33,6 @@ public class CachedHasher {
             } catch (Exception e) {
                 LOG.error("Couldn't generate ETag from resource '" + path + "'", e);
                 cache.remove(path);
-
-                if (isDev) {
-                    e.printStackTrace();
-                }
                 return null;
             }
         }

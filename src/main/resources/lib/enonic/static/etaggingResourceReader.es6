@@ -17,11 +17,11 @@ exports.read = (path, etagOverrideOption) => {
             ? -1
             : 0;
 
-    const[ status, body, etag ] = __.toNativeObject(etaggingResourceReader.read(`${app.name}:${path}`, etagOverride));
+    const { status, error, etag } = __.toNativeObject(etaggingResourceReader.read(`${app.name}:${path}`, etagOverride));
 
     return {
         status: parseInt(status),
-        body,
+        error,
         etagValue: etag || undefined
     }
 };

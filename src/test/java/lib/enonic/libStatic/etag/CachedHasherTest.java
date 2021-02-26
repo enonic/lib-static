@@ -83,7 +83,7 @@ public class CachedHasherTest extends ScriptTestSupport {
 
     @Before
     public void setUp() {
-        cachedHasher = new CachedHasher(false);
+        cachedHasher = new CachedHasher();
         hasherMock = mock(Hasher.class);
     }
 
