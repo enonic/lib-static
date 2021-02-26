@@ -11,6 +11,7 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,18 +47,18 @@ public class CachedEtaggerTest extends ScriptTestSupport {
     private final String TEXT_PATH = "myapplication:/static/static-test-text.txt";
     private final String GIF_PATH = "myapplication:/static/w3c_home.gif";
 
-    private byte[] hugeAssetBytes1,
-            hugeAssetBytes2,
-            hugeAssetBytes3,
-            hugeAssetBytes4,
-            hugeAssetBytes5,
-            hugeAssetBytes6,
-            textAssetBytes1,
-            textAssetBytes2,
-            textAssetBytes3,
-            gifAssetBytes1,
-            gifAssetBytes2,
-            gifAssetBytes3;
+    private Resource hugeAsset1,
+            hugeAsset2,
+            hugeAsset3,
+            hugeAsset4,
+            hugeAsset5,
+            hugeAsset6,
+            textAsset1,
+            textAsset2,
+            textAsset3,
+            gifAsset1,
+            gifAsset2,
+            gifAsset3;
 
 
     @Override
@@ -67,23 +68,21 @@ public class CachedEtaggerTest extends ScriptTestSupport {
         BeanContext context = newBeanContext(ResourceKey.from("myapplication:/test"));
         ResourceService resourceService = context.getService( ResourceService.class ).get();
 
-        Resource hugeAsset = resourceService.getResource(ResourceKey.from(HUGE_PATH));
-        hugeAssetBytes1 = hugeAsset.getBytes().read();
-        hugeAssetBytes2 = hugeAsset.getBytes().read();
-        hugeAssetBytes3 = hugeAsset.getBytes().read();
-        hugeAssetBytes4 = hugeAsset.getBytes().read();
-        hugeAssetBytes5 = hugeAsset.getBytes().read();
-        hugeAssetBytes6 = hugeAsset.getBytes().read();
+        hugeAsset1 = resourceService.getResource(ResourceKey.from(HUGE_PATH));
+        hugeAsset2 = resourceService.getResource(ResourceKey.from(HUGE_PATH));
+        hugeAsset3 = resourceService.getResource(ResourceKey.from(HUGE_PATH));
+        hugeAsset4 = resourceService.getResource(ResourceKey.from(HUGE_PATH));
+        hugeAsset5 = resourceService.getResource(ResourceKey.from(HUGE_PATH));
+        hugeAsset6 = resourceService.getResource(ResourceKey.from(HUGE_PATH));
 
-        Resource textAsset = resourceService.getResource(ResourceKey.from(TEXT_PATH));
-        textAssetBytes1 = textAsset.getBytes().read();
-        textAssetBytes2 = textAsset.getBytes().read();
-        textAssetBytes3 = textAsset.getBytes().read();
+        textAsset1 = resourceService.getResource(ResourceKey.from(TEXT_PATH));
+        textAsset2 = resourceService.getResource(ResourceKey.from(TEXT_PATH));
+        textAsset3 = resourceService.getResource(ResourceKey.from(TEXT_PATH));
 
-        Resource gifAsset = resourceService.getResource(ResourceKey.from(GIF_PATH));
-        gifAssetBytes1 = gifAsset.getBytes().read();
-        gifAssetBytes2 = gifAsset.getBytes().read();
-        gifAssetBytes3 = gifAsset.getBytes().read();
+
+        gifAsset1 = resourceService.getResource(ResourceKey.from(GIF_PATH));
+        gifAsset2 = resourceService.getResource(ResourceKey.from(GIF_PATH));
+        gifAsset3 = resourceService.getResource(ResourceKey.from(GIF_PATH));
     }
 
     @Before
@@ -100,14 +99,14 @@ public class CachedEtaggerTest extends ScriptTestSupport {
     public void testGetCachedEtag_noForceRecache_shouldConsistentEtagAndSubsequentCallsMuchFasterThanFirstCall() {
 
         Long time0 = System.nanoTime();
-        String etag1 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAssetBytes1, false);
+        String etag1 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset1, false);
         Long time1 = System.nanoTime();
 
-        String etag2 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAssetBytes2, false);
-        String etag3 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAssetBytes3, false);
-        String etag4 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAssetBytes4, false);
-        String etag5 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAssetBytes5, false);
-        String etag6 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAssetBytes6, false);
+        String etag2 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset2, false);
+        String etag3 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset3, false);
+        String etag4 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset4, false);
+        String etag5 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset5, false);
+        String etag6 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset6, false);
         Long time6 = System.nanoTime();
 
         // Nanoseconds
@@ -135,12 +134,12 @@ public class CachedEtaggerTest extends ScriptTestSupport {
         when(etaggerMock.getEtag(any(byte[].class))).thenReturn("Im a mock etag");
         cachedETagger.etagger = etaggerMock;
 
-        cachedETagger.getCachedEtag(HUGE_PATH, hugeAssetBytes1, false);
-        cachedETagger.getCachedEtag(TEXT_PATH, textAssetBytes1, false);
-        cachedETagger.getCachedEtag(TEXT_PATH, textAssetBytes2, false);
-        cachedETagger.getCachedEtag(HUGE_PATH, hugeAssetBytes2, false);
-        cachedETagger.getCachedEtag(HUGE_PATH, hugeAssetBytes3, false);
-        cachedETagger.getCachedEtag(TEXT_PATH, textAssetBytes3, false);
+        cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset1, false);
+        cachedETagger.getCachedEtag(TEXT_PATH, textAsset1, false);
+        cachedETagger.getCachedEtag(TEXT_PATH, textAsset2, false);
+        cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset2, false);
+        cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset3, false);
+        cachedETagger.getCachedEtag(TEXT_PATH, textAsset3, false);
 
         // etaggerMock.getEtag called exactly twice, because two different paths are used, cached once each.
         verify(etaggerMock, times(2)).getEtag(any(byte[].class));
@@ -154,32 +153,32 @@ public class CachedEtaggerTest extends ScriptTestSupport {
         Long old, neww;
         old = System.nanoTime();
 
-        String etag1 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAssetBytes1, true);
+        String etag1 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset1, true);
         neww = System.nanoTime();
         deltas.add(neww-old);
         old = neww;
 
-        String etag2 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAssetBytes2, true);
+        String etag2 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset2, true);
         neww = System.nanoTime();
         deltas.add(neww-old);
         old = neww;
 
-        String etag3 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAssetBytes3, true);
+        String etag3 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset3, true);
         neww = System.nanoTime();
         deltas.add(neww-old);
         old = neww;
 
-        String etag4 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAssetBytes4, true);
+        String etag4 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset4, true);
         neww = System.nanoTime();
         deltas.add(neww-old);
         old = neww;
 
-        String etag5 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAssetBytes5, true);
+        String etag5 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset5, true);
         neww = System.nanoTime();
         deltas.add(neww-old);
         old = neww;
 
-        String etag6 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAssetBytes6, true);
+        String etag6 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset6, true);
         neww = System.nanoTime();
         deltas.add(neww-old);
 
@@ -211,12 +210,12 @@ public class CachedEtaggerTest extends ScriptTestSupport {
         when(etaggerMock.getEtag(Mockito.any(byte[].class))).thenReturn("Im a mock etag");
         cachedETagger.etagger = etaggerMock;
 
-        cachedETagger.getCachedEtag(HUGE_PATH, hugeAssetBytes1, true);
-        cachedETagger.getCachedEtag(TEXT_PATH, textAssetBytes1, true);
-        cachedETagger.getCachedEtag(TEXT_PATH, textAssetBytes2, true);
-        cachedETagger.getCachedEtag(HUGE_PATH, hugeAssetBytes2, true);
-        cachedETagger.getCachedEtag(HUGE_PATH, hugeAssetBytes3, true);
-        cachedETagger.getCachedEtag(TEXT_PATH, textAssetBytes3, true);
+        cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset1, true);
+        cachedETagger.getCachedEtag(TEXT_PATH, textAsset1, true);
+        cachedETagger.getCachedEtag(TEXT_PATH, textAsset2, true);
+        cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset2, true);
+        cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset3, true);
+        cachedETagger.getCachedEtag(TEXT_PATH, textAsset3, true);
 
         // etaggerMock.getEtag called every time twice, because forceRecache forces a new etag.
         Mockito.verify(etaggerMock, Mockito.times(6)).getEtag(Mockito.any(byte[].class));
@@ -224,7 +223,12 @@ public class CachedEtaggerTest extends ScriptTestSupport {
 
 
     @Test
-    public void testGetCachedEtag_handleFailure_shouldReturnNullAndRemoveCachedPath() throws NoSuchAlgorithmException {
+    public void testGetCachedEtag_handleFailure_shouldReturnNullAndRemoveCachedPath() throws NoSuchAlgorithmException, IOException {
+
+        byte[] hugeAssetBytes1 = hugeAsset1.getBytes().read();
+        byte[] hugeAssetBytes2 = hugeAsset2.getBytes().read();
+        byte[] textAssetBytes1 = textAsset1.getBytes().read();
+        byte[] gifAssetBytes1 = gifAsset1.getBytes().read();
 
         cachedETagger.etagger = etaggerMock;
         when(etaggerMock.getEtag(hugeAssetBytes1)).thenReturn("I am huge etag");
@@ -232,15 +236,15 @@ public class CachedEtaggerTest extends ScriptTestSupport {
         when(etaggerMock.getEtag(textAssetBytes1)).thenReturn("I am text etag");
         when(etaggerMock.getEtag(gifAssetBytes1)).thenThrow(new RuntimeException("Oh no I can't remember how GIF is pronounced"));
 
-        String etag1 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAssetBytes1, false);
+        String etag1 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset1, false);
         // Should have been called once
         verify(etaggerMock, times(1)).getEtag(any(byte[].class));
 
-        String etag2 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAssetBytes2, false);
+        String etag2 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset2, false);
         // Should still have been called only once - the first time, since the second time was cached
         verify(etaggerMock, times(1)).getEtag(any(byte[].class));
 
-        String etag3 = cachedETagger.getCachedEtag(TEXT_PATH, textAssetBytes1, false);
+        String etag3 = cachedETagger.getCachedEtag(TEXT_PATH, textAsset1, false);
         // Should have been called one more time now - new path
         verify(etaggerMock, times(2)).getEtag(any(byte[].class));
 
@@ -248,7 +252,7 @@ public class CachedEtaggerTest extends ScriptTestSupport {
         when(etagCacheMock.containsKey(any(String.class))).thenReturn(false);
         cachedETagger.etagCache = etagCacheMock;
 
-        String etag4 = cachedETagger.getCachedEtag(GIF_PATH, gifAssetBytes1, true);
+        String etag4 = cachedETagger.getCachedEtag(GIF_PATH, gifAsset1, true);
 
         verify(etagCacheMock, never()).put(any(String.class), any(String.class));
         verify(etagCacheMock, times(1)).remove(GIF_PATH);

@@ -3,6 +3,8 @@ package lib.enonic.libStatic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.enonic.xp.resource.Resource;
+
 import java.util.HashMap;
 
 
@@ -17,10 +19,16 @@ public class CachedEtagger {
         this.isDev = isDev;
     }
 
-    protected String getCachedEtag(String path, byte[] contentBytes, boolean forceReCache) {
+    protected String getCachedEtag(String path, Resource resource, boolean forceReCache) {
         synchronized (etagCache) {
             try {
                 if (forceReCache || !etagCache.containsKey(path)) {
+
+                    Long t0 = System.nanoTime();
+                    byte[] contentBytes = resource.getBytes().read();
+                    Long t1 = System.nanoTime();
+                    LOG.info("Read bytes in nanos:  "+ ((t1-t0)/1000000000F));
+
                     String etag = etagger.getEtag(contentBytes);
                     etagCache.put(path, etag);
                     return etag;
