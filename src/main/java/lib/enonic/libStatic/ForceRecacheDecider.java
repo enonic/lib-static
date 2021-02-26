@@ -26,7 +26,7 @@ public class ForceRecacheDecider {
         // Rest: dev mode, where static files may be mutable and we need to decide
         synchronized (prevLastmodifiedDates) {
             if (etagOverrideMode > 0) {
-                Long lastModified = null;
+                Long lastModified;
                 try {
                     lastModified = resource.getTimestamp();
 
