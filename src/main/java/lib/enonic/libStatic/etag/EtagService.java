@@ -1,4 +1,4 @@
-package lib.enonic.libStatic;
+package lib.enonic.libStatic.etag;
 
 import com.enonic.xp.resource.Resource;
 import com.enonic.xp.resource.ResourceKey;
@@ -9,18 +9,20 @@ import com.enonic.xp.server.RunMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 
-public class ETaggingResourceReader implements ScriptBean {
-    private final static Logger LOG = LoggerFactory.getLogger( ETaggingResourceReader.class );
+public class EtagService implements ScriptBean {
+    private final static Logger LOG = LoggerFactory.getLogger( EtagService.class );
 
     protected static boolean isDev = RunMode.get() != RunMode.PROD;
-    protected static CachedEtagger cachedEtagger = new CachedEtagger(isDev);
-    protected static ForceRecacheDecider forceRecacheDecider = new ForceRecacheDecider(isDev);
+    protected CachedHasher cachedHasher = new CachedHasher(isDev);
+    protected ForceRecacheDecider forceRecacheDecider = new ForceRecacheDecider(isDev);
 
     protected ResourceService resourceService;
 
+    public static final String STATUS_KEY = "status";
+    public static final String ERROR_KEY = "error";
+    public static final String ETAG_KEY = "etag";
 
     /** Gets a content string and MD5-contenthash etag string.
      *
@@ -34,11 +36,12 @@ public class ETaggingResourceReader implements ScriptBean {
      *                     * If -1 (actually, < 0) : skips all etag processing and returns no etag string, even in prod.
      * @return (String array) [statusCode, contentOrErrorMessage, etag]
      */
-    public List<String> read(String path, Integer etagOverrideMode) {
-        if (path.endsWith(":")) {
-            return Arrays.asList(
-                    "400",
-                    "Empty path not allowed."
+    public Map<String, String> getEtag(String path, Integer etagOverrideMode) {
+        path = path.trim();
+        if (path.endsWith(":") || path.endsWith(":/")) {
+            return Map.of(
+                STATUS_KEY, "400",
+                ERROR_KEY,  "Empty (root) path not allowed."
             );
         }
         if (etagOverrideMode == null) {
@@ -51,12 +54,12 @@ public class ETaggingResourceReader implements ScriptBean {
         try {
             synchronized (resourceService) {
                 resource = resourceService.getResource(ResourceKey.from(path));
-            }
-            if (!resource.exists()) {
-                return Arrays.asList(
-                        "404",
-                        "Resource not found: '" + path + "'"
-                );
+                if (!resource.exists()) {
+                    return Map.of(
+                        STATUS_KEY, "404",
+                        ERROR_KEY,  "Resource not found: '" + path + "'"
+                    );
+                }
             }
 
         } catch (Exception e) {
@@ -64,9 +67,9 @@ public class ETaggingResourceReader implements ScriptBean {
             if (isDev) {
                 e.printStackTrace();
             }
-            return Arrays.asList(
-                    "500",
-                    "Couldn't process resource: '" + path + "'"
+            return Map.of(
+                    STATUS_KEY, "500",
+                    ERROR_KEY,  "Couldn't process resource: '" + path + "'"
             );
         }
 
@@ -75,28 +78,25 @@ public class ETaggingResourceReader implements ScriptBean {
             forceReCache = forceRecacheDecider.shouldReCache(path, etagOverrideMode, resource);
             doProcessEtag = etagOverrideMode > (isDev ? 0 : -1); // 0: true in prod, false in dev. 1 forces true in dev, -1 forces false in prod.
 
-            System.out.println("\tprocessEtag: " + doProcessEtag);
-            System.out.println("\trecache:   " + forceReCache + "\n");
 
             try {
                 // FIXME: readString doesn't seem cached under the hood???
                 // Long t0 = System.nanoTime();
-                String content = resource.readString();
+                // String content = resource.readString();
                 // Long t1 = System.nanoTime();
                 // LOG.info("Read string in nanos: " + ((t1 - t0) / 1000000000F) + "\n---");
 
                 if (doProcessEtag) {
-                    String etag = cachedEtagger.getCachedEtag(path, resource, forceReCache);
-                    return Arrays.asList(
-                            "200",
-                            content,
-                            etag
+                    // System.out.println("\tforceReCache:   " + forceReCache + "\n");
+                    String etag = cachedHasher.getCachedHash(path, resource, forceReCache);
+                    return Map.of(
+                            STATUS_KEY, "200",
+                            ETAG_KEY,  etag
                     );
 
                 } else {
-                    return Arrays.asList(
-                            "200",
-                            content
+                    return Map.of(
+                            STATUS_KEY, "200"
                     );
                 }
 
@@ -105,9 +105,9 @@ public class ETaggingResourceReader implements ScriptBean {
                 if (isDev) {
                     e.printStackTrace();
                 }
-                return Arrays.asList(
-                        "500",
-                        "Couldn't read resource: '" + path + "'"
+                return Map.of(
+                        STATUS_KEY, "500",
+                        ERROR_KEY,  "Couldn't read resource: '" + path + "'"
                 );
             }
         }

@@ -1,4 +1,4 @@
-package lib.enonic.libStatic;
+package lib.enonic.libStatic.etag;
 
 import com.enonic.xp.resource.Resource;
 import com.enonic.xp.resource.ResourceKey;
@@ -36,11 +36,11 @@ import static org.mockito.Mockito.when;
     - If something fails, should catch it and return null
     - If something fails, should wipe path from cache: on first call after failure, should again use time, and save time (and not call cacheAndGetEtag) on later calls after that.
  */
-public class CachedEtaggerTest extends ScriptTestSupport {
-    private final static Logger LOG = LoggerFactory.getLogger( CachedEtaggerTest.class );
+public class CachedHasherTest extends ScriptTestSupport {
+    private final static Logger LOG = LoggerFactory.getLogger( CachedHasherTest.class );
 
-    private CachedEtagger cachedETagger;
-    private Etagger etaggerMock;
+    private CachedHasher cachedHasher;
+    private Hasher hasherMock;
 
 
     private final String HUGE_PATH = "myapplication:/static/hugh.jazzit.blob";
@@ -56,9 +56,7 @@ public class CachedEtaggerTest extends ScriptTestSupport {
             textAsset1,
             textAsset2,
             textAsset3,
-            gifAsset1,
-            gifAsset2,
-            gifAsset3;
+            gifAsset1;
 
 
     @Override
@@ -81,14 +79,12 @@ public class CachedEtaggerTest extends ScriptTestSupport {
 
 
         gifAsset1 = resourceService.getResource(ResourceKey.from(GIF_PATH));
-        gifAsset2 = resourceService.getResource(ResourceKey.from(GIF_PATH));
-        gifAsset3 = resourceService.getResource(ResourceKey.from(GIF_PATH));
     }
 
     @Before
     public void setUp() {
-        cachedETagger = new CachedEtagger(false);
-        etaggerMock = mock(Etagger.class);
+        cachedHasher = new CachedHasher(false);
+        hasherMock = mock(Hasher.class);
     }
 
 
@@ -96,17 +92,17 @@ public class CachedEtaggerTest extends ScriptTestSupport {
 
 
     @Test
-    public void testGetCachedEtag_noForceRecache_shouldConsistentEtagAndSubsequentCallsMuchFasterThanFirstCall() {
+    public void testGetCachedHash_noForceRecache_shouldConsistentEtagAndSubsequentCallsMuchFasterThanFirstCall() {
 
         Long time0 = System.nanoTime();
-        String etag1 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset1, false);
+        String etag1 = cachedHasher.getCachedHash(HUGE_PATH, hugeAsset1, false);
         Long time1 = System.nanoTime();
 
-        String etag2 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset2, false);
-        String etag3 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset3, false);
-        String etag4 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset4, false);
-        String etag5 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset5, false);
-        String etag6 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset6, false);
+        String etag2 = cachedHasher.getCachedHash(HUGE_PATH, hugeAsset2, false);
+        String etag3 = cachedHasher.getCachedHash(HUGE_PATH, hugeAsset3, false);
+        String etag4 = cachedHasher.getCachedHash(HUGE_PATH, hugeAsset4, false);
+        String etag5 = cachedHasher.getCachedHash(HUGE_PATH, hugeAsset5, false);
+        String etag6 = cachedHasher.getCachedHash(HUGE_PATH, hugeAsset6, false);
         Long time6 = System.nanoTime();
 
         // Nanoseconds
@@ -128,57 +124,57 @@ public class CachedEtaggerTest extends ScriptTestSupport {
 
 
     @Test
-    public void testGetCachedEtag_noForceRecache_shouldOnlyCallGetEtagOnFirstCallByPath() throws NoSuchAlgorithmException {
+    public void testGetCachedHash_noForceRecache_shouldOnlyCallGetEtagOnFirstCallByPath() throws NoSuchAlgorithmException {
 
         // Mixing up order of paths. Shouldn't matter: subsequent calls not call etagger.getEtag
-        when(etaggerMock.getEtag(any(byte[].class))).thenReturn("Im a mock etag");
-        cachedETagger.etagger = etaggerMock;
+        when(hasherMock.getHash(any(byte[].class))).thenReturn("Im a mock etag");
+        cachedHasher.hasher = hasherMock;
 
-        cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset1, false);
-        cachedETagger.getCachedEtag(TEXT_PATH, textAsset1, false);
-        cachedETagger.getCachedEtag(TEXT_PATH, textAsset2, false);
-        cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset2, false);
-        cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset3, false);
-        cachedETagger.getCachedEtag(TEXT_PATH, textAsset3, false);
+        cachedHasher.getCachedHash(HUGE_PATH, hugeAsset1, false);
+        cachedHasher.getCachedHash(TEXT_PATH, textAsset1, false);
+        cachedHasher.getCachedHash(TEXT_PATH, textAsset2, false);
+        cachedHasher.getCachedHash(HUGE_PATH, hugeAsset2, false);
+        cachedHasher.getCachedHash(HUGE_PATH, hugeAsset3, false);
+        cachedHasher.getCachedHash(TEXT_PATH, textAsset3, false);
 
         // etaggerMock.getEtag called exactly twice, because two different paths are used, cached once each.
-        verify(etaggerMock, times(2)).getEtag(any(byte[].class));
+        verify(hasherMock, times(2)).getHash(any(byte[].class));
     }
 
 
 
     @Test
-    public void testGetCachedEtag_forceRecache_shouldConsistentEtagAndCallTimes() {
+    public void testGetCachedHash_forceRecache_shouldConsistentEtagAndCallTimes() {
         ArrayList<Long> deltas = new ArrayList<>();
         Long old, neww;
         old = System.nanoTime();
 
-        String etag1 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset1, true);
+        String etag1 = cachedHasher.getCachedHash(HUGE_PATH, hugeAsset1, true);
         neww = System.nanoTime();
         deltas.add(neww-old);
         old = neww;
 
-        String etag2 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset2, true);
+        String etag2 = cachedHasher.getCachedHash(HUGE_PATH, hugeAsset2, true);
         neww = System.nanoTime();
         deltas.add(neww-old);
         old = neww;
 
-        String etag3 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset3, true);
+        String etag3 = cachedHasher.getCachedHash(HUGE_PATH, hugeAsset3, true);
         neww = System.nanoTime();
         deltas.add(neww-old);
         old = neww;
 
-        String etag4 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset4, true);
+        String etag4 = cachedHasher.getCachedHash(HUGE_PATH, hugeAsset4, true);
         neww = System.nanoTime();
         deltas.add(neww-old);
         old = neww;
 
-        String etag5 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset5, true);
+        String etag5 = cachedHasher.getCachedHash(HUGE_PATH, hugeAsset5, true);
         neww = System.nanoTime();
         deltas.add(neww-old);
         old = neww;
 
-        String etag6 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset6, true);
+        String etag6 = cachedHasher.getCachedHash(HUGE_PATH, hugeAsset6, true);
         neww = System.nanoTime();
         deltas.add(neww-old);
 
@@ -204,55 +200,55 @@ public class CachedEtaggerTest extends ScriptTestSupport {
     }
 
     @Test
-    public void testGetCachedEtag_forceRecache_shouldCallGetEtagOnEveryCall() throws NoSuchAlgorithmException {
+    public void testGetCachedHash_forceRecache_shouldCallGetEtagOnEveryCall() throws NoSuchAlgorithmException {
 
         // Mixing up order of paths. Shouldn't matter: subsequent calls not call etagger.getEtag
-        when(etaggerMock.getEtag(Mockito.any(byte[].class))).thenReturn("Im a mock etag");
-        cachedETagger.etagger = etaggerMock;
+        when(hasherMock.getHash(Mockito.any(byte[].class))).thenReturn("Im a mock etag");
+        cachedHasher.hasher = hasherMock;
 
-        cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset1, true);
-        cachedETagger.getCachedEtag(TEXT_PATH, textAsset1, true);
-        cachedETagger.getCachedEtag(TEXT_PATH, textAsset2, true);
-        cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset2, true);
-        cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset3, true);
-        cachedETagger.getCachedEtag(TEXT_PATH, textAsset3, true);
+        cachedHasher.getCachedHash(HUGE_PATH, hugeAsset1, true);
+        cachedHasher.getCachedHash(TEXT_PATH, textAsset1, true);
+        cachedHasher.getCachedHash(TEXT_PATH, textAsset2, true);
+        cachedHasher.getCachedHash(HUGE_PATH, hugeAsset2, true);
+        cachedHasher.getCachedHash(HUGE_PATH, hugeAsset3, true);
+        cachedHasher.getCachedHash(TEXT_PATH, textAsset3, true);
 
         // etaggerMock.getEtag called every time twice, because forceRecache forces a new etag.
-        Mockito.verify(etaggerMock, Mockito.times(6)).getEtag(Mockito.any(byte[].class));
+        Mockito.verify(hasherMock, Mockito.times(6)).getHash(Mockito.any(byte[].class));
     }
 
 
     @Test
-    public void testGetCachedEtag_handleFailure_shouldReturnNullAndRemoveCachedPath() throws NoSuchAlgorithmException, IOException {
+    public void testGetCachedHash_handleFailure_shouldReturnNullAndRemoveCachedPath() throws NoSuchAlgorithmException, IOException {
 
         byte[] hugeAssetBytes1 = hugeAsset1.getBytes().read();
         byte[] hugeAssetBytes2 = hugeAsset2.getBytes().read();
         byte[] textAssetBytes1 = textAsset1.getBytes().read();
         byte[] gifAssetBytes1 = gifAsset1.getBytes().read();
 
-        cachedETagger.etagger = etaggerMock;
-        when(etaggerMock.getEtag(hugeAssetBytes1)).thenReturn("I am huge etag");
-        when(etaggerMock.getEtag(hugeAssetBytes2)).thenReturn("I am huge etag");
-        when(etaggerMock.getEtag(textAssetBytes1)).thenReturn("I am text etag");
-        when(etaggerMock.getEtag(gifAssetBytes1)).thenThrow(new RuntimeException("Oh no I can't remember how GIF is pronounced"));
+        cachedHasher.hasher = hasherMock;
+        when(hasherMock.getHash(hugeAssetBytes1)).thenReturn("I am huge etag");
+        when(hasherMock.getHash(hugeAssetBytes2)).thenReturn("I am huge etag");
+        when(hasherMock.getHash(textAssetBytes1)).thenReturn("I am text etag");
+        when(hasherMock.getHash(gifAssetBytes1)).thenThrow(new RuntimeException("Oh no I can't remember how GIF is pronounced"));
 
-        String etag1 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset1, false);
+        String etag1 = cachedHasher.getCachedHash(HUGE_PATH, hugeAsset1, false);
         // Should have been called once
-        verify(etaggerMock, times(1)).getEtag(any(byte[].class));
+        verify(hasherMock, times(1)).getHash(any(byte[].class));
 
-        String etag2 = cachedETagger.getCachedEtag(HUGE_PATH, hugeAsset2, false);
+        String etag2 = cachedHasher.getCachedHash(HUGE_PATH, hugeAsset2, false);
         // Should still have been called only once - the first time, since the second time was cached
-        verify(etaggerMock, times(1)).getEtag(any(byte[].class));
+        verify(hasherMock, times(1)).getHash(any(byte[].class));
 
-        String etag3 = cachedETagger.getCachedEtag(TEXT_PATH, textAsset1, false);
+        String etag3 = cachedHasher.getCachedHash(TEXT_PATH, textAsset1, false);
         // Should have been called one more time now - new path
-        verify(etaggerMock, times(2)).getEtag(any(byte[].class));
+        verify(hasherMock, times(2)).getHash(any(byte[].class));
 
         HashMap<String, String> etagCacheMock = mock(HashMap.class);
         when(etagCacheMock.containsKey(any(String.class))).thenReturn(false);
-        cachedETagger.etagCache = etagCacheMock;
+        cachedHasher.cache = etagCacheMock;
 
-        String etag4 = cachedETagger.getCachedEtag(GIF_PATH, gifAsset1, true);
+        String etag4 = cachedHasher.getCachedHash(GIF_PATH, gifAsset1, true);
 
         verify(etagCacheMock, never()).put(any(String.class), any(String.class));
         verify(etagCacheMock, times(1)).remove(GIF_PATH);

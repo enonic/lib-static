@@ -1,4 +1,4 @@
-package lib.enonic.libStatic;
+package lib.enonic.libStatic.etag;
 
 import com.enonic.xp.resource.Resource;
 import com.enonic.xp.resource.ResourceKey;
@@ -19,10 +19,10 @@ import java.security.NoSuchAlgorithmException;
     - Etag is different for two different contentBytes
     - Handles huge bytearrays
  */
-public class EtaggerTest extends ScriptTestSupport {
-    private final static Logger LOG = LoggerFactory.getLogger( EtaggerTest.class );
+public class HasherTest extends ScriptTestSupport {
+    private final static Logger LOG = LoggerFactory.getLogger( HasherTest.class );
 
-    private Etagger tagger;
+    private Hasher hasher;
 
     private byte[] hugeAssetBytes1,
             hugeAssetBytes2,
@@ -54,16 +54,16 @@ public class EtaggerTest extends ScriptTestSupport {
 
     @Before
     public void setUp() {
-        tagger = new Etagger();
+        hasher = new Hasher();
     }
 
 
 
     @Test
-    public void testGetEtag_shouldDifferentForDifferentContentBytes() throws NoSuchAlgorithmException {
-        String hugeEtag = tagger.getEtag(hugeAssetBytes1);
-        String textEtag = tagger.getEtag(textAssetBytes1);
-        String gifEtag = tagger.getEtag(gifAssetBytes1);
+    public void testGetHash_shouldDifferentForDifferentContentBytes() throws NoSuchAlgorithmException {
+        String hugeEtag = hasher.getHash(hugeAssetBytes1);
+        String textEtag = hasher.getHash(textAssetBytes1);
+        String gifEtag = hasher.getHash(gifAssetBytes1);
 
         LOG.info("Huge etag: " + hugeEtag);
         LOG.info("Text etag: " + textEtag);
@@ -75,15 +75,15 @@ public class EtaggerTest extends ScriptTestSupport {
     }
 
     @Test
-    public void testGetEtag_shouldConsistentForSameContentBytes() throws NoSuchAlgorithmException {
-        String hugeEtag1 = tagger.getEtag(hugeAssetBytes1);
-        String hugeEtag2 = tagger.getEtag(hugeAssetBytes2);
+    public void testGetHash_shouldConsistentForSameContentBytes() throws NoSuchAlgorithmException {
+        String hugeEtag1 = hasher.getHash(hugeAssetBytes1);
+        String hugeEtag2 = hasher.getHash(hugeAssetBytes2);
 
-        String textEtag1 = tagger.getEtag(textAssetBytes1);
-        String textEtag2 = tagger.getEtag(textAssetBytes2);
+        String textEtag1 = hasher.getHash(textAssetBytes1);
+        String textEtag2 = hasher.getHash(textAssetBytes2);
 
-        String gifEtag1 = tagger.getEtag(gifAssetBytes1);
-        String gifEtag2 = tagger.getEtag(gifAssetBytes2);
+        String gifEtag1 = hasher.getHash(gifAssetBytes1);
+        String gifEtag2 = hasher.getHash(gifAssetBytes2);
 
         Assert.assertEquals(hugeEtag1, hugeEtag2);
         Assert.assertEquals(textEtag1, textEtag2);
@@ -91,18 +91,18 @@ public class EtaggerTest extends ScriptTestSupport {
     }
 
     @Test
-    public void testGetEtag_expectTimeDifferenceForHugeResource() throws NoSuchAlgorithmException {
+    public void testGetHash_expectTimeDifferenceForHugeResource() throws NoSuchAlgorithmException {
         Long zero = System.nanoTime();
-        tagger.getEtag(hugeAssetBytes1);
-        tagger.getEtag(hugeAssetBytes2);
+        hasher.getHash(hugeAssetBytes1);
+        hasher.getHash(hugeAssetBytes2);
         Long one = System.nanoTime();
 
-        tagger.getEtag(textAssetBytes1);
-        tagger.getEtag(textAssetBytes2);
+        hasher.getHash(textAssetBytes1);
+        hasher.getHash(textAssetBytes2);
         Long two = System.nanoTime();
 
-        tagger.getEtag(gifAssetBytes1);
-        tagger.getEtag(gifAssetBytes2);
+        hasher.getHash(gifAssetBytes1);
+        hasher.getHash(gifAssetBytes2);
         Long three = System.nanoTime();
 
         // Nanoseconds x 2

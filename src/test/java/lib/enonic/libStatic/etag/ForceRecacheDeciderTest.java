@@ -1,4 +1,4 @@
-package lib.enonic.libStatic;
+package lib.enonic.libStatic.etag;
 
 import com.enonic.xp.resource.Resource;
 import com.enonic.xp.testing.ScriptTestSupport;

@@ -1,12 +1,12 @@
-package lib.enonic.libStatic;
+package lib.enonic.libStatic.etag;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 
-public class Etagger {
-    public String getEtag(byte[] contentBytes) throws NoSuchAlgorithmException {
+public class Hasher {
+    public String getHash(byte[] contentBytes) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("MD5");
         md.update(contentBytes);
         byte[] digested = md.digest();
