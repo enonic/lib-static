@@ -9,6 +9,17 @@ import org.junit.Test;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+
+/* Tests: shouldReCache
+    - Prod: always return false
+    - Dev, and etagOverride is default (0) or -1: always return false
+    - Dev, and resource NOT read before (not in prevLastmodifiedDates): return true
+    - Dev, and resource IS read before and DOES match date: return false
+    - Dev, and resource IS read before and does NOT match date: return true
+    - Dev, and resource.getTimestamp fails: return true, then returns true again on first call on that path afterwards
+ */
+
+
 public class ForceRecacheDeciderTest extends ScriptTestSupport {
     private ForceRecacheDecider decider;
     private Resource resourceMock;
@@ -29,15 +40,6 @@ public class ForceRecacheDeciderTest extends ScriptTestSupport {
         resourceMock = mock(Resource.class);
         //prevLastmodifiedDatesMock = mock(HashMap.class);
     }
-
-    /* Tests:
-        - Prod: return false
-        - Dev, and resource NOT read before (not in prevLastmodifiedDates): return true
-        - Dev, and resource IS read before and DOES match date: return false
-        - Dev, and resource IS read before and does NOT match date: return true
-        - Dev, and resource.getTimestamp fails: return true, then returns true again on first call on that path afterwards
- */
-
 
     ///////////////////////////////////////////////////  Prod
 
@@ -249,15 +251,56 @@ public class ForceRecacheDeciderTest extends ScriptTestSupport {
         Assert.assertTrue(firstA);  // true, since first check on that path
         Assert.assertFalse(secondA);
         Assert.assertTrue(thirdA);  // true, since getTimestamp failed
-        Assert.assertTrue(fourthA); // true, since the failure removed the path from prevLastmodifiedDates
+        Assert.assertTrue(fourthA); // true, since first call after the failure removed the path from prevLastmodifiedDates
         Assert.assertFalse(fifthA);
         Assert.assertFalse(sixthA);
 
         Assert.assertTrue(firstB);  // true, since first check on that path
         Assert.assertFalse(secondB);
         Assert.assertFalse(thirdB);
-        Assert.assertTrue(fourthB); // true, since timestamp has changed
-        Assert.assertTrue(fifthB); // true, since the failure removed the path from prevLastmodifiedDates
+        Assert.assertTrue(fourthB); // true, since getTimestamp failed
+        Assert.assertTrue(fifthB); // true, since first call after the failure removed the path from prevLastmodifiedDates
+        Assert.assertFalse(sixthB);
+    }
+
+
+
+    @Test
+    public void testShouldReCache_dev_override1TimestampFails_shouldNotBeEffectedByCallOrder() {
+        // Same as above, but mixing up the call order between path A and B. Only the point in their individual sequence where each of them get a failure, should matter
+
+        when(resourceMock.getTimestamp()).thenReturn(12345678L);
+        boolean firstA = decider.shouldReCache(APATH, 1, resourceMock);
+        boolean firstB = decider.shouldReCache(BPATH, 1, resourceMock);
+        boolean secondB = decider.shouldReCache(BPATH, 1, resourceMock);
+        boolean secondA = decider.shouldReCache(APATH, 1, resourceMock);
+        boolean thirdB = decider.shouldReCache(BPATH, 1, resourceMock);
+
+        // Timestamp changes: "file was updated", so the next call on that path should return true - specifically for each path:
+        when(resourceMock.getTimestamp()).thenThrow(new RuntimeException("Oh no"));
+        boolean fourthB = decider.shouldReCache(BPATH, 1, resourceMock);
+        boolean thirdA = decider.shouldReCache(APATH, 1, resourceMock);
+
+        Resource resourceMock2 = mock(Resource.class);
+        when(resourceMock2.getTimestamp()).thenReturn(12345678L);
+        boolean fifthB = decider.shouldReCache(BPATH, 1, resourceMock2);
+        boolean fourthA = decider.shouldReCache(APATH, 1, resourceMock2);
+        boolean fifthA = decider.shouldReCache(APATH, 1, resourceMock2);
+        boolean sixthB = decider.shouldReCache(BPATH, 1, resourceMock2);
+        boolean sixthA = decider.shouldReCache(APATH, 1, resourceMock2);
+
+        Assert.assertTrue(firstA);  // true, since first check on that path
+        Assert.assertFalse(secondA);
+        Assert.assertTrue(thirdA);  // true, since getTimestamp failed
+        Assert.assertTrue(fourthA); // true, since first call after the failure removed the path from prevLastmodifiedDates
+        Assert.assertFalse(fifthA);
+        Assert.assertFalse(sixthA);
+
+        Assert.assertTrue(firstB);  // true, since first check on that path
+        Assert.assertFalse(secondB);
+        Assert.assertFalse(thirdB);
+        Assert.assertTrue(fourthB); // true, since getTimestamp failed
+        Assert.assertTrue(fifthB); // true, since first call after the failure removed the path from prevLastmodifiedDates
         Assert.assertFalse(sixthB);
     }
 }

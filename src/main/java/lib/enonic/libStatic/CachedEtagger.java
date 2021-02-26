@@ -29,9 +29,8 @@ public class CachedEtagger {
 
             } catch (Exception e) {
                 LOG.error("Couldn't generate ETag from resource '" + path + "'", e);
-                if (etagCache.containsKey(path)) {
-                    etagCache.remove(path);
-                }
+                etagCache.remove(path);
+
                 if (isDev) {
                     e.printStackTrace();
                 }
