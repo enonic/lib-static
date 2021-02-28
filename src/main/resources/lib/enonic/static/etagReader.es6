@@ -1,4 +1,4 @@
-const etagService = __.newBean('lib.enonic.libStatic.EtagService');
+const etagService = __.newBean('lib.enonic.libStatic.etag.EtagService');
 
 
 /** Gets a content string and MD5-contenthash etag string.
@@ -17,7 +17,7 @@ exports.read = (path, etagOverrideOption) => {
             ? -1
             : 0;
 
-    const { status, error, etag } = __.toNativeObject(etagService.read(`${app.name}:${path}`, etagOverride));
+    const { status, error, etag } = __.toNativeObject(etagService.getEtag(`${app.name}:${path}`, etagOverride));
 
 
 
