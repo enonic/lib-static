@@ -1,6 +1,7 @@
 const lib = require('/lib/enonic/static/etagReader');
 const t = require('/lib/xp/testing');
 
+const ioLib = require('/lib/xp/io');
 
 
 // HELPERS
@@ -84,100 +85,117 @@ exports.testHelper_Content_deviasion = () => {
 
 /////////////////////////////////////////////////////// Test .read:
 
-exports.testReadAndTag_Asset = () => {
-    const result = lib.read('/assets/asset-test-target.txt');
+exports.testRead_Asset = () => {
+    const path = '/assets/asset-test-target.txt';
+    const result = lib.read(path);
 
-    t.assertEquals("I am a test asset\n", result.body);
     t.assertEquals(200, result.status);
-    verifyEtagAndContent(result.etagValue, result.body);
+    t.assertTrue(!result.error);
+
+    const resource = ioLib.getResource(path);
+    const content = ioLib.readText(resource.getStream());
+    verifyEtagAndContent(result.etagValue, content);
 };
 
-exports.testReadAndTag_HTML = () => {
-    const result = lib.read('/static/static-test-html.html');
+exports.testRead_HTML = () => {
+    const path = '/static/static-test-html.html';
+    const result = lib.read(path);
 
-    t.assertEquals("<html><body><p>I am a test HTML</p></body></html>\n", result.body);
     t.assertEquals(200, result.status);
-    verifyEtagAndContent(result.etagValue, result.body);
+    t.assertTrue(!result.error);
+
+    const resource = ioLib.getResource(path);
+    const content = ioLib.readText(resource.getStream());
+    verifyEtagAndContent(result.etagValue, content);
 };
 
-exports.testReadAndTag_CSS = () => {
-    const result = lib.read('/static/static-test-css.css');
+exports.testRead_CSS = () => {
+    const path = '/static/static-test-css.css';
+    const result = lib.read(path);
 
-    t.assertEquals(".i.am.a.test.css {\n\n}\n", result.body);
     t.assertEquals(200, result.status);
-    verifyEtagAndContent(result.etagValue, result.body);
+    t.assertTrue(!result.error);
+
+    const resource = ioLib.getResource(path);
+    const content = ioLib.readText(resource.getStream());
+    verifyEtagAndContent(result.etagValue, content);
 };
 
-exports.testReadAndTag_JS = () => {
-    const result = lib.read('/static/static-test-js.js');
+exports.testRead_JS = () => {
+    const path = '/static/static-test-js.js';
+    const result = lib.read(path);
 
-    t.assertEquals("console.log(\"I am a test js\");\n", result.body);
     t.assertEquals(200, result.status);
-    verifyEtagAndContent(result.etagValue, result.body);
+    t.assertTrue(!result.error);
+
+    const resource = ioLib.getResource(path);
+    const content = ioLib.readText(resource.getStream());
+    verifyEtagAndContent(result.etagValue, content);
 };
 
-exports.testReadAndTag_JSON = () => {
-    const result = lib.read('/static/static-test-json.json');
+exports.testRead_JSON = () => {
+    const path = '/static/static-test-json.json';
+    const result = lib.read(path);
 
-    t.assertEquals(`{
-  "I": {
-    "am": "a",
-    "test": "json"
-  }
-}
-`, result.body);
     t.assertEquals(200, result.status);
-    verifyEtagAndContent(result.etagValue, result.body);
+    t.assertTrue(!result.error);
+
+    const resource = ioLib.getResource(path);
+    const content = ioLib.readText(resource.getStream());
+    verifyEtagAndContent(result.etagValue, content);
 };
 
-exports.testReadAndTag_XML = () => {
-    const result = lib.read('/static/static-test-xml.xml');
-
-    t.assertEquals(`<I>
-    <am>a</am>
-    <test>xml</test>
-</I>
-`, result.body);
-    t.assertEquals(200, result.status);
-    verifyEtagAndContent(result.etagValue, result.body);
-}
-
-exports.testReadAndTag_Text = () => {
-    const result = lib.read('/static/static-test-text.txt');
-
-    t.assertEquals("I am a test text\n", result.body);
-    t.assertEquals(200, result.status);
-    verifyEtagAndContent(result.etagValue, result.body);
-}
-
-exports.testReadAndTag_JPG = () => {
-    const result = lib.read('/static/w3c_home.jpg');
+exports.testRead_XML = () => {
+    const path = '/static/static-test-xml.xml';
+    const result = lib.read(path);
 
     t.assertEquals(200, result.status);
-    verifyEtagAndContent(result.etagValue, result.body);
+    t.assertTrue(!result.error);
+
+    const resource = ioLib.getResource(path);
+    const content = ioLib.readText(resource.getStream());
+    verifyEtagAndContent(result.etagValue, content);
 };
 
-exports.testReadAndTag_GIF = () => {
-    const result = lib.read('/static/w3c_home.gif');
+exports.testRead_Text = () => {
+    const path = '/static/static-test-text.txt';
+    const result = lib.read(path);
 
     t.assertEquals(200, result.status);
-    verifyEtagAndContent(result.etagValue, result.body);
+    t.assertTrue(!result.error);
+
+    const resource = ioLib.getResource(path);
+    const content = ioLib.readText(resource.getStream());
+    verifyEtagAndContent(result.etagValue, content);
 };
+
+exports.testRead_JPG = () => {
+    const path = '/static/w3c_home.jpg';
+    const result = lib.read(path);
+
+    t.assertEquals(200, result.status);
+    t.assertTrue(!result.error);
+
+    const resource = ioLib.getResource(path);
+    const content = ioLib.readText(resource.getStream());
+    verifyEtagAndContent(result.etagValue, content);
+};
+
 
 // Path error handling
 
-exports.testReadAndTag_NotFound_should404 = () => {
-    const result = lib.read('/static/doesNotExist.txt');
+exports.testRead_NotFound_should404 = () => {
+    const result = lib.read('/static/thisDoesNotExist.txt');
 
-    t.assertTrue(!!result.body);
+    t.assertTrue(!!result.error);
     t.assertEquals(404, result.status);
     t.assertTrue(!result.etagValue); // No etag on 404!
 }
 
-exports.testGet_fail_path_EmptyString_should500_Thorough = () => {
+exports.testGet_fail_path_EmptyString_should400_Thorough = () => {
     const result = lib.read('');
 
-    t.assertTrue(!!result.body);
-    t.assertEquals(500, result.status);
-    t.assertTrue(!result.etagValue); // No etag on 500!
+    t.assertTrue(!!result.error);
+    t.assertEquals(400, result.status);
+    t.assertTrue(!result.etagValue); // No etag on 400!
 }
