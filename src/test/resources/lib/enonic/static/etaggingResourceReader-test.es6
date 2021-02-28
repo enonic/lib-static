@@ -1,4 +1,4 @@
-const lib = require('/lib/enonic/static/etaggingResourceReader');
+const lib = require('/lib/enonic/static/etagReader');
 const t = require('/lib/xp/testing');
 
 

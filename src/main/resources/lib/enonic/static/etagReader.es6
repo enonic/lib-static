@@ -1,4 +1,4 @@
-const etaggingResourceReader = __.newBean('lib.enonic.libStatic.ETaggingResourceReader');
+const etagService = __.newBean('lib.enonic.libStatic.EtagService');
 
 
 /** Gets a content string and MD5-contenthash etag string.
@@ -17,7 +17,9 @@ exports.read = (path, etagOverrideOption) => {
             ? -1
             : 0;
 
-    const { status, error, etag } = __.toNativeObject(etaggingResourceReader.read(`${app.name}:${path}`, etagOverride));
+    const { status, error, etag } = __.toNativeObject(etagService.read(`${app.name}:${path}`, etagOverride));
+
+
 
     return {
         status: parseInt(status),

@@ -89,10 +89,10 @@ public class EtagService implements ScriptBean {
         } catch (Exception e) {
             Long errorRnd = (long)(Math.random() * Long.MAX_VALUE);
             String errorId = Long.toString(errorRnd, 36);
-            LOG.error("Couldn't process resource: '" + path + "' (error ID: " + errorId + ")", e);
+            LOG.error("Couldn't process etag: '" + path + "' (error ID: " + errorId + ")", e);
             return Map.of(
                     STATUS_KEY, "500",
-                    ERROR_KEY,  "Couldn't process resource: '" + path + "' (error ID: " + errorId + ")"
+                    ERROR_KEY,  "Couldn't process etag: '" + path + "' (error ID: " + errorId + ")"
             );
         }
     }

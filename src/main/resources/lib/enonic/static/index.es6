@@ -1,5 +1,6 @@
-const taggingReader = require('/lib/enonic/static/etaggingResourceReader');
+const etagReader = require('/lib/enonic/static/etagReader');
 const optionsParser = require('/lib/enonic/static/options');
+const ioLib = require('/lib/xp/io');
 
 exports.get = (pathOrOptions, options) => {
     const {
@@ -16,21 +17,47 @@ exports.get = (pathOrOptions, options) => {
             throw Error(errorMessage);
         }
 
-        const { status, body, etagValue } = taggingReader.read(path, etagOverride);
+        const { status, error, etagValue } = etagReader.read(path, etagOverride);
 
         if (status < 300) {
+            const resource = ioLib.getResource(path);
+            const body = ioLib.readText(resource.getStream());
+
             const contentType = contentTypeFunc(path, body);
+
             const headers = {
                 'Cache-Control': cacheControlFunc(path, body, contentType),
                 'ETag': etagValue
             };
 
-            return { status, body, contentType, headers };
+            return {status, body, contentType, headers};
+
+        } else if (status >= 500) {
+            // Attempt graceful handling: the status so far comes from the etagReader trying to resolve the etag.
+            // In case it's still possible to return the main data with a must-revalidate header - much better than nothing - try to read it:
+            try {
+                const resource = ioLib.getResource(path);
+                const body = ioLib.readText(resource.getStream());
+
+                const contentType = contentTypeFunc(path, body);
+
+                const headers = {
+                    'Cache-Control': 'must-revalidate'
+                };
+
+                log.warn("Successfully fell back to reading resource '" + path + "' after failing ETag processing (" + error + ")");
+                return {status, body, contentType, headers};
+
+            } catch (e) {
+                log.warn("Tried reading resource '" + path + "' after failing ETag processing (" + error + ") - but this too failed.");
+                throw e;
+            }
 
         } else {
+            // An error in the 400-area from the etagReader is bound to yield the same error here, so don't even try a fallback. Just return it.
             return {
                 status,
-                body,
+                body: error,
                 contentType: "text/plain",
             }
         }
