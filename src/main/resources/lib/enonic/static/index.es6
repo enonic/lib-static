@@ -149,11 +149,11 @@ const getRootError = (root) => {
 
 /* .static helper: creates a path from the request, and prefixes the root */
 const getPath = (request, root, contextPathOverride) => {
-    const removePrefix = contextPathOverride || request.contextPath;
+    const removePrefix = contextPathOverride || request.contextPath || '** contextPath (contextPathOverride) IS MISSING IN BOTH REQUEST AND OPTIONS **';
     if (request.path.startsWith(removePrefix)) {
-        return resolvePath( `${root}/${request.path.substring(removePrefix.length)}`);
+        return `${root}/${resolvePath(request.path.substring(removePrefix.length))}`;
     }
-    throw Error(`options.contextPathOverride || request.contextPath = '${removePrefix}'. Expected this to be the prefix of request.path '${request.path}'. Add or correct options.contextPathOverride so that it matches the request.path URI root (which is removed from request.path to create the relative asset path).`);
+    throw Error(`options.contextPathOverride || request.contextPath = '${removePrefix}'. Expected that to be the prefix of request.path '${request.path}'. Add or correct options.contextPathOverride so that it matches the request.path URI root (which is removed from request.path to create the relative asset path).`);
 }
 
 
@@ -171,10 +171,11 @@ exports.static = (rootOrOptions, options) => {
     if (!errorMessage) {
         root = resolvePath(root);
         errorMessage = getRootError(root);
+        root = "/" + root;
     }
 
     if (errorMessage) {
-        return makeErrorLogAndResponse(Error(errorMessage), throwErrors, rootOrOptions, options, "static", "Root");
+        throw Error(errorMessage);
     }
 
     return function getStatic(request) {
@@ -182,6 +183,14 @@ exports.static = (rootOrOptions, options) => {
             const path = getPath(request, root, contextPathOverride);
 
             const { status, error, etagValue } = etagReader.read(path, etagOverride);
+
+            const ifNoneMatch = (request.headers || {})['If-None-Match'];
+            if (ifNoneMatch && ifNoneMatch === etagValue) {
+                return {
+                    status: 304
+                };
+            }
+
 
             return makeResponse(status, path, contentTypeFunc, cacheControlFunc, etagValue, error);
 
