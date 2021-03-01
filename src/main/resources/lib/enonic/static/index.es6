@@ -184,11 +184,14 @@ exports.static = (rootOrOptions, options) => {
 
             const { status, error, etagValue } = etagReader.read(path, etagOverride);
 
-            const ifNoneMatch = (request.headers || {})['If-None-Match'];
-            if (ifNoneMatch && ifNoneMatch === etagValue) {
-                return {
-                    status: 304
-                };
+            let ifNoneMatch = (request.headers || {})['If-None-Match'];
+            if (ifNoneMatch) {
+                ifNoneMatch = ifNoneMatch.replace(/-*gzip$/, '');
+                if (ifNoneMatch === etagValue) {
+                    return {
+                        status: 304
+                    };
+                }
             }
 
 

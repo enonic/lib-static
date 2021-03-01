@@ -396,6 +396,22 @@ exports.testStatic_ifNoneMatch_matchingEtagValues_should304 = () => {
 };
 
 
+exports.testStatic_ifNoneMatch_matchingEtagValuesGzip_should304 = () => {
+    const getStatic = lib.static('assets');
+
+    const request = {
+        path: 'my/endpoint/asset-test-target.txt',
+        contextPath: 'my/endpoint',
+        headers: {
+            'If-None-Match': 'djsptplmcdcidp39wx6ydiwn3--gzip'        // <-- TODO: Copied from output. Should mock instead.
+        }
+    };
+
+    const result = getStatic(request);
+
+    t.assertEquals(304, result.status);
+};
+
 exports.testStatic_ifNoneMatch_nonMatchingEtagValues_should200WithUpdatedContentAndEtag = () => {
     const getStatic = lib.static('assets');
 
@@ -619,9 +635,14 @@ exports.testStatic_GIF = () => {
     t.assertEquals(optionsParser.DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"]);
 };
 
+
+// TODO: Complete these:
+
+/*
 exports.testStatic_fail_invalidRoot = () => {
     const getStatic = lib.static('doesNotExist');
 }
+ */
 
 
 // Path error handling
