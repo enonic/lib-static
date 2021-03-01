@@ -128,8 +128,31 @@ exports.get = (pathOrOptions, options) => {
 };
 
 
+
+resolvePath = (root) => {
+    const rootArr = root.split('/').filter(i => !!i);
+    for (let i=1; i<rootArr.length; i++) {
+        if (rootArr[i].endsWith('..')) {
+            rootArr.splice(i - 1, 2);
+            i -= 2;
+        }
+    }
+    return rootArr.join('/');
+}
+
+const verifyRoot = (root) => {
+    if (root.match(/\.\.\./)) {
+        return `Illegal root argument (or .root option attribute) '${root}': can't contain '...'`;
+    }
+    if (!root || root.startsWith("..")) {
+        return `Illegal root argument (or .root option attribute) '${root}': can't resolve to '/' or outside - must be a subdirectory of the JAR`;
+    }
+
+    return undefined;
+}
+
 exports.static = (rootOrOptions, options) => {
-    const {
+    let {
         root,
         cacheControlFunc,
         contentTypeFunc,
@@ -139,15 +162,16 @@ exports.static = (rootOrOptions, options) => {
     } = optionsParser.parseRootAndOptions(rootOrOptions, options);
 
     if (!errorMessage) {
-        // TODO: Verify valid root - cannot resolve to JAR root or outside JAR
+        root = resolvePath(root);
+        errorMessage = verifyRoot(root);
     }
+
     if (errorMessage) {
         return makeErrorLogAndResponse(Error(errorMessage), throwErrors, rootOrOptions, options, "static", "Root");
     }
 
     return function getStatic(request) {
         try {
-
             const path = getPath(request, root);
 
             const { status, error, etagValue } = etagReader.read(path, etagOverride);

@@ -275,3 +275,21 @@ exports.testGet_fail_cacheControlFunc_runtimeError_throwErrors = () => {
 
     t.assertTrue(failed, "Should have failed. Instead, got a result: " + JSON.stringify(result));
 }
+
+/* export index.es6.resolvePath to test:
+exports.testResolvePath = () => {
+    t.assertEquals("", lib.resolvePath("/"));
+    t.assertEquals("..", lib.resolvePath("/.."));
+    t.assertEquals("..", lib.resolvePath("../"));
+    t.assertEquals("", lib.resolvePath("////////"));
+    t.assertEquals("", lib.resolvePath("begone/.."));
+    t.assertEquals("will/be/lost/in/time", lib.resolvePath("all/../those/../moments/../will/be/lost/in/time"));
+    t.assertEquals("will/be/lost/in/time", lib.resolvePath("will/be/lost/in/time/like/../tears/../in/../rain/.."));
+    t.assertEquals("will/be/lost/in/time", lib.resolvePath("all/those/moments/../../../will/be/lost/in/time"));
+    t.assertEquals("will/be/lost/in/time", lib.resolvePath("will/be/lost/in/time/like/../tears/in/rain/../../.."));
+    t.assertEquals("will/be/lost/in/time", lib.resolvePath("will/be/lost/in/time/like/../tears/in/rain/../../../"));
+    t.assertEquals("../will/be/lost/in/time", lib.resolvePath("../all/../those/../moments/../will/be/lost/in/time"));
+    t.assertEquals("../will/be/lost/in/time", lib.resolvePath("../will/be/lost/in/time/like/../tears/../in/../rain/.."));
+    t.assertEquals("will/be/lost/in/time", lib.resolvePath("will/be/lost/../in/time/"))
+}
+*/
