@@ -100,6 +100,7 @@ const getContentTypeFunc = (contentType) => {
         return () => undefined;
     }
     if (contentType === true || contentType === undefined) {
+
         return ioLib.getMimeType;
     }
     if (contentType || contentType === '') {
@@ -134,6 +135,7 @@ const getContentTypeFunc = (contentType) => {
                         return contentType[key];
                     }
                 }
+
                 return ioLib.getMimeType(path);
             }
         }
@@ -142,6 +144,76 @@ const getContentTypeFunc = (contentType) => {
     throw Error(`Unexpected type for the 'contentType' option: '${Array.isArray(contentType) ? "array" : typeof contentType}'. Expected: string, object or function.`);
 }
 
+
+const parseStringAndOptions = (stringOrOptions, options, attributeKey) => {
+
+    let pathOrRoot,
+        useOptions,
+        throwErrors = undefined;
+
+    try {
+        // Argument overloading: stringOrOptions can be the only argument - an optionsWithRoot/optionsWithPath object - in which case a root/path
+        // attribute must be included in it. If it is an object, then any other arguments after that are irrelevant:
+        if (stringOrOptions && typeof stringOrOptions === 'object') {
+            if (Array.isArray(stringOrOptions)) {
+                throwErrors = !!(options || {}).throwErrors;
+                throw Error(`First argument (${attributeKey}OrOptions) is of unexpected type 'array'. Expected: string or object.`);
+            }
+            throwErrors = !!stringOrOptions.throwErrors;
+            verifyString(stringOrOptions[attributeKey], attributeKey);
+            pathOrRoot = stringOrOptions[attributeKey].trim();
+            useOptions = stringOrOptions
+
+            // But if the first argument isn't a (truthy) object, it could also be a valid root/path string. Verify and maybe use that,
+            // and if so, look for and use a second object as options:
+        } else {
+            const isArray = Array.isArray(options);
+            if (!options || (typeof options === 'object' && !isArray)) {
+                useOptions = options || {};
+                throwErrors = !!useOptions.throwErrors;
+
+            } else {
+                throw Error(`Second argument (options) is if unexpected type '${isArray ? "array" : typeof options}'. Expected: object.`);
+            }
+
+            verifyString(stringOrOptions, attributeKey);
+            pathOrRoot = stringOrOptions.trim();
+        }
+
+        const {
+            cacheControl,
+            contentType,
+            etag,
+        } = useOptions;
+
+        const cacheControlFunc = getCacheControlFunc(cacheControl);
+        const contentTypeFunc = getContentTypeFunc(contentType);
+
+        verifyEtagOption(etag);
+
+        const output = {
+            cacheControlFunc,
+            contentTypeFunc,
+            throwErrors,
+            etagOverride: etag
+        };
+        output[attributeKey] = pathOrRoot;
+
+        return output;
+
+    } catch (e) {
+        return {
+            throwErrors,
+            errorMessage: e.message
+        };
+    }
+}
+
+
+
+
+
+//////////////////////////////////////////////////////////  Entries
 
 
 
@@ -212,66 +284,3 @@ exports.parsePathAndOptions = (pathOrOptions, options) =>
  */
 exports.parseRootAndOptions = (rootOrOptions, options) =>
     parseStringAndOptions(rootOrOptions, options, "root");
-
-
-
-parseStringAndOptions = (stringOrOptions, options, attributeKey) => {
-    let string,
-        useOptions,
-        throwErrors = undefined;
-
-    try {
-        // Argument overloading: stringOrOptions can be the only argument - an optionsWithRoot/optionsWithPath object - in which case a root/path
-        // attribute must be included in it. If it is an object, then any other arguments after that are irrelevant:
-        if (stringOrOptions && typeof stringOrOptions === 'object') {
-            if (Array.isArray(stringOrOptions)) {
-                throwErrors = !!(options || {}).throwErrors;
-                throw Error(`First argument (${attributeKey}OrOptions) is of unexpected type 'array'. Expected: string or object.`);
-            }
-            throwErrors = !!stringOrOptions.throwErrors;
-            verifyString(stringOrOptions[attributeKey], attributeKey);
-            string = stringOrOptions[attributeKey].trim();
-            useOptions = stringOrOptions
-
-            // But if the first argument isn't a (truthy) object, it could also be a valid root/path string. Verify and maybe use that,
-            // and if so, look for and use a second object as options:
-        } else {
-            const isArray = Array.isArray(options);
-            if (!options || (typeof options === 'object' && !isArray)) {
-                useOptions = options || {};
-                throwErrors = !!useOptions.throwErrors;
-
-            } else {
-                throw Error(`Second argument (options) is if unexpected type '${isArray ? "array" : typeof options}'. Expected: object.`);
-            }
-
-            verifyString(stringOrOptions, attributeKey);
-            string = stringOrOptions.trim();
-        }
-
-        const {
-            cacheControl,
-            contentType,
-            etag,
-        } = useOptions;
-
-        const cacheControlFunc = getCacheControlFunc(cacheControl);
-        const contentTypeFunc = getContentTypeFunc(contentType);
-
-        verifyEtagOption(etag);
-
-        return {
-            [attributeKey]: string,
-            cacheControlFunc,
-            contentTypeFunc,
-            throwErrors,
-            etagOverride: etag
-        };
-
-    } catch (e) {
-        return {
-            throwErrors,
-            errorMessage: e.message
-        };
-    }
-}
