@@ -91,15 +91,10 @@ const makeErrorLogAndResponse = (e, throwErrors, stringOrOptions, options, metho
 }
 
 
-/* .static helper: creates a path from the request, and prefixes the root */
-const getPath = (request, root) => {
-    // TODO: extract (relative) and verify path from request!!!
-    throw Error("NOT IMPLEMENTED");
-}
 
 
 
-/////////////////////////////////////////////////////////////////////////////  Entries
+/////////////////////////////////////////////////////////////////////////////  .get
 
 exports.get = (pathOrOptions, options) => {
 
@@ -128,9 +123,10 @@ exports.get = (pathOrOptions, options) => {
 };
 
 
+/////////////////////////////////////////////////////////////////////////////  .static
 
-resolvePath = (root) => {
-    const rootArr = root.split('/').filter(i => !!i);
+const resolvePath = (path) => {
+    const rootArr = path.split('/').filter(i => !!i);
     for (let i=1; i<rootArr.length; i++) {
         if (rootArr[i].endsWith('..')) {
             rootArr.splice(i - 1, 2);
@@ -140,7 +136,7 @@ resolvePath = (root) => {
     return rootArr.join('/');
 }
 
-const verifyRoot = (root) => {
+const getRootError = (root) => {
     if (root.match(/\.\.\./)) {
         return `Illegal root argument (or .root option attribute) '${root}': can't contain '...'`;
     }
@@ -151,19 +147,30 @@ const verifyRoot = (root) => {
     return undefined;
 }
 
+/* .static helper: creates a path from the request, and prefixes the root */
+const getPath = (request, root, contextPathOverride) => {
+    const removePrefix = contextPathOverride || request.contextPath;
+    if (request.path.startsWith(removePrefix)) {
+        return resolvePath( `${root}/${request.path.substring(removePrefix.length)}`);
+    }
+    throw Error(`options.contextPathOverride || request.contextPath = '${removePrefix}'. Expected this to be the prefix of request.path '${request.path}'. Add or correct options.contextPathOverride so that it matches the request.path URI root (which is removed from request.path to create the relative asset path).`);
+}
+
+
 exports.static = (rootOrOptions, options) => {
     let {
         root,
         cacheControlFunc,
         contentTypeFunc,
         etagOverride,
+        contextPathOverride,
         throwErrors,
         errorMessage
     } = optionsParser.parseRootAndOptions(rootOrOptions, options);
 
     if (!errorMessage) {
         root = resolvePath(root);
-        errorMessage = verifyRoot(root);
+        errorMessage = getRootError(root);
     }
 
     if (errorMessage) {
@@ -172,7 +179,7 @@ exports.static = (rootOrOptions, options) => {
 
     return function getStatic(request) {
         try {
-            const path = getPath(request, root);
+            const path = getPath(request, root, contextPathOverride);
 
             const { status, error, etagValue } = etagReader.read(path, etagOverride);
 

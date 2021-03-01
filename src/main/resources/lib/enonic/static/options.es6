@@ -184,6 +184,7 @@ const parseStringAndOptions = (stringOrOptions, options, attributeKey) => {
             cacheControl,
             contentType,
             etag,
+            contextPathOverride
         } = useOptions;
 
         const cacheControlFunc = getCacheControlFunc(cacheControl);
@@ -195,6 +196,7 @@ const parseStringAndOptions = (stringOrOptions, options, attributeKey) => {
             cacheControlFunc,
             contentTypeFunc,
             throwErrors,
+            contextPathOverride,
             etagOverride: etag
         };
         output[attributeKey] = pathOrRoot;
