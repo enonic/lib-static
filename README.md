@@ -54,7 +54,7 @@ repositories {
 In any XP controller, import the library:
 
 ```
-const libStatic = require('lib/enonic/static');
+const libStatic = require('/lib/enonic/static');
 ```
 
 <br/>
@@ -83,7 +83,7 @@ The getter function `getStatic` takes the [XP request object](https://developer.
 <a name="static-params"></a>
 #### Params:
 - `root` (string): path to a root folder where resources are found. This string points to a root folder in the built JAR.
-    - Note: _"a root folder in the built JAR"_ is accurate, but if you think JAR's can be a bit obscure here's an easier mental model: `root` points to a folder below and relative to the _build/resources/main_. This is where all assets are collected when building the JAR. And when running XP in [dev mode](https://developer.enonic.com/docs/enonic-cli/master/dev#start), it actually IS where assets are served from. Depending on specific build setups, you can also think of `root` as being relative to _src/main/resources/_.
+    - Note: _"a root folder in the built JAR"_ is accurate, but if you think JAR's can be a bit obscure here's an easier mental model: `root` points to a folder below and relative to the _build/resources/main_. This is where all assets are collected when building the JAR. And when running XP in [dev mode](https://developer.enonic.com/docs/enonic-cli/master/dev#start), it actually IS where assets are served from. Depending on specific build setups, you can also think of `root` as being relative to _src/main/resources/_. Cannot contain `..` or any of the characters `: | < > ' " ´` or backslash or backtick.
 - `options` (object): add an [options object](#options) after `path` to control behaviour for all responses from the returned getter function.
 - `optionsWithRoot` (object): same as above: an [options object](#options). But when used as the first and only argument, this object _must_ also include a `{ root: ..., }` attribute too - a root string same as above. This is simply for convenience if you prefer named parameters instead of a positional `root` argument. If both are supplied, the positional `root` argument is used.
 
@@ -134,7 +134,7 @@ Like [static](#api-static), it be used in three ways:
 `const response = libStatic.get(optionsWithPath);`
 
 #### Params:
-- `path` (string): path and full file name to an asset file, relative to the JAR root (or relative to _build/resources/main_ in XP dev mode, see [the 'root' param explanation](#static-params) above. Difference: `path` is allowed to contain `..`, but not in such a way that it points directly to the JAR root or outside the JAR - then an error will occur).
+- `path` (string): path and full file name to an asset file, relative to the JAR root (or relative to _build/resources/main_ in XP dev mode, see [the 'root' param explanation](#static-params) above. Cannot contain `..` or any of the characters `: | < > ' " ´` or backslash or backtick.
 - `options` (object, optional): add an [options object](#options) after `path` to control behaviour for this specific response.
 - `optionsWithPath` (object): same as above, an [options object](#options) but when used as the first and only argument, this object _must_ include a `{ path: ..., }` attribute too - a path string same as above. This is simply for convenience if you prefer named parameters instead of a positional `path` argument. If both are supplied, the positional `path` argument is used.
 

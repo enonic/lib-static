@@ -20,19 +20,16 @@ const verifyEtagOption = (etag) => {
 
 
 
-// Verifies the path or root (attributeKey is 'path' or 'root', just a label)
-const verifyString = (string, attributeKey) => {
-    if (typeof string !== 'string') {
-        if (string) {
-            throw Error(`First argument (${attributeKey}OrOptions), or the ${attributeKey} attribute in it, is of unexpected type '${Array.isArray(string) ? "array" : typeof string}'. Expected: string or object.`);
+// Verify that path or root is a string, and not empty (label is 'path' or 'root')
+const verifyAndTrimPathOrRoot = (pathOrRoot, label) => {
+    if (typeof pathOrRoot !== 'string') {
+        if (pathOrRoot) {
+            throw Error(`First argument (${label}OrOptions), or the ${label} attribute in it, is of unexpected type '${Array.isArray(pathOrRoot) ? "array" : typeof pathOrRoot}'. Expected: string or object.`);
         } else {
-            throw Error(`First argument (${attributeKey}OrOptions), or the ${attributeKey} attribute in it, is missing (or falsy)`);
+            throw Error(`First argument (${label}OrOptions), or the ${label} attribute in it, is missing (or falsy)`);
         }
     }
-
-    if (!string.trim()) {
-        throw Error(`First argument (${attributeKey}OrOptions), or the ${attributeKey} attribute in it, is empty or all-spaces.`);
-    }
+    return pathOrRoot.trim();
 }
 
 
@@ -160,8 +157,7 @@ const parseStringAndOptions = (stringOrOptions, options, attributeKey) => {
                 throw Error(`First argument (${attributeKey}OrOptions) is of unexpected type 'array'. Expected: string or object.`);
             }
             throwErrors = !!stringOrOptions.throwErrors;
-            verifyString(stringOrOptions[attributeKey], attributeKey);
-            pathOrRoot = stringOrOptions[attributeKey].trim();
+            pathOrRoot = verifyAndTrimPathOrRoot(stringOrOptions[attributeKey], attributeKey);
             useOptions = stringOrOptions
 
             // But if the first argument isn't a (truthy) object, it could also be a valid root/path string. Verify and maybe use that,
@@ -176,8 +172,7 @@ const parseStringAndOptions = (stringOrOptions, options, attributeKey) => {
                 throw Error(`Second argument (options) is if unexpected type '${isArray ? "array" : typeof options}'. Expected: object.`);
             }
 
-            verifyString(stringOrOptions, attributeKey);
-            pathOrRoot = stringOrOptions.trim();
+            pathOrRoot = verifyAndTrimPathOrRoot(stringOrOptions, attributeKey);
         }
 
         const {

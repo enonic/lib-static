@@ -5,7 +5,8 @@ const ioLib = require('/lib/xp/io');
 
 const makeResponse200 = (status, path, contentTypeFunc, cacheControlFunc, etagValue) => {
     const resource = ioLib.getResource(path);
-    const body = ioLib.readText(resource.getStream());
+    const body = resource.getStream();
+
     const contentType = contentTypeFunc(path, body);
 
     const headers = {
@@ -22,7 +23,8 @@ const makeResponse200 = (status, path, contentTypeFunc, cacheControlFunc, etagVa
 const makeFallbackResponse = (status, path, contentTypeFunc, etagError) => {
     try {
         const resource = ioLib.getResource(path);
-        const body = ioLib.readText(resource.getStream());
+        const body = resource.getStream();
+
         const contentType = contentTypeFunc(path, body);
 
         const headers = {
@@ -98,7 +100,7 @@ const makeErrorLogAndResponse = (e, throwErrors, stringOrOptions, options, metho
 
 exports.get = (pathOrOptions, options) => {
 
-    const {
+    let {
         path,
         cacheControlFunc,
         contentTypeFunc,
@@ -113,6 +115,18 @@ exports.get = (pathOrOptions, options) => {
             throw Error(errorMessage);
         }
 
+        path = path.replace(/^\/+/, '');
+        const pathError = getPathError(path);
+        if (pathError) {
+            return {
+                status: 400,
+                body: `Resource path '${path}' ${pathError}`,
+                contentType: 'text/plain'
+            }
+        }
+        path = `/${path}`;
+
+
         const { status, error, etagValue } = etagReader.read(path, etagOverride);
 
         return makeResponse(status, path, contentTypeFunc, cacheControlFunc, etagValue, error);
@@ -126,35 +140,56 @@ exports.get = (pathOrOptions, options) => {
 /////////////////////////////////////////////////////////////////////////////  .static
 
 const resolvePath = (path) => {
-    const rootArr = path.split('/').filter(i => !!i);
+    const rootArr = path.split(/\/+/).filter(i => !!i);
     for (let i=1; i<rootArr.length; i++) {
         if (rootArr[i].endsWith('..')) {
             rootArr.splice(i - 1, 2);
             i -= 2;
         }
     }
-    return rootArr.join('/');
-}
-
-const getRootError = (root) => {
-    if (root.match(/\.\.\./)) {
-        return `Illegal root argument (or .root option attribute) '${root}': can't contain '...'`;
-    }
-    if (!root || root.startsWith("..")) {
-        return `Illegal root argument (or .root option attribute) '${root}': can't resolve to '/' or outside - must be a subdirectory of the JAR`;
-    }
-
-    return undefined;
+    return rootArr.join('/').trim();
 }
 
 /* .static helper: creates a path from the request, and prefixes the root */
-const getPath = (request, root, contextPathOverride) => {
+const getPathFromRequest = (request, root, contextPathOverride) => {
     const removePrefix = contextPathOverride || request.contextPath || '** contextPath (contextPathOverride) IS MISSING IN BOTH REQUEST AND OPTIONS **';
+
     if (request.path.startsWith(removePrefix)) {
-        return `${root}/${resolvePath(request.path.substring(removePrefix.length))}`;
+        const relativePath = request.path
+            .trim()
+            .substring(removePrefix.length)
+            .replace(/^\/+/, '');
+
+        const error = getPathError(relativePath);
+
+        return (error)
+            ? {
+                pathError: `Illegal relative resource path '${relativePath}': ${error}`    // 400-type error
+            }
+            : {
+                path: `${root}/${relativePath}`
+            };
     }
+
+    // 500-type error
     throw Error(`options.contextPathOverride || request.contextPath = '${removePrefix}'. Expected that to be the prefix of request.path '${request.path}'. Add or correct options.contextPathOverride so that it matches the request.path URI root (which is removed from request.path to create the relative asset path).`);
 }
+
+
+// Very conservative filename verification:
+// Actual filenames with these characters are rare and more likely to be attempted attacks.
+// For now, easier/cheaper to just prevent them. Revisit this later if necessary.
+const doubleDotRx = /\.\./;
+const illegalCharsRx = /[<>:"'`´\\|?*]/;
+const getPathError = (trimmedPathString) => {
+    if (trimmedPathString.match(doubleDotRx) || trimmedPathString.match(illegalCharsRx)) {
+        return "can't contain '..' or any of these characters: \\ | ? * < > ' \" ` ´";
+    }
+    if (!trimmedPathString) {
+        return "is empty or all-spaces";
+    }
+};
+exports.getPathError = getPathError;
 
 
 exports.static = (rootOrOptions, options) => {
@@ -169,10 +204,21 @@ exports.static = (rootOrOptions, options) => {
     } = optionsParser.parseRootAndOptions(rootOrOptions, options);
 
     if (!errorMessage) {
+        root = root.replace(/^\/+/, '');
+        errorMessage = getPathError(root);
+    }
+    if (!errorMessage) {
         root = resolvePath(root);
-        errorMessage = getRootError(root);
+        if (!root) {
+            errorMessage = "is empty or all-spaces";
+        }
         root = "/" + root;
     }
+
+    if (errorMessage) {
+        errorMessage = `Illegal root argument (or .root option attribute) '${root}': ${errorMessage}`;
+    }
+
 
     if (errorMessage) {
         throw Error(errorMessage);
@@ -180,20 +226,23 @@ exports.static = (rootOrOptions, options) => {
 
     return function getStatic(request) {
         try {
-            const path = getPath(request, root, contextPathOverride);
-
-            const { status, error, etagValue } = etagReader.read(path, etagOverride);
-
-            let ifNoneMatch = (request.headers || {})['If-None-Match'];
-            if (ifNoneMatch) {
-                ifNoneMatch = ifNoneMatch.replace(/-*gzip$/, '');
-                if (ifNoneMatch === etagValue) {
-                    return {
-                        status: 304
-                    };
+            const { path, pathError }  = getPathFromRequest(request, root, contextPathOverride);
+            if (pathError) {
+                return {
+                    status: 400,
+                    body: pathError,
+                    contentType: 'text/plain'
                 }
             }
 
+            const { etagValue, status, error } = etagReader.read(path, etagOverride);
+
+            let ifNoneMatch = (request.headers || {})['If-None-Match'];
+            if (ifNoneMatch && ifNoneMatch === etagValue) {
+                return {
+                    status: 304
+                };
+            }
 
             return makeResponse(status, path, contentTypeFunc, cacheControlFunc, etagValue, error);
 

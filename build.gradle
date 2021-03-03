@@ -11,23 +11,12 @@ plugins {
 
 dependencies {
     compileOnly "com.enonic.xp:core-api:${xpVersion}"
+    compileOnly "com.enonic.xp:script-api:${xpVersion}"
 
     compile "com.enonic.xp:lib-io:${xpVersion}"
-    compile "com.enonic.xp:lib-context:${xpVersion}"
-    compile "com.enonic.xp:lib-repo:${xpVersion}"
-    compile "com.enonic.xp:lib-node:${xpVersion}"
-    compile "com.enonic.xp:lib-portal:${xpVersion}"
-
-    compile 'com.enonic.lib:lib-util:2.0.0'
-    compile 'com.enonic.lib:lib-cache:2.1.1'
-
-    compile group: 'org.jdom', name: 'jdom', version: '2.0.2'
-    compile group: 'org.json', name: 'json', version: '20201115'
-    compile group: 'jaxen', name: 'jaxen', version: '1.2.0-atlassian-2'
-
     testCompile "com.enonic.xp:testing:${xpVersion}"
-    testImplementation 'org.mockito:mockito-inline:3.7.7'
-    testImplementation 'org.mockito:mockito-junit-jupiter:3.7.7'
+
+    testImplementation "org.mockito:mockito-inline:3.7.7"
 }
 
 repositories {
