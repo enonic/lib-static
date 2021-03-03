@@ -186,32 +186,32 @@ public class EtagServiceTest extends ScriptTestSupport {
         service.isDev = false;
         Map<String, String> result = service.getEtag("myapplication:", 0);
         assertEquals(400, Integer.parseInt(result.get(STATUS_KEY)));
-        LOG.info("Ok - error message as expected: " + result.get(ERROR_KEY));
         assertTrue(result.get(ERROR_KEY).trim().length() > 0);
+        LOG.info("Ok: " + result.get(STATUS_KEY)  + " - " + result.get(ERROR_KEY));
     }
     @Test
     public void testGetEtag_dev_emptyPath_should400() {
         service.isDev = true;
         Map<String, String> result = service.getEtag("myapplication:", 0);
         assertEquals(400, Integer.parseInt(result.get(STATUS_KEY)));
-        LOG.info("Ok - error message as expected: " + result.get(ERROR_KEY));
         assertTrue(result.get(ERROR_KEY).trim().length() > 0);
+        LOG.info("Ok: " + result.get(STATUS_KEY)  + " - " + result.get(ERROR_KEY));
     }
     @Test
     public void testGetEtag_prod_rootPath_should400() {
         service.isDev = false;
         Map<String, String> result = service.getEtag("myapplication:/", 0);
         assertEquals(400, Integer.parseInt(result.get(STATUS_KEY)));
-        LOG.info("Ok - error message as expected: " + result.get(ERROR_KEY));
         assertTrue(result.get(ERROR_KEY).trim().length() > 0);
+        LOG.info("Ok: " + result.get(STATUS_KEY)  + " - " + result.get(ERROR_KEY));
     }
     @Test
     public void testGetEtag_dev_rootPath_should400() {
         service.isDev = true;
         Map<String, String> result = service.getEtag("myapplication:/", 0);
         assertEquals(400, Integer.parseInt(result.get(STATUS_KEY)));
-        LOG.info("Ok - error message as expected: " + result.get(ERROR_KEY));
         assertTrue(result.get(ERROR_KEY).trim().length() > 0);
+        LOG.info("Ok: " + result.get(STATUS_KEY)  + " - " + result.get(ERROR_KEY));
     }
 
 
@@ -221,48 +221,48 @@ public class EtagServiceTest extends ScriptTestSupport {
         service.isDev = false;
         Map<String, String> result = service.getEtag("myapplication:static/no.exist", 0);
         assertEquals(404, Integer.parseInt(result.get(STATUS_KEY)));
-        LOG.info("Ok - error message as expected: " + result.get(ERROR_KEY));
         assertTrue(result.get(ERROR_KEY).trim().length() > 0);
+        LOG.info("Ok: " + result.get(STATUS_KEY)  + " - " + result.get(ERROR_KEY));
     }
     @Test
     public void testGetEtag_dev_noExist_should404() {
         service.isDev = true;
         Map<String, String> result = service.getEtag("myapplication:static/no.exist", 0);
         assertEquals(404, Integer.parseInt(result.get(STATUS_KEY)));
-        LOG.info("Ok - error message as expected: " + result.get(ERROR_KEY));
         assertTrue(result.get(ERROR_KEY).trim().length() > 0);
+        LOG.info("Ok: " + result.get(STATUS_KEY)  + " - " + result.get(ERROR_KEY));
     }
     @Test
     public void testGetEtag_prod_positiveEtagOverride_noExist_should404() {
         service.isDev = false;
         Map<String, String> result = service.getEtag("myapplication:static/no.exist", 1);
         assertEquals(404, Integer.parseInt(result.get(STATUS_KEY)));
-        LOG.info("Ok - error message as expected: " + result.get(ERROR_KEY));
         assertTrue(result.get(ERROR_KEY).trim().length() > 0);
+        LOG.info("Ok: " + result.get(STATUS_KEY)  + " - " + result.get(ERROR_KEY));
     }
     @Test
     public void testGetEtag_dev_positiveEtagOverride_noExist_should404() {
         service.isDev = true;
         Map<String, String> result = service.getEtag("myapplication:static/no.exist", 1);
         assertEquals(404, Integer.parseInt(result.get(STATUS_KEY)));
-        LOG.info("Ok - error message as expected: " + result.get(ERROR_KEY));
         assertTrue(result.get(ERROR_KEY).trim().length() > 0);
+        LOG.info("Ok: " + result.get(STATUS_KEY)  + " - " + result.get(ERROR_KEY));
     }
     @Test
     public void testGetEtag_prod_negativeEtagOverride_noExist_should404() {
         service.isDev = false;
         Map<String, String> result = service.getEtag("myapplication:static/no.exist", -1);
         assertEquals(404, Integer.parseInt(result.get(STATUS_KEY)));
-        LOG.info("Ok - error message as expected: " + result.get(ERROR_KEY));
         assertTrue(result.get(ERROR_KEY).trim().length() > 0);
+        LOG.info("Ok: " + result.get(STATUS_KEY)  + " - " + result.get(ERROR_KEY));
     }
     @Test
     public void testGetEtag_dev_negativeEtagOverride_noExist_should404() {
         service.isDev = true;
         Map<String, String> result = service.getEtag("myapplication:static/no.exist", -1);
         assertEquals(404, Integer.parseInt(result.get(STATUS_KEY)));
-        LOG.info("Ok - error message as expected: " + result.get(ERROR_KEY));
         assertTrue(result.get(ERROR_KEY).trim().length() > 0);
+        LOG.info("Ok: " + result.get(STATUS_KEY)  + " - " + result.get(ERROR_KEY));
     }
 
 
@@ -272,16 +272,16 @@ public class EtagServiceTest extends ScriptTestSupport {
         service.isDev = false;
         Map<String, String> result = service.getEtag("static/no.exist", 1);
         assertEquals(500, Integer.parseInt(result.get(STATUS_KEY)));
-        LOG.info("Ok - error message as expected: " + result.get(ERROR_KEY));
         assertTrue(result.get(ERROR_KEY).trim().length() > 0);
+        LOG.info("Ok: " + result.get(STATUS_KEY)  + " - " + result.get(ERROR_KEY));
     }
     @Test
     public void testGetEtag_dev_missingAppPath_should500() {
         service.isDev = true;
         Map<String, String> result = service.getEtag("static/no.exist", 1);
         assertEquals(500, Integer.parseInt(result.get(STATUS_KEY)));
-        LOG.info("Ok - error message as expected: " + result.get(ERROR_KEY));
         assertTrue(result.get(ERROR_KEY).trim().length() > 0);
+        LOG.info("Ok: " + result.get(STATUS_KEY)  + " - " + result.get(ERROR_KEY));
     }
 
 }

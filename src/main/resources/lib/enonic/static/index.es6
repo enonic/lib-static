@@ -5,16 +5,20 @@ const ioLib = require('/lib/xp/io');
 
 const makeResponse200 = (status, path, contentTypeFunc, cacheControlFunc, etagValue) => {
     const resource = ioLib.getResource(path);
-    const body = resource.getStream();
 
-    const contentType = contentTypeFunc(path, body);
+    const contentType = contentTypeFunc(path, resource);
 
     const headers = {
-        'Cache-Control': cacheControlFunc(path, body, contentType),
+        'Cache-Control': cacheControlFunc(path, resource, contentType),
         'ETag': etagValue
     };
 
-    return {status, body, contentType, headers};
+    return {
+        status,
+        body: resource.getStream(),
+        contentType,
+        headers
+    };
 }
 
 
@@ -23,19 +27,23 @@ const makeResponse200 = (status, path, contentTypeFunc, cacheControlFunc, etagVa
 const makeFallbackResponse = (status, path, contentTypeFunc, etagError) => {
     try {
         const resource = ioLib.getResource(path);
-        const body = resource.getStream();
 
-        const contentType = contentTypeFunc(path, body);
+        const contentType = contentTypeFunc(path, resource);
 
         const headers = {
             'Cache-Control': 'must-revalidate'
         };
 
         log.warn(`Successful fallback to reading resource '${path}', although ETag processing failed (${etagError})`);
-        return {status, body, contentType, headers};
+        return {
+            status,
+            body: resource.getStream(),
+            contentType,
+            headers
+        };
 
     } catch (e) {
-        log.warn(`Tried reading resource '${path}' after failing ETag processing (${etagError}) - but this failed too.`);
+        log.error(`Tried reading resource '${path}' after failing ETag processing (${etagError}) - but this failed too.`, e);
         throw e;
     }
 }
@@ -209,6 +217,7 @@ exports.static = (rootOrOptions, options) => {
     }
     if (!errorMessage) {
         root = resolvePath(root);
+        // TODO: verify that root exists and is a directory?
         if (!root) {
             errorMessage = "is empty or all-spaces";
         }

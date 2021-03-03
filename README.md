@@ -99,14 +99,23 @@ _getAnyStatic.es6_ returns any asset under _/my-resources_ in the application JA
 const libStatic = require('lib/enonic/static');
 
 const options = { ...some options, or not... }
-const getStatic = libStatic.static('my-resources', options);
+const getStatic = libStatic.static('my-resources', options);     // <-- equivalent with 'root' attribute: libStatic.static({root: 'my-resources', ... other options etc... });
 
 exports.get = (request) => {
     return getStatic(request);
 };
 ```
 
-The path to the actual asset is determined by the URL path (in the `request` object). This relative to the access URL of the controller itself. In this example, _getAnyStatic.es6_ is accessed at `https://someDomain.com/resources/public`. That means the URL `https://someDomain.com/resources/public/subfolder/target-resource.xml` will return the static resource _/my-resources/subfolder/target-resource.xml_ from the JAR (a.k.a. _build/resources/main/my-resources/subfolder/target-resource.xml_ in dev mode).
+The path to the actual asset is determined by the URL path (`request.path`). This relative to the access URL of the controller itself. 
+
+
+NOTE: It's recommended to use `.static` in an XP [service controller](https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service). Here, routing is included, the endpoint's rootpath is already in `request.contextPath`, and relative asset path is automatically determined. However, if you use `.static` in a non-service controller, you must supply the endpoint's rootpath in options, as `contextPathOverride`!  
+
+For example, if _getAnyStatic.es6_ is accessed with a [controller mapping](https://developer.enonic.com/docs/xp/stable/cms/mappings) at `https://someDomain.com/resources/public`, then that's an endpoint with the rootpath `resources/public`. Since this is not a service, we add the contextPathOverride option:
+
+`const getStatic = libStatic.static('my-resources', {contextPathOverride: 'resources/public'});`
+
+Now the URL `https://someDomain.com/resources/public/subfolder/target-resource.xml` will return the static resource _/my-resources/subfolder/target-resource.xml_ from the JAR (a.k.a. _build/resources/main/my-resources/subfolder/target-resource.xml_ in dev mode).
 
 Same example as above, but simplified and without options:
 ```
@@ -144,10 +153,10 @@ Accessing _getSingleStatic.es6_ on some URL where it replies to a GET request, *
 ```
 // getSingleStatic.es6:
 
-const libStatic = require('lib/enonic/static');
+const libStatic = require('lib/enonic/static');    
 
 exports.get = (request) => { 
-    return libStatic.get('public/my-folder/another-asset.css');
+    return libStatic.get('public/my-folder/another-asset.css');  // <-- equivalent with 'path' attribute: libStatic.get({path: 'public/my-folder/another-asset.css', ... other options etc...});
 };
 ```
 
@@ -202,7 +211,7 @@ NOTE: mutable assets should not be served with this header! See [below](#mutable
 As described above, an object can be added with optional attributes to **override** the [default behaviour](#behaviour):
 
 ```
-{ cacheControl, contentType, etag, throwErrors }
+{ cacheControl, contentType, etag, throwErrors, contextPathOverride }
 ```
 
 ### Params:
@@ -210,18 +219,19 @@ As described above, an object can be added with optional attributes to **overrid
 - `cacheControl` (boolean/string/function, optional): override the default header value (`'public, max-age=31536000, immutable'`) and return another `Cache-Control` header.
     - if set as a `false` boolean, no `Cache-Control` headers are sent. A `true` boolean is just ignored.
     - if set as a string, always use that value. An empty string will act as `false` and switch off cacheControl.
-    - if set as a function: `(filePathAndName, content, mimeType) => cacheControl`. For fine-grained control which can use file content or resolved MIMEtype string too if needed. _filePathAndName_ is the asset's file path and name (relative to the JAR root, or `build/resources/main/` in dev mode). Meant to replace the default header handling, but can be tricked if needed: anytime the function returns `null`, lib-static's default Cache-Control header is used instead. The output _cacheControl_ string is used in response `headers: { 'Cache-Control': <cacheControl> }`
+    - if set as a function: `(filePathAndName, resource, mimeType) => cacheControl`. For fine-grained control which can use resource path, resolved MIMEtype string, or file content if needed. _filePathAndName_ is the asset's file path and name (relative to the JAR root, or `build/resources/main/` in dev mode). File content is by resource object: _resource_ is the output from [ioLib getResource](https://developer.enonic.com/docs/xp/stable/api/lib-io#getresource), so your function should handle this if used. This function and the string it returns is meant to replace the default header handling, but here's a trick if needed: anytime the function returns `null`, lib-static's default Cache-Control header is used instead. The output _cacheControl_ string is used in response `headers: { 'Cache-Control': <cacheControl> }`
 - `contentType` (string/boolean/object/function, optional): override the built-in MIME type handling.
     - if set as a boolean, switches MIME type handling on/off. `true` is basically ignored (keep using built-in type detection), `false` skips processing and removes the content-type header (same as an empty string)  
     - if set as a non-empty string, assets will not be processed to try and find the MIME content type. Instead this value will always be preselected and returned.
     - if set as an object, keys are file types (the extensions of the asset file names _after compilation_, case-insensitive and will ignore dots), and values are Content-Type strings - for example, `{"json": "application/json", ".mp3": "audio/mpeg", "TTF": "font/ttf"}`. For files with extensions that are not among the keys in the object, the handling will fall back to the built-in handling.
-    - if set as a function: `(filePathAndName) => contentType`. filePathAndName is the asset file path and name (relative to the JAR root, or `build/resources/main/` in dev mode) and content is the file content. In cases where this function returns `null`, the processing falls back to the built-in contentType detection.
+    - if set as a function: `(filePathAndName, resource) => contentType`. _filePathAndName_ is the asset file path and name (relative to the JAR root, or `build/resources/main/` in dev mode). File content is by resource object: _resource_ is the output from [ioLib getResource](https://developer.enonic.com/docs/xp/stable/api/lib-io#getresource), so your function should handle this if used. Same trick as for the _cacheControl_ function above: in cases where the function returns `null`, the processing falls back to the built-in contentType detection.
 - `etag` (boolean, optional): The default behavior of lib-static is to generate/handle ETag in prod, while skipping it entirely in dev mode.
     - Setting the etag parameter to `false` will turn **off** etag processing (runtime content processing, headers and handling) in **prod** too.
     - Setting it to `true` will turn it **on in dev mode** too.
 - `throwErrors` (boolean, default is `false`): by default, the `.get` method should not throw errors when used correctly. Instead, it internally server-logs (and hash-ID-tags) errors and automatically outputs a 500 error response. 
   - Setting `throwErrors` to `true` overrides this: the 500-response generation is skipped, and the error is re-thrown down to the calling context, to be handled there. 
   - This does not apply to 404-not-found type "errors", they will always generate a 404-response either way. 
+- `contextPathOverride`: Only used in [.static](#api-static). The default behavior of the returned `getStatic` function is to take a request object, and compare the current path to the endpoint's rootpath to get a relative asset path (below `root` in the JAR). This is done by looking at `request.contextPath` and removing that from `request.path`. However, contextPath only works well in an XP service - if you want to use `static` elsewhere, for example with a controller mapping, you need to supply the endpoint's root path to `contextPathOverride`.
 
 In addition, you may supply a `path` or `root` param ([.get](#api-get) or [.static](#api-static), respectively). If a positional `path` or `root` argument is used and the options object is the second argument, then `path` or `root` parameters will be ignored in the options object.
 

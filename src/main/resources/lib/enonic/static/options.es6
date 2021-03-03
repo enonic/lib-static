@@ -70,8 +70,8 @@ const getCacheControlFunc = (cacheControl) => {
     }
 
     if (argType === 'function') {
-        return (path, content, mimeType) => {
-            const result = cacheControl(path, content, mimeType);
+        return (path, resource, mimeType) => {
+            const result = cacheControl(path, resource, mimeType);
             if (result === null) {
                 return DEFAULT_CACHE_CONTROL;
             }
@@ -108,8 +108,8 @@ const getContentTypeFunc = (contentType) => {
         }
 
         if (argType === 'function') {
-            return (path) => {
-                const result = contentType(path);
+            return (path, resource) => {
+                const result = contentType(path, resource);
                 if (result === null) {
                     return ioLib.getMimeType(path);
                 }
@@ -226,8 +226,8 @@ const parseStringAndOptions = (stringOrOptions, options, attributeKey) => {
  *
  * @param pathOrOptions {string|object} Path string, or an object that contains at least a path attribute and may contain other options - same as next parameter below.
  * @param options {{
- *                  contentType: (string|boolean|object|function(path): string)?,
- *                  cacheControl: (string|boolean|function(path, content, mimeType): string)?,
+ *                  contentType: (string|boolean|object|function(path, resource): string)?,
+ *                  cacheControl: (string|boolean|function(path, resource, mimeType): string)?,
  *                  etag: (boolean?),
  *                  throwErrors: (boolean?)
  *           }} Options object (only applies if pathOrOptions is a string). Any path string here will be ignored.
@@ -235,8 +235,8 @@ const parseStringAndOptions = (stringOrOptions, options, attributeKey) => {
  *      {
  *          path: (string),
  *          etagOverride: (boolean?),
- *          cacheControlFunc: (function(path, content, mimeType): string),
- *          contentTypeFunc: (function(path, content): string),
+ *          cacheControlFunc: (function(path, resource, mimeType): string),
+ *          contentTypeFunc: (function(path, resource): string),
  *          throwErrors: (boolean)
  *      } | {
  *          errorMessage: string,
@@ -261,8 +261,8 @@ exports.parsePathAndOptions = (pathOrOptions, options) =>
  *
  * @param rootOrOptions {string|object} Root string, or an object that contains at least a root attribute and may contain other options - same as next parameter below.
  * @param options {{
- *                  contentType: (string|boolean|object|function(path): string)?,
- *                  cacheControl: (string|boolean|function(path, content, mimeType): string)?,
+ *                  contentType: (string|boolean|object|function(path, resource): string)?,
+ *                  cacheControl: (string|boolean|function(path, resource, mimeType): string)?,
  *                  etag: (boolean?),
  *                  throwErrors: (boolean?)
  *           }} Options object (only applies if rootOrOptions is a string). Any root string here will be ignored. NOTE: the contentType and cacheControl functions should take full path params for each individual resource, not just root. The same applies to the returned cacheControlFunc and contentTypeFunc - exactly like with index.js.get.
@@ -270,8 +270,8 @@ exports.parsePathAndOptions = (pathOrOptions, options) =>
  *      {
  *          root: (string),
  *          etagOverride: (boolean?),
- *          cacheControlFunc: (function(path, content, mimeType): string),
- *          contentTypeFunc: (function(path, content): string),
+ *          cacheControlFunc: (function(path, resource, mimeType): string),
+ *          contentTypeFunc: (function(path, resource): string),
  *          throwErrors: (boolean)
  *      } | {
  *          errorMessage: string,
