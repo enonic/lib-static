@@ -57,6 +57,10 @@ In any XP controller, import the library:
 const libStatic = require('/lib/enonic/static');
 ```
 
+
+
+
+
 <br/>
 <br/>
 
@@ -126,6 +130,9 @@ exports.get = libStatic.static('my-resources');
 
 Also worth knowing: the `body` in the returned response is the content, not as a string but a resource stream from [ioLib](https://developer.enonic.com/docs/xp/stable/api/lib-io) (see resource.getStream()). This works for both binary and non-binary files when used by browsers, but might be less straightforward when writing tests.
 
+
+
+
 <br/>
 
 <a name="api-get"></a>
@@ -164,6 +171,9 @@ exports.get = (request) => {
     return libStatic.get('public/my-folder/another-asset.css');  // <-- equivalent with 'path' attribute: libStatic.get({path: 'public/my-folder/another-asset.css', ... other options etc...});
 };
 ```
+
+
+
 
 <br/>
 <br/>
@@ -207,6 +217,9 @@ Content of the requested asset, or an error message.
 
 NOTE: mutable assets should not be served with this header! See [below](#mutable-headers).
 
+
+
+
 <br/>
 <br/>
 
@@ -239,6 +252,9 @@ As described above, an object can be added with optional attributes to **overrid
 - `contextPathOverride`: Only used in [.static](#api-static). The default behavior of the returned `getStatic` function is to take a request object, and compare the current path to the endpoint's rootpath to get a relative asset path (below `root` in the JAR). This is done by looking at `request.contextPath` and removing that from `request.path`. However, contextPath only works well in an XP service - if you want to use `static` elsewhere, for example with a controller mapping, you need to supply the endpoint's root path to `contextPathOverride`.
 
 In addition, you may supply a `path` or `root` param ([.get](#api-get) or [.static](#api-static), respectively). If a positional `path` or `root` argument is used and the options object is the second argument, then `path` or `root` parameters will be ignored in the options object.
+
+
+
 
 <br/>
 <br/>
@@ -323,6 +339,11 @@ If you have mutable assets in your project, there are several ways you could imp
         }
     );      
     ```
+
+
+
+
+
 
 <br/>
 <br/>
