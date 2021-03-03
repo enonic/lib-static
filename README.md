@@ -102,7 +102,8 @@ const options = { ...some options, or not... }
 const getStatic = libStatic.static('my-resources', options);     // <-- equivalent with 'root' attribute: libStatic.static({root: 'my-resources', ... other options etc... });
 
 exports.get = (request) => {
-    return getStatic(request);
+    const response = getStatic(request);
+    return response;
 };
 ```
 
@@ -123,6 +124,8 @@ const libStatic = require('lib/enonic/static');
 exports.get = libStatic.static('my-resources');
 ```
 
+Also worth knowing: the `body` in the returned response is the content, not as a string but a resource stream from [ioLib](https://developer.enonic.com/docs/xp/stable/api/lib-io) (see resource.getStream()). This works for both binary and non-binary files when used by browsers, but might be less straightforward when writing tests.
+
 <br/>
 
 <a name="api-get"></a>
@@ -141,6 +144,8 @@ Like [static](#api-static), it be used in three ways:
 `const response = libStatic.get(path, options);`
 
 `const response = libStatic.get(optionsWithPath);`
+
+Worth knowing: the `body` in the returned response is the content, not as a string but a resource stream from [ioLib](https://developer.enonic.com/docs/xp/stable/api/lib-io) (see resource.getStream()). This works for both binary and non-binary files when used by browsers, but might be less straightforward when writing tests. 
 
 #### Params:
 - `path` (string): path and full file name to an asset file, relative to the JAR root (or relative to _build/resources/main_ in XP dev mode, see [the 'root' param explanation](#static-params) above. Cannot contain `..` or any of the characters `: | < > ' " ´ * ?` or backslash or backtick.
