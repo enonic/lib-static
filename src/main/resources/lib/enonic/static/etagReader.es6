@@ -18,11 +18,13 @@ exports.read = (path, etagOverrideOption) => {
             ? -1
             : 0;
 
-    const { error, etag } = __.toNativeObject(etagService.getEtag(`${app.name}:${path}`, etagOverride));
+    let { error, etag } = __.toNativeObject(etagService.getEtag(`${app.name}:${path}`, etagOverride));
 
     if (error) {
         throw Error(error);
     }
 
-    return etag || undefined
+    return (etag && etag[0] !== '"')
+        ? `"${etag}"`
+        : etag || undefined
 };
