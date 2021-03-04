@@ -1,6 +1,6 @@
 const etagReader = require('/lib/enonic/static/etagReader');
 const optionsParser = require('/lib/enonic/static/options');
-const ioLib = require('/lib/xp/io');
+const ioLib = require('/lib/enonic/static/io');
 
 
 const makeResponse200 = (status, path, contentTypeFunc, cacheControlFunc, etagValue) => {

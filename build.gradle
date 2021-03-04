@@ -13,14 +13,12 @@ dependencies {
     compileOnly "com.enonic.xp:core-api:${xpVersion}"
     compileOnly "com.enonic.xp:script-api:${xpVersion}"
 
-    compile "com.enonic.xp:lib-io:${xpVersion}"
     testCompile "com.enonic.xp:testing:${xpVersion}"
 
     testImplementation "org.mockito:mockito-inline:3.7.7"
 }
 
 repositories {
-    mavenLocal()
     jcenter()
     xp.enonicRepo()
 }

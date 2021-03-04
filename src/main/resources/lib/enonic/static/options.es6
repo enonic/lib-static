@@ -1,4 +1,4 @@
-const ioLib = require('/lib/xp/io');
+const ioLib = require('/lib/enonic/static/io');
 
 const DEFAULT_MAX_AGE = 31536000;
 
