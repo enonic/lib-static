@@ -1,11 +1,5 @@
 package lib.enonic.libStatic.etag;
 
-import java.util.Map;
-import java.util.function.Supplier;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.enonic.xp.resource.Resource;
 import com.enonic.xp.resource.ResourceKey;
 import com.enonic.xp.resource.ResourceProcessor;
@@ -13,6 +7,12 @@ import com.enonic.xp.resource.ResourceService;
 import com.enonic.xp.script.bean.BeanContext;
 import com.enonic.xp.script.bean.ScriptBean;
 import com.enonic.xp.server.RunMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Supplier;
 
 public class EtagService
     implements ScriptBean
@@ -23,23 +23,22 @@ public class EtagService
 
     protected static boolean isDev = RunMode.get() != RunMode.PROD;
 
-    private Supplier<ResourceService> resourceServiceSupplier;
+    protected Supplier<ResourceService> resourceServiceSupplier;
 
-    public static final String STATUS_KEY = "status";
 
     public static final String ERROR_KEY = "error";
-
     public static final String ETAG_KEY = "etag";
+    private static final Map<String, String> NO_ETAG = new HashMap<>();
 
     public Map<String, String> getEtag( String path )
     {
         return getEtag( path, 0 );
     }
 
-    /** Gets a content string and contenthash etag string.
+    /** Gets a contenthash etag string or an error, at the keys "etag" or "error" in the returned map.
      *
      *
-     * @param path (string) Absolute (i.e. JAR-root-relative) path, name and extension to the file
+     * @param path (string) Absolute (i.e. JAR-root-relative) path, name and extension to the file. Must be already checked and verified.
      * @param etagOverrideMode (int) if 0 (or null), default handling: in XP prod mode do cached processing without lastModified-checking, and in dev mode skip all etag processing
      *                     Setting to -1 or 1 overrides this:
      *                     * If 1 (actually, > 0) : process and cache etags, even in dev mode.
@@ -50,11 +49,6 @@ public class EtagService
      */
     public Map<String, String> getEtag( String path, Integer etagOverrideMode )
     {
-        path = path.trim();
-        if ( path.endsWith( ":" ) || path.endsWith( ":/" ) )
-        {
-            return Map.of( STATUS_KEY, "400", ERROR_KEY, "Empty (root) path not allowed." );
-        }
         if ( etagOverrideMode == null )
         {
             etagOverrideMode = 0;
@@ -63,33 +57,28 @@ public class EtagService
         final ResourceService resourceService = resourceServiceSupplier.get();
         try
         {
-            Resource resource = resourceService.getResource( ResourceKey.from( path ) );
-            if ( !resource.exists() )
-            {
-                return Map.of( STATUS_KEY, "404", ERROR_KEY, "Resource not found: '" + path + "'" );
-            }
-
             boolean doProcessEtag =
                 etagOverrideMode > ( isDev ? 0 : -1 ); // 0: true in prod, false in dev. 1 forces true in dev, -1 forces false in prod.
 
             if ( doProcessEtag )
             {
+                Resource resource = resourceService.getResource( ResourceKey.from( path ) );
                 final String etag = resourceService.processResource( createEtagProcessor( resource.getKey() ) );
-                return Map.of( STATUS_KEY, "200", ETAG_KEY, etag );
+                return Map.of( ETAG_KEY, etag );
 
             }
             else
             {
-                return Map.of( STATUS_KEY, "200" );
+                return NO_ETAG;
             }
 
         }
         catch ( Exception e )
         {
             long errorRnd = (long) ( Math.random() * Long.MAX_VALUE );
-            String errorId = Long.toString( errorRnd, 36 );
-            LOG.error( "Couldn't process etag: '" + path + "' (error ID: " + errorId + ")", e );
-            return Map.of( STATUS_KEY, "500", ERROR_KEY, "Couldn't process etag: '" + path + "' (error ID: " + errorId + ")" );
+            String errorMsg = "Couldn't process etag from resource '" + path + "' (error ID: " + Long.toString( errorRnd, 36 ) + ")";
+            LOG.error(errorMsg, e );
+            return Map.of( ERROR_KEY, errorMsg );
         }
     }
 
