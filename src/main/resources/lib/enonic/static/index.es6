@@ -3,7 +3,8 @@ const optionsParser = require('/lib/enonic/static/options');
 const ioLib = require('/lib/enonic/static/io');
 
 
-const makeResponse200 = (path, resource, contentType, cacheControlFunc, etagValue) => {
+const getResponse200 = (path, resource, contentTypeFunc, cacheControlFunc, etagValue) => {
+    const contentType = contentTypeFunc(path, resource);
     return {
         status: 200,
         body: resource.getStream(),
@@ -13,40 +14,7 @@ const makeResponse200 = (path, resource, contentType, cacheControlFunc, etagValu
             'ETag': etagValue
         }
     };
-}
-
-
-// Attempt graceful handling: the status and etagError so far comes from the etagReader trying to resolve the etag.
-// In case it's still possible to return the main data with a must-revalidate header - much better than nothing - try to read it:
-const makeFallbackResponse = (path, resource, contentType, etagError) => {
-    try {
-        const response = {
-            status: 200,
-            body: resource.getStream(),
-            contentType,
-            headers: {
-                'Cache-Control': 'must-revalidate'
-            }
-        };
-
-        log.warn(`Handled: serving fallback resource (non-caching headers) after ETag processing error: ${etagError}`);
-
-        return response;
-
-    } catch (e) {
-        log.error(`Tried serving non-caching fallback resource after failed ETag processing - but that failed too, see below. ETag error was: ${etagError}`);
-        throw e;
-    }
-}
-
-
-const getResponse = (path, resource, contentTypeFunc, cacheControlFunc, etagValue, etagError) => {
-    const contentType = contentTypeFunc(path, resource);
-
-    return (!etagError)
-        ? makeResponse200(path, resource, contentType, cacheControlFunc, etagValue)
-        : makeFallbackResponse(path, resource, contentType, etagError);
-}
+};
 
 
 /** Creates an easy-readable and trackable error message in the log,
@@ -138,9 +106,9 @@ exports.get = (pathOrOptions, options) => {
 
         path = `/${path}`;
 
-        const { etagValue, etagError } = etagReader.read(path, etagOverride);
+        const etag = etagReader.read(path, etagOverride);
 
-        return getResponse(path, resource, contentTypeFunc, cacheControlFunc, etagValue, etagError);
+        return getResponse200(path, resource, contentTypeFunc, cacheControlFunc, etag);
 
     } catch (e) {
         return errorLogAndResponse500(e, throwErrors, pathOrOptions, options, "get", "Path");
@@ -246,16 +214,17 @@ exports.static = (rootOrOptions, options) => {
                 return response400;
             }
 
-            const { etagValue, etagError } = etagReader.read(path, etagOverride);
+            const etag = etagReader.read(path, etagOverride);
+
 
             let ifNoneMatch = (request.headers || {})['If-None-Match'];
-            if (ifNoneMatch && ifNoneMatch === etagValue) {
+            if (ifNoneMatch && ifNoneMatch === etag) {
                 return {
                     status: 304
                 };
             }
 
-            return getResponse(path, resource, contentTypeFunc, cacheControlFunc, etagValue, etagError);
+            return getResponse200(path, resource, contentTypeFunc, cacheControlFunc, etag);
 
         } catch (e) {
             return errorLogAndResponse500(e, throwErrors, rootOrOptions, options, "static", "Root");

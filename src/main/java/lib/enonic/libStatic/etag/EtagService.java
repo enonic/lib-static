@@ -10,7 +10,6 @@ import com.enonic.xp.server.RunMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -23,12 +22,12 @@ public class EtagService
 
     protected static boolean isDev = RunMode.get() != RunMode.PROD;
 
-    protected Supplier<ResourceService> resourceServiceSupplier;
+    Supplier<ResourceService> resourceServiceSupplier;
 
 
     public static final String ERROR_KEY = "error";
     public static final String ETAG_KEY = "etag";
-    private static final Map<String, String> NO_ETAG = new HashMap<>();
+    private static final Map<String, String> NO_ETAG = Map.of();
 
     public Map<String, String> getEtag( String path )
     {
@@ -49,11 +48,6 @@ public class EtagService
      */
     public Map<String, String> getEtag( String path, Integer etagOverrideMode )
     {
-        if ( etagOverrideMode == null )
-        {
-            etagOverrideMode = 0;
-        }
-
         final ResourceService resourceService = resourceServiceSupplier.get();
         try
         {
