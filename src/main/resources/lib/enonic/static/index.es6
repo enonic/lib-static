@@ -202,18 +202,16 @@ exports.static = (rootOrOptions, options) => {
     } = optionsParser.parseRootAndOptions(rootOrOptions, options);
 
     if (!errorMessage) {
-        root = root.replace(/^\/+/, '');
+        root = resolvePath(root.replace(/^\/+/, ''));
         errorMessage = getPathError(root);
+        root = "/" + root;
     }
     if (!errorMessage) {
-        root = resolvePath(root);
         // TODO: verify that root exists and is a directory?
         if (!root) {
             errorMessage = "is empty or all-spaces";
         }
-        root = "/" + root;
     }
-
     if (errorMessage) {
         errorMessage = `Illegal root argument (or .root option attribute) '${root}': ${errorMessage}`;
     }
@@ -221,6 +219,7 @@ exports.static = (rootOrOptions, options) => {
     if (errorMessage) {
         throw Error(errorMessage);
     }
+
 
     return function getStatic(request) {
         try {
