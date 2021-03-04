@@ -17,6 +17,23 @@ const getResponse200 = (path, resource, contentTypeFunc, cacheControlFunc, etagV
 };
 
 
+const getEtagOr304 = (path, request, etagOverride) => {
+    let etag = etagReader.read(path, etagOverride);
+
+    const ifNoneMatch = (request.headers || {})['If-None-Match'];
+    if (ifNoneMatch) {
+        etag = (ifNoneMatch[0] === '"') ? `"${etag}"` : etag;
+        if (ifNoneMatch === etag) {
+            return {
+                response304: {
+                    status: 304
+                }
+            };
+        }
+    }
+    return { etag };
+}
+
 /** Creates an easy-readable and trackable error message in the log,
  *  and returns a generic error message with a tracking ID in the response */
 const errorLogAndResponse500 = (e, throwErrors, stringOrOptions, options, methodLabel, rootOrPathLabel) => {
@@ -50,7 +67,7 @@ const errorLogAndResponse500 = (e, throwErrors, stringOrOptions, options, method
 
 
 
-const getResource = (path, pathError) => {
+const getResourceOr400 = (path, pathError) => {
     if (pathError) {
         return {
             response400: {
@@ -99,7 +116,7 @@ exports.get = (pathOrOptions, options) => {
         path = path.replace(/^\/+/, '');
         const pathError = getPathError(path);
 
-        const { resource, response400 } = getResource(path, pathError ? `Resource path '${path}' ${pathError}` : undefined);
+        const { resource, response400 } = getResourceOr400(path, pathError ? `Resource path '${path}' ${pathError}` : undefined);
         if (response400) {
             return response400;
         }
@@ -209,19 +226,14 @@ exports.static = (rootOrOptions, options) => {
             const { path, pathError }  = getPathFromRequest(request, root, contextPathOverride);
 
 
-            const { resource, response400 } = getResource(path, pathError);
+            const { resource, response400 } = getResourceOr400(path, pathError);
             if (response400) {
                 return response400;
             }
 
-            const etag = etagReader.read(path, etagOverride);
-
-
-            let ifNoneMatch = (request.headers || {})['If-None-Match'];
-            if (ifNoneMatch && ifNoneMatch === etag) {
-                return {
-                    status: 304
-                };
+            const { etag, response304 } = getEtagOr304(path, request, etagOverride);
+            if (response304) {
+                return response304
             }
 
             return getResponse200(path, resource, contentTypeFunc, cacheControlFunc, etag);
