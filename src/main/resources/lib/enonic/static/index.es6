@@ -3,7 +3,7 @@ const optionsParser = require('/lib/enonic/static/options');
 const ioLib = require('/lib/enonic/static/io');
 
 
-const getResponse200 = (path, resource, contentTypeFunc, cacheControlFunc, etagValue) => {
+const getResponse200 = (path, resource, contentTypeFunc, cacheControlFunc, etag) => {
     const contentType = contentTypeFunc(path, resource);
     return {
         status: 200,
@@ -11,7 +11,7 @@ const getResponse200 = (path, resource, contentTypeFunc, cacheControlFunc, etagV
         contentType,
         headers: {
             'Cache-Control': cacheControlFunc(path, resource, contentType),
-            'ETag': etagValue
+            'ETag': etag
         }
     };
 };
@@ -20,9 +20,11 @@ const getResponse200 = (path, resource, contentTypeFunc, cacheControlFunc, etagV
 const getEtagOr304 = (path, request, etagOverride) => {
     let etag = etagReader.read(path, etagOverride);
 
-    const ifNoneMatch = (request.headers || {})['If-None-Match'];
+    let ifNoneMatch = (request.headers || {})['If-None-Match'];
     if (ifNoneMatch) {
-        etag = (ifNoneMatch[0] === '"') ? `"${etag}"` : etag;
+        ifNoneMatch = (ifNoneMatch[0] !== '"')
+            ? `"${ifNoneMatch}"`
+            : ifNoneMatch;
         if (ifNoneMatch === etag) {
             return {
                 response304: {
@@ -56,7 +58,7 @@ const errorLogAndResponse500 = (e, throwErrors, stringOrOptions, options, method
 
         return {
             status: 500,
-            contentType: "text/plain",
+            contentType: "text/plain; charset=utf-8",
             body: `Server error, logged with error ID: ${errorID}`
         }
 
@@ -73,7 +75,7 @@ const getResourceOr400 = (path, pathError) => {
             response400: {
                 status: 400,
                 body: pathError,
-                contentType: 'text/plain'
+                contentType: 'text/plain; charset=utf-8'
             }
         };
     }
@@ -84,7 +86,7 @@ const getResourceOr400 = (path, pathError) => {
             response400: {
                 status: 404,
                 body: `Not found: ${path}`,
-                contentType: 'text/plain'
+                contentType: 'text/plain; charset=utf-8'
             }
         }
     }
@@ -151,7 +153,7 @@ const getPathFromRequest = (request, root, contextPathOverride) => {
     const removePrefix = contextPathOverride || request.contextPath || '** contextPath (contextPathOverride) IS MISSING IN BOTH REQUEST AND OPTIONS **';
 
     if (request.path.startsWith(removePrefix)) {
-        const relativePath = request.path
+        const relativePath = decodeURI(request.path)
             .trim()
             .substring(removePrefix.length)
             .replace(/^\/+/, '');
@@ -216,7 +218,6 @@ exports.static = (rootOrOptions, options) => {
         errorMessage = `Illegal root argument (or .root option attribute) '${root}': ${errorMessage}`;
     }
 
-
     if (errorMessage) {
         throw Error(errorMessage);
     }
@@ -224,7 +225,6 @@ exports.static = (rootOrOptions, options) => {
     return function getStatic(request) {
         try {
             const { path, pathError }  = getPathFromRequest(request, root, contextPathOverride);
-
 
             const { resource, response400 } = getResourceOr400(path, pathError);
             if (response400) {
