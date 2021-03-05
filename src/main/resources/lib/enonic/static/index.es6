@@ -21,17 +21,12 @@ const getEtagOr304 = (path, request, etagOverride) => {
     let etag = etagReader.read(path, etagOverride);
 
     let ifNoneMatch = (request.headers || {})['If-None-Match'];
-    if (ifNoneMatch) {
-        ifNoneMatch = (ifNoneMatch[0] !== '"')
-            ? `"${ifNoneMatch}"`
-            : ifNoneMatch;
-        if (ifNoneMatch === etag) {
-            return {
-                response304: {
-                    status: 304
-                }
-            };
-        }
+    if (ifNoneMatch && ifNoneMatch === etag) {
+        return {
+            response304: {
+                status: 304
+            }
+        };
     }
     return { etag };
 }
