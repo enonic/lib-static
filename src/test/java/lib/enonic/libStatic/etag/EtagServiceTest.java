@@ -42,7 +42,7 @@ public class EtagServiceTest extends ScriptTestSupport {
         resourceServiceMock = Mockito.mock(ResourceService.class);
 
         Mockito.when(resourceServiceSupplierMock.get()).thenReturn(resourceServiceMock);
-        Mockito.when(resourceServiceMock.getResource( Mockito.any(ResourceKey.class) )).then
+        //Mockito.when(resourceServiceMock.getResource( Mockito.any(ResourceKey.class) )).then
 
         service = new EtagService();
         service.initialize( newBeanContext(ResourceKey.from("myapplication:/test")));
