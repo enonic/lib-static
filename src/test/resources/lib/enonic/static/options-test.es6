@@ -1,4 +1,4 @@
-const ioLib = require('/lib/xp/io');
+const ioLib = require('/lib/enonic/static/io');
 
 const lib = require('/lib/enonic/static/options');
 const t = require('/lib/xp/testing');

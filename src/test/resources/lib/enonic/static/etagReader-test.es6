@@ -1,7 +1,7 @@
 const lib = require('/lib/enonic/static/etagReader');
 const t = require('/lib/xp/testing');
 
-const ioLib = require('/lib/xp/io');
+const ioLib = require('/lib/enonic/static/io');
 
 
 // HELPERS
