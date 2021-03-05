@@ -24,7 +24,5 @@ exports.read = (path, etagOverrideOption) => {
         throw Error(error);
     }
 
-    return (etag && etag[0] !== '"')
-        ? `"${etag}"`
-        : etag || undefined
+    return etag || undefined
 };
