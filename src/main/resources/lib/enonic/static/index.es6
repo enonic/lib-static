@@ -5,14 +5,24 @@ const ioLib = require('/lib/enonic/static/io');
 
 const getResponse200 = (path, resource, contentTypeFunc, cacheControlFunc, etag) => {
     const contentType = contentTypeFunc(path, resource);
+    const cacheControlHeader = cacheControlFunc(path, resource, contentType);
+
+    // Preventing any keys at all with null/undefined values in header (since those cause NPE):
+    const headers = {};
+    if (cacheControlHeader) {
+        headers['Cache-Control'] = cacheControlHeader;
+    }
+    if (etag) {
+        headers.ETag = etag;
+    }
+
+
+
     return {
         status: 200,
         body: resource.getStream(),
         contentType,
-        headers: {
-            'Cache-Control': cacheControlFunc(path, resource, contentType),
-            'ETag': etag
-        }
+        headers
     };
 };
 
@@ -147,8 +157,8 @@ const resolvePath = (path) => {
 const getPathFromRequest = (request, root, contextPathOverride) => {
     const removePrefix = contextPathOverride || request.contextPath || '** contextPath (contextPathOverride) IS MISSING IN BOTH REQUEST AND OPTIONS **';
 
-    if (request.path.startsWith(removePrefix)) {
-        const relativePath = decodeURI(request.path)
+    if (request.rawPath.startsWith(removePrefix)) {
+        const relativePath = request.rawPath
             .trim()
             .substring(removePrefix.length)
             .replace(/^\/+/, '');
@@ -165,7 +175,7 @@ const getPathFromRequest = (request, root, contextPathOverride) => {
     }
 
     // 500-type error
-    throw Error(`options.contextPathOverride || request.contextPath = '${removePrefix}'. Expected that to be the prefix of request.path '${request.path}'. Add or correct options.contextPathOverride so that it matches the request.path URI root (which is removed from request.path to create the relative asset path).`);
+    throw Error(`options.contextPathOverride || request.contextPath = '${removePrefix}'. Expected that to be the prefix of request.rawPath '${request.rawPath}'. Add or correct options.contextPathOverride so that it matches the request.rawPath URI root (which is removed from request.rawPath to create the relative asset path).`);
 }
 
 
