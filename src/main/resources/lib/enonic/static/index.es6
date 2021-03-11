@@ -2,6 +2,7 @@ const etagReader = require('/lib/enonic/static/etagReader');
 const optionsParser = require('/lib/enonic/static/options');
 const ioLib = require('/lib/enonic/static/io');
 
+var IS_DEV = Java.type('com.enonic.xp.server.RunMode').get().toString() !== 'PROD';
 
 const getResponse200 = (path, resource, contentTypeFunc, cacheControlFunc, etag) => {
     const contentType = contentTypeFunc(path, resource);
@@ -15,8 +16,6 @@ const getResponse200 = (path, resource, contentTypeFunc, cacheControlFunc, etag)
     if (etag) {
         headers.ETag = etag;
     }
-
-
 
     return {
         status: 200,
@@ -76,23 +75,32 @@ const errorLogAndResponse500 = (e, throwErrors, stringOrOptions, options, method
 
 const getResourceOr400 = (path, pathError) => {
     if (pathError) {
+        // TODO: In prod mode, the pathError will just be swallowed. Log it?
         return {
-            response400: {
-                status: 400,
-                body: pathError,
-                contentType: 'text/plain; charset=utf-8'
-            }
+            response400: (IS_DEV)
+                ? {
+                    status: 400,
+                    body: pathError,
+                    contentType: 'text/plain; charset=utf-8'
+                }
+                : {
+                    status: 400,
+                }
         };
     }
 
     const resource = ioLib.getResource(path);
     if (!resource.exists()) {
         return {
-            response400: {
-                status: 404,
-                body: `Not found: ${path}`,
-                contentType: 'text/plain; charset=utf-8'
-            }
+            response400: (IS_DEV)
+                ? {
+                    status: 404,
+                    body: `Not found: ${path}`,
+                    contentType: 'text/plain; charset=utf-8'
+                }
+                : {
+                    status: 404
+                }
         }
     }
 
@@ -196,6 +204,8 @@ exports.getPathError = getPathError;
 
 
 exports.static = (rootOrOptions, options) => {
+
+
     let {
         root,
         cacheControlFunc,
