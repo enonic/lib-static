@@ -89,13 +89,6 @@ const getResourceOr400 = (path, pathError) => {
         };
     }
 
-    log.info("Looking for resourc path... (" +
-    	(Array.isArray(path) ?
-    		("array[" + path.length + "]") :
-    		(typeof path + (path && typeof path === 'object' ? (" with keys: " + JSON.stringify(Object.keys(path))) : ""))
-    	) + "): " + JSON.stringify(path, null, 2)
-    );
-
     const resource = ioLib.getResource(path);
     if (!resource.exists()) {
         return {

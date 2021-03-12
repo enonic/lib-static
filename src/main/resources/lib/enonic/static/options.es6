@@ -42,17 +42,6 @@ const verifyAndTrimPathOrRoot = (pathOrRoot, label) => {
  * @param cacheControl (string, boolean or function). See README for how the cacheControl option works.
  * */
 const getCacheControlFunc = (cacheControl) => {
-    /*
-    if (cacheControl || cacheControl === false || cacheControl === '') {
-        log.info("cacheControl (" +
-            (Array.isArray(cacheControl) ?
-                    ("array[" + cacheControl.length + "]") :
-                    (typeof cacheControl + (cacheControl && typeof cacheControl === 'object' ? (" with keys: " + JSON.stringify(Object.keys(cacheControl))) : ""))
-            ) + "): " + JSON.stringify(cacheControl, null, 2)
-        );
-    }
-    //*/
-
     if (cacheControl === false || cacheControl === '') {
         // Override: explicitly switch off with false or empty string
         return () => undefined;
