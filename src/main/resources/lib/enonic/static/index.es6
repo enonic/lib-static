@@ -63,7 +63,7 @@ const errorLogAndResponse500 = (e, throwErrors, stringOrOptions, options, method
         return {
             status: 500,
             contentType: "text/plain; charset=utf-8",
-            body: `Server error, logged with error ID: ${errorID}`
+            body: `Server error (logged with error ID: ${errorID})`
         }
 
     } else {
@@ -88,6 +88,13 @@ const getResourceOr400 = (path, pathError) => {
                 }
         };
     }
+
+    log.info("Looking for resourc path... (" +
+    	(Array.isArray(path) ?
+    		("array[" + path.length + "]") :
+    		(typeof path + (path && typeof path === 'object' ? (" with keys: " + JSON.stringify(Object.keys(path))) : ""))
+    	) + "): " + JSON.stringify(path, null, 2)
+    );
 
     const resource = ioLib.getResource(path);
     if (!resource.exists()) {
@@ -161,29 +168,24 @@ const resolvePath = (path) => {
     return rootArr.join('/').trim();
 }
 
-/* .static helper: creates a path from the request, and prefixes the root */
-const getPathFromRequest = (request, root, contextPathOverride) => {
-    const removePrefix = contextPathOverride || request.contextPath || '** contextPath (contextPathOverride) IS MISSING IN BOTH REQUEST AND OPTIONS **';
-
-    if (request.rawPath.startsWith(removePrefix)) {
-        const relativePath = request.rawPath
-            .trim()
-            .substring(removePrefix.length)
-            .replace(/^\/+/, '');
-
-        const error = getPathError(relativePath);
-
-        return (error)
-            ? {
-                pathError: `Illegal relative resource path '${relativePath}': ${error}`    // 400-type error
-            }
-            : {
-                path: `${root}/${relativePath}`
-            };
+/* .static helper: creates a resource path from the request, relative to the root folder (which will be prefixed later).
+*  Overridable with the getCleanPath option param. */
+const getRelativeResourcePath = (request) => {
+    if (!(request || {}).rawPath) {
+        throw Error(`Can't resolve relative asset path - request doesn't have a .rawPath attribute: ` + JSON.stringify(request));
     }
 
-    // 500-type error
-    throw Error(`options.contextPathOverride || request.contextPath = '${removePrefix}'. Expected that to be the prefix of request.rawPath '${request.rawPath}'. Add or correct options.contextPathOverride so that it matches the request.rawPath URI root (which is removed from request.rawPath to create the relative asset path).`);
+    const removePrefix = request.contextPath.trim() || '** missing or falsy **';
+
+    if (!request.rawPath.startsWith(removePrefix)) {
+        // Gives 500-type error
+        throw Error(`Can't resolve relative asset path: request.contextPath (${JSON.stringify(request.contextPath)}) was expected to be a non-empty prefix of request.rawPath (${JSON.stringify(request.rawPath)}). You may need to supply a getCleanPath(request) function parameter to extract a relative asset path from the request.`);
+    }
+
+    return request.rawPath
+        .trim()
+        .substring(removePrefix.length)
+        .replace(/^\/+/, '');
 }
 
 
@@ -203,54 +205,69 @@ const getPathError = (trimmedPathString) => {
 exports.getPathError = getPathError;
 
 
+const resolveRoot = (root) => {
+    let resolvedRoot = resolvePath(root.replace(/^\/+/, '').replace(/\/+$/, ''));
+    let errorMessage = getPathError(resolvedRoot);
+    resolvedRoot = "/" + resolvedRoot;
+
+    if (!errorMessage) {
+        // TODO: verify that root exists and is a directory?
+        if (!resolvedRoot) {
+            errorMessage = "is empty or all-spaces";
+        }
+    }
+
+    if (errorMessage) {
+        throw Error(`Illegal root argument (or .root option attribute) ${JSON.stringify(root)}: ${errorMessage}`);
+    }
+
+    return resolvedRoot;
+};
+
+
 exports.static = (rootOrOptions, options) => {
-
-
     let {
         root,
         cacheControlFunc,
         contentTypeFunc,
         etagOverride,
-        contextPathOverride,
+        getCleanPath,
         throwErrors,
         errorMessage
     } = optionsParser.parseRootAndOptions(rootOrOptions, options);
-
-    if (!errorMessage) {
-        root = resolvePath(root.replace(/^\/+/, ''));
-        errorMessage = getPathError(root);
-        root = "/" + root;
-    }
-    if (!errorMessage) {
-        // TODO: verify that root exists and is a directory?
-        if (!root) {
-            errorMessage = "is empty or all-spaces";
-        }
-    }
-    if (errorMessage) {
-        errorMessage = `Illegal root argument (or .root option attribute) '${root}': ${errorMessage}`;
-    }
 
     if (errorMessage) {
         throw Error(errorMessage);
     }
 
+    root = resolveRoot(root, errorMessage);
+
+    // Allow option override of the function that gets the relative resource path from the request
+    const getRelativePathFunc = getCleanPath || getRelativeResourcePath;
 
     return function getStatic(request) {
         try {
-            const { path, pathError }  = getPathFromRequest(request, root, contextPathOverride);
+            const relativePath = getRelativePathFunc(request);
 
-            const { resource, response400 } = getResourceOr400(path, pathError);
+            const error = getPathError(relativePath);
+            const pathError = (error)
+                ? `Illegal relative resource path '${relativePath}': ${error}`      // 400-type error
+                : error;
+
+
+            const absolutePath = `${root}/${relativePath}`;
+
+            const { resource, response400 } = getResourceOr400(absolutePath, pathError);
             if (response400) {
                 return response400;
             }
 
-            const { etag, response304 } = getEtagOr304(path, request, etagOverride);
+            const { etag, response304 } = getEtagOr304(absolutePath, request, etagOverride);
             if (response304) {
                 return response304
             }
 
-            return getResponse200(path, resource, contentTypeFunc, cacheControlFunc, etag);
+            return getResponse200(absolutePath, resource, contentTypeFunc, cacheControlFunc, etag);
 
         } catch (e) {
             return errorLogAndResponse500(e, throwErrors, rootOrOptions, options, "static", "Root");

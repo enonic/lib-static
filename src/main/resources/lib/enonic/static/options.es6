@@ -179,11 +179,15 @@ const parseStringAndOptions = (stringOrOptions, options, attributeKey) => {
             cacheControl,
             contentType,
             etag,
-            contextPathOverride
+            getCleanPath
         } = useOptions;
 
         const cacheControlFunc = getCacheControlFunc(cacheControl);
         const contentTypeFunc = getContentTypeFunc(contentType);
+
+        if (getCleanPath !== undefined && typeof getCleanPath !== 'function') {
+            throw Error(`Unexpected type of 'getCleanPath' parameter: '${typeof getCleanPath}'. Expected a function. getCleanPath is: ${JSON.stringify(getCleanPath)}`);
+        }
 
         verifyEtagOption(etag);
 
@@ -191,7 +195,7 @@ const parseStringAndOptions = (stringOrOptions, options, attributeKey) => {
             cacheControlFunc,
             contentTypeFunc,
             throwErrors,
-            contextPathOverride,
+            getCleanPath,
             etagOverride: etag
         };
         output[attributeKey] = pathOrRoot;
@@ -228,6 +232,7 @@ const parseStringAndOptions = (stringOrOptions, options, attributeKey) => {
  * @param options {{
  *                  contentType: (string|boolean|object|function(path, resource): string)?,
  *                  cacheControl: (string|boolean|function(path, resource, mimeType): string)?,
+ *                  getCleanPath: (function: string)?,
  *                  etag: (boolean?),
  *                  throwErrors: (boolean?)
  *           }} Options object (only applies if pathOrOptions is a string). Any path string here will be ignored.
@@ -237,6 +242,7 @@ const parseStringAndOptions = (stringOrOptions, options, attributeKey) => {
  *          etagOverride: (boolean?),
  *          cacheControlFunc: (function(path, resource, mimeType): string),
  *          contentTypeFunc: (function(path, resource): string),
+ *          getCleanPath: (function: string)?,
  *          throwErrors: (boolean)
  *      } | {
  *          errorMessage: string,
@@ -263,6 +269,7 @@ exports.parsePathAndOptions = (pathOrOptions, options) =>
  * @param options {{
  *                  contentType: (string|boolean|object|function(path, resource): string)?,
  *                  cacheControl: (string|boolean|function(path, resource, mimeType): string)?,
+ *                  getCleanPath: (function: string)?,
  *                  etag: (boolean?),
  *                  throwErrors: (boolean?)
  *           }} Options object (only applies if rootOrOptions is a string). Any root string here will be ignored. NOTE: the contentType and cacheControl functions should take full path params for each individual resource, not just root. The same applies to the returned cacheControlFunc and contentTypeFunc - exactly like with index.js.get.
@@ -272,6 +279,7 @@ exports.parsePathAndOptions = (pathOrOptions, options) =>
  *          etagOverride: (boolean?),
  *          cacheControlFunc: (function(path, resource, mimeType): string),
  *          contentTypeFunc: (function(path, resource): string),
+ *          getCleanPath: (function: string)?,
  *          throwErrors: (boolean)
  *      } | {
  *          errorMessage: string,

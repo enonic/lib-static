@@ -113,14 +113,7 @@ exports.get = (request) => {
 
 The path to the actual asset is determined by the URL path (`request.path`). This relative to the access URL of the controller itself. 
 
-
-NOTE: It's recommended to use `.static` in an XP [service controller](https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service). Here, routing is included, the endpoint's rootpath is already in `request.contextPath`, and relative asset path is automatically determined. However, if you use `.static` in a non-service controller, you must supply the endpoint's rootpath in options, as `contextPathOverride`!  
-
-For example, if _getAnyStatic.es6_ is accessed with a [controller mapping](https://developer.enonic.com/docs/xp/stable/cms/mappings) at `https://someDomain.com/resources/public`, then that's an endpoint with the rootpath `resources/public`. Since this is not a service, we add the contextPathOverride option:
-
-`const getStatic = libStatic.static('my-resources', {contextPathOverride: 'resources/public'});`
-
-Now the URL `https://someDomain.com/resources/public/subfolder/target-resource.xml` will return the static resource _/my-resources/subfolder/target-resource.xml_ from the JAR (a.k.a. _build/resources/main/my-resources/subfolder/target-resource.xml_ in dev mode).
+NOTE: It's recommended to use `.static` in an [XP service controller](https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service). Here, routing is included and easy to handle: the endpoint's standard root path is already in `request.contextPath`, and the asset path is automatically determined relative to that. If you use `.static` in a context where the asset path (relative to `root`) can't be determined by simply subtracting `request.contextPath` from the beginning of `request.rawPath`, you should add a `getCleanPath` [option parameter](#options).
 
 Same example as above, but simplified and without options:
 ```
@@ -229,7 +222,7 @@ NOTE: mutable assets should not be served with this header! See [below](#mutable
 As described above, an object can be added with optional attributes to **override** the [default behaviour](#behaviour):
 
 ```
-{ cacheControl, contentType, etag, throwErrors, contextPathOverride }
+{ cacheControl, contentType, etag, getCleanPath, throwErrors }
 ```
 
 ### Params:
@@ -246,10 +239,29 @@ As described above, an object can be added with optional attributes to **overrid
 - `etag` (boolean, optional): The default behavior of lib-static is to generate/handle ETag in prod, while skipping it entirely in dev mode.
     - Setting the etag parameter to `false` will turn **off** etag processing (runtime content processing, headers and handling) in **prod** too.
     - Setting it to `true` will turn it **on in dev mode** too.
+- `getCleanPath` (function, optional): Only used in [.static](#api-static). The default behavior of the returned `getStatic` function is to take a request object, and compare the beginning of the current requested path (`request.rawPath`) to the endpoint's own root path (`request.contextPath`) and get a relative asset path below `root` (so that later, prefixing the `root` value to that relative path will give the absolute full path to the resource in the JAR). In cases where this default behavior is not enough, you can override it by adding a `getCleanPath` param: `(request) => 'resource/path/below/root'`. Emphasis: the returned 'clean' path from this function should be _relative to the `root` folder_, not an absolute path in the JAR.
+    - **For example:** if _getAnyStatic.es6_ is accessed with a [controller mapping](https://developer.enonic.com/docs/xp/stable/cms/mappings) at `https://someDomain.com/resources/public`, then that's an endpoint with the path `resources/public` - but that can't be determined from the request. So the automatic extraction of a relative path needs a `getCleanPath` override. Very simplified here:
+    ```
+    const getStatic = libStatic.static(
+        'my-resources', 
+        { 
+            getCleanPath: (request) => {
+                if (!resource.rawPath.startsWith('resources/public') { throw Error('Ooops'); }
+                return resource.rawPath.substring('resources/public'.length);
+            }
+        }
+    );
+    ```
+    - Now, since `request.rawPath` doesn't include the protocol or domain, the URL `https://someDomain.com/resources/public/subfolder/target-resource.xml` will make `getCleanPath` return `/subfolder/target-resource.xml`, which together with `root` will look up the resource _/my-resources/subfolder/target-resource.xml_ in the JAR (a.k.a. _build/resources/main/my-resources/subfolder/target-resource.xml_ in dev mode).
 - `throwErrors` (boolean, default is `false`): by default, the `.get` method should not throw errors when used correctly. Instead, it internally server-logs (and hash-ID-tags) errors and automatically outputs a 500 error response. 
   - Setting `throwErrors` to `true` overrides this: the 500-response generation is skipped, and the error is re-thrown down to the calling context, to be handled there. 
   - This does not apply to 404-not-found type "errors", they will always generate a 404-response either way. 
-- `contextPathOverride`: Only used in [.static](#api-static). The default behavior of the returned `getStatic` function is to take a request object, and compare the current path to the endpoint's rootpath to get a relative asset path (below `root` in the JAR). This is done by looking at `request.contextPath` and removing that from `request.path`. However, contextPath only works well in an XP service - if you want to use `static` elsewhere, for example with a controller mapping, you need to supply the endpoint's root path to `contextPathOverride`.
+
+
+
+
+
+
 
 In addition, you may supply a `path` or `root` param ([.get](#api-get) or [.static](#api-static), respectively). If a positional `path` or `root` argument is used and the options object is the second argument, then `path` or `root` parameters will be ignored in the options object.
 
