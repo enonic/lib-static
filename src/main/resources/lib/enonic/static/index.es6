@@ -75,7 +75,9 @@ const errorLogAndResponse500 = (e, throwErrors, stringOrOptions, options, method
 
 const getResourceOr400 = (path, pathError) => {
     if (pathError) {
-        // TODO: In prod mode, the pathError will just be swallowed. Log it?
+        if (!IS_DEV) {
+            log.warning(pathError);
+        }
         return {
             response400: (IS_DEV)
                 ? {
@@ -91,6 +93,9 @@ const getResourceOr400 = (path, pathError) => {
 
     const resource = ioLib.getResource(path);
     if (!resource.exists()) {
+        if (!IS_DEV) {
+            log.warning(`Not found: ${path}`);
+        }
         return {
             response400: (IS_DEV)
                 ? {
@@ -131,12 +136,13 @@ exports.get = (pathOrOptions, options) => {
         path = path.replace(/^\/+/, '');
         const pathError = getPathError(path);
 
+        path = `/${path}`;
+
         const { resource, response400 } = getResourceOr400(path, pathError ? `Resource path '${path}' ${pathError}` : undefined);
         if (response400) {
             return response400;
         }
 
-        path = `/${path}`;
 
         const etag = etagReader.read(path, etagOverride);
 

@@ -255,7 +255,7 @@ As described above, an object can be added with optional attributes to **overrid
     - Now, since `request.rawPath` doesn't include the protocol or domain, the URL `https://someDomain.com/resources/public/subfolder/target-resource.xml` will make `getCleanPath` return `/subfolder/target-resource.xml`, which together with `root` will look up the resource _/my-resources/subfolder/target-resource.xml_ in the JAR (a.k.a. _build/resources/main/my-resources/subfolder/target-resource.xml_ in dev mode).
 - `throwErrors` (boolean, default is `false`): by default, the `.get` method should not throw errors when used correctly. Instead, it internally server-logs (and hash-ID-tags) errors and automatically outputs a 500 error response. 
   - Setting `throwErrors` to `true` overrides this: the 500-response generation is skipped, and the error is re-thrown down to the calling context, to be handled there. 
-  - This does not apply to 404-not-found type "errors", they will always generate a 404-response either way. 
+  - This does not apply to 404-not-found type "errors", they will always generate a 404-response either way.
 
 
 
