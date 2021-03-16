@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import com.enonic.xp.resource.ResourceKey;
 import com.enonic.xp.resource.ResourceService;
 import com.enonic.xp.testing.ScriptTestSupport;
+import com.enonic.xp.testing.resource.ClassLoaderResourceService;
 
 import static org.junit.Assert.*;
 

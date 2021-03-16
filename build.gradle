@@ -20,7 +20,7 @@ dependencies {
 
 repositories {
     jcenter()
-    xp.enonicRepo()
+    xp.enonicRepo('dev')
 }
 
 // This task takes care of es6 under src/main/resources/site. You can replace it with build steps of your own if you want.
