@@ -4,9 +4,14 @@ const lib = require('./index');
 const t = require('/lib/xp/testing');
 
 
-
 const optionsParser = require('/lib/enonic/static/options');
 
+
+t.mock('/lib/enonic/static/runMode.js', {
+    isDev: function () {
+        return true;
+    }
+});
 
 
 //////////////////////////////////////////////////////////////////  TEST .get
@@ -16,9 +21,10 @@ const optionsParser = require('/lib/enonic/static/options');
 exports.testGet_path_Asset_FullDefaultResponse = () => {
     const result = lib.get('/assets/asset-test-target.txt');
 
-    t.assertEquals("I am a test asset\n", ioLib.readText(result.body));
     t.assertEquals(200, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
+    t.assertEquals("I am a test asset\n", ioLib.readText(result.body));
 
     t.assertTrue(!!result.headers);
     t.assertEquals('object', typeof result.headers);
@@ -27,8 +33,8 @@ exports.testGet_path_Asset_FullDefaultResponse = () => {
     t.assertEquals(optionsParser.DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"]);
 
     log.info(".get: full get response readout (" +
-    	(typeof result + (result && typeof result === 'object' ? (" with keys: " + JSON.stringify(Object.keys(result))) : "")
-    	) + "): " + JSON.stringify(result, null, 2)
+        (typeof result + (result && typeof result === 'object' ? (" with keys: " + JSON.stringify(Object.keys(result))) : "")
+        ) + "): " + JSON.stringify(result, null, 2)
     );
 };
 
@@ -37,7 +43,8 @@ exports.testGet_optionsPath = () => {
 
     t.assertEquals("I am a test asset\n", ioLib.readText(result.body));
     t.assertEquals(200, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
 
     t.assertTrue(!!result.headers);
     t.assertEquals('object', typeof result.headers);
@@ -51,7 +58,8 @@ exports.testGet_path_HTML_FullDefaultResponse = () => {
 
     t.assertEquals("<html><body><p>I am a test HTML</p></body></html>\n", ioLib.readText(result.body));
     t.assertEquals(200, result.status);
-    t.assertEquals("text/html", result.contentType);
+    t.assertTrue(!!result.contentType);
+    t.assertTrue(result.contentType.indexOf("text/html") !== -1);
 
     t.assertTrue(!!result.headers);
     t.assertEquals('object', typeof result.headers);
@@ -63,7 +71,8 @@ exports.testGet_path_HTML_FullDefaultResponse = () => {
 exports.testGet_path_Css = () => {
     const result = lib.get('/static/static-test-css.css');
 
-    t.assertEquals("text/css", result.contentType);
+    t.assertTrue(!!result.contentType);
+    t.assertTrue(result.contentType.indexOf("text/css") !== -1);
     t.assertEquals(".i.am.a.test.css {\n\n}\n", ioLib.readText(result.body));
 
     t.assertTrue(!!result.headers);
@@ -76,7 +85,8 @@ exports.testGet_path_Css = () => {
 exports.testGet_path_JS = () => {
     const result = lib.get('/static/static-test-js.js');
 
-    t.assertEquals("application/javascript", result.contentType);
+    t.assertTrue(!!result.contentType);
+    t.assertTrue(result.contentType.indexOf("application/javascript") !== -1);
     t.assertEquals("console.log(\"I am a test js\");\n", ioLib.readText(result.body));
 
     t.assertTrue(!!result.headers);
@@ -89,7 +99,8 @@ exports.testGet_path_JS = () => {
 exports.testGet_path_JSON = () => {
     const result = lib.get('/static/static-test-json.json');
 
-    t.assertEquals("application/json", result.contentType);
+    t.assertTrue(!!result.contentType);
+    t.assertTrue(result.contentType.indexOf("application/json") !== -1);
     t.assertEquals(`{
   "I": {
     "am": "a",
@@ -108,7 +119,8 @@ exports.testGet_path_JSON = () => {
 exports.testGet_path_XML = () => {
     const result = lib.get('/static/static-test-xml.xml');
 
-    t.assertEquals("text/xml", result.contentType);
+    t.assertTrue(!!result.contentType);
+    t.assertTrue(result.contentType.indexOf("text/xml") !== -1);
     t.assertEquals(`<I>
     <am>a</am>
     <test>xml</test>
@@ -125,7 +137,8 @@ exports.testGet_path_XML = () => {
 exports.testGet_path_Text = () => {
     const result = lib.get('/static/static-test-text.txt');
 
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertEquals("I am a test text\n", ioLib.readText(result.body));
 
     t.assertTrue(!!result.headers);
@@ -139,7 +152,8 @@ exports.testGet_path_JPG = () => {
     const result = lib.get('/static/w3c_home.jpg');
 
     t.assertEquals(200, result.status);
-    t.assertEquals("image/jpeg", result.contentType);
+    t.assertTrue(!!result.contentType);
+    t.assertTrue(result.contentType.indexOf("image/jpeg") !== -1);
 
     t.assertTrue(!!result.headers);
     t.assertEquals('object', typeof result.headers);
@@ -152,7 +166,8 @@ exports.testGet_path_GIF = () => {
     const result = lib.get('/static/w3c_home.gif');
 
     t.assertEquals(200, result.status);
-    t.assertEquals("image/gif", result.contentType);
+    t.assertTrue(!!result.contentType);
+    t.assertTrue(result.contentType.indexOf("image/gif") !== -1);
 
     t.assertTrue(!!result.headers);
     t.assertEquals('object', typeof result.headers);
@@ -162,7 +177,6 @@ exports.testGet_path_GIF = () => {
 };
 
 
-
 // Path error handling
 
 exports.testGet_fail_path_NotFound_should404 = () => {
@@ -170,7 +184,8 @@ exports.testGet_fail_path_NotFound_should404 = () => {
 
     t.assertTrue(!!result.body);
     t.assertEquals(404, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
     t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
 
@@ -182,7 +197,8 @@ exports.testGet_fail_path_empty_should400 = () => {
 
     t.assertTrue(!!result.body);
     t.assertEquals(400, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
     t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
 
@@ -194,7 +210,8 @@ exports.testGet_fail_path_spaces_should400 = () => {
 
     t.assertTrue(!!result.body);
     t.assertEquals(400, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
     t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
 
@@ -206,7 +223,8 @@ exports.testGet_fail_path_slash_should400 = () => {
 
     t.assertTrue(!!result.body);
     t.assertEquals(400, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
     t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
 
@@ -218,7 +236,8 @@ exports.testGet_fail_path_slashes_should400 = () => {
 
     t.assertTrue(!!result.body);
     t.assertEquals(400, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
     t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
 
@@ -226,11 +245,12 @@ exports.testGet_fail_path_slashes_should400 = () => {
 }
 
 exports.testGet_fail_path_optionsArg_NotFound_should404 = () => {
-    const result = lib.get({path:'/static/doesNotExist.txt'});
+    const result = lib.get({path: '/static/doesNotExist.txt'});
 
     t.assertTrue(!!result.body);
     t.assertEquals(404, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
     t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
 
@@ -238,11 +258,12 @@ exports.testGet_fail_path_optionsArg_NotFound_should404 = () => {
 }
 
 exports.testGet_fail_path_optionsArg_empty_should400 = () => {
-    const result = lib.get({path:''});
+    const result = lib.get({path: ''});
 
     t.assertTrue(!!result.body);
     t.assertEquals(400, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
     t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
 
@@ -250,11 +271,12 @@ exports.testGet_fail_path_optionsArg_empty_should400 = () => {
 }
 
 exports.testGet_fail_path_optionsArg_spaces_should400 = () => {
-    const result = lib.get({path:'  '});
+    const result = lib.get({path: '  '});
 
     t.assertTrue(!!result.body);
     t.assertEquals(400, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
     t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
 
@@ -262,11 +284,12 @@ exports.testGet_fail_path_optionsArg_spaces_should400 = () => {
 }
 
 exports.testGet_fail_path_optionsArg_slash_should400 = () => {
-    const result = lib.get({path:'/'});
+    const result = lib.get({path: '/'});
 
     t.assertTrue(!!result.body);
     t.assertEquals(400, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
     t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
 
@@ -274,11 +297,12 @@ exports.testGet_fail_path_optionsArg_slash_should400 = () => {
 }
 
 exports.testGet_fail_path_optionsArg_slashes_should400 = () => {
-    const result = lib.get({path:'///'});
+    const result = lib.get({path: '///'});
 
     t.assertTrue(!!result.body);
     t.assertEquals(400, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
     t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
 
@@ -292,7 +316,8 @@ exports.testGet_fail_optionParsingError_should500withMessage = () => {
 
     t.assertTrue(!!result.body);
     t.assertEquals(500, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
     t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
 
@@ -303,7 +328,8 @@ exports.testGet_fail_optionParsingError_should500withMessage = () => {
 
     t.assertTrue(!!result.body);
     t.assertEquals(500, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
     t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
 
@@ -330,7 +356,8 @@ exports.testGet_fail_pathParsingError_should500withMessage = () => {
 
     t.assertTrue(!!result.body);
     t.assertEquals(500, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
     t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
 
@@ -360,7 +387,8 @@ exports.testGet_fail_contentTypeFunc_runtimeError_should500withMessage = () => {
 
     t.assertTrue(!!result.body);
     t.assertEquals(500, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
     t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
 
@@ -395,7 +423,8 @@ exports.testGet_fail_cacheControlFunc_runtimeError_should500withMessage = () => 
 
     t.assertTrue(!!result.body);
     t.assertEquals(500, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
     t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
 
@@ -585,20 +614,6 @@ exports.testGetPathError_colon_shouldReturnNonEmptyErrorMessage = () => {
 
     log.info("OK: " + errorMessage);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 //////////////////////////////////////////////////////////////////////  TEST .static
@@ -849,9 +864,6 @@ exports.testStatic_fail_optionParsingError_arg1_shouldThrowErrorEvenWithThrowErr
 }
 
 
-
-
-
 //////////////////////////////////////////////////////////////////////////////////  Test the returned getStatic func
 
 exports.testGetStatic_root_Asset_FullDefaultResponse = () => {
@@ -859,7 +871,7 @@ exports.testGetStatic_root_Asset_FullDefaultResponse = () => {
 
     // Simulate an XP GET request from frontend
     const request = {
-        path: 'my/endpoint/asset-test-target.txt',              // This path, in context of contextPath, yields the relative path 'asset-test-target.txt',
+        rawPath: 'my/endpoint/asset-test-target.txt',              // This path, in context of contextPath, yields the relative path 'asset-test-target.txt',
         contextPath: 'my/endpoint'                              // which together with the root folder 'assets' becomes the full asset path: 'assets/asset-test-target.txt'
     };
 
@@ -867,7 +879,8 @@ exports.testGetStatic_root_Asset_FullDefaultResponse = () => {
 
     t.assertEquals("I am a test asset\n", ioLib.readText(result.body));
     t.assertEquals(200, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
 
     t.assertTrue(!!result.headers);
     t.assertEquals('object', typeof result.headers);
@@ -882,13 +895,12 @@ exports.testGetStatic_root_Asset_FullDefaultResponse = () => {
 };
 
 
-
 exports.testGetStatic_optionsRoot = () => {
     const getStatic = lib.static({root: 'assets'});            // Root folder: '/assets/'
 
     // Simulate an XP GET request from frontend
     const request = {
-        path: 'my/endpoint/asset-test-target.txt',              // This path, in context of contextPath, yields the relative path 'asset-test-target.txt',
+        rawPath: 'my/endpoint/asset-test-target.txt',              // This path, in context of contextPath, yields the relative path 'asset-test-target.txt',
         contextPath: 'my/endpoint'                              // which together with the root folder 'assets' becomes the full asset path: 'assets/asset-test-target.txt'
     };
 
@@ -896,7 +908,8 @@ exports.testGetStatic_optionsRoot = () => {
 
     t.assertEquals("I am a test asset\n", ioLib.readText(result.body));
     t.assertEquals(200, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
 
     t.assertTrue(!!result.headers);
     t.assertEquals('object', typeof result.headers);
@@ -909,7 +922,7 @@ exports.testGetStatic_ifNoneMatch_matchingEtagValues_should304 = () => {
     const getStatic = lib.static('assets');
 
     const request = {
-        path: 'my/endpoint/asset-test-target.txt',
+        rawPath: 'my/endpoint/asset-test-target.txt',
         contextPath: 'my/endpoint',
         headers: {
             'If-None-Match': 'djsptplmcdcidp39wx6ydiwn3'        // <-- TODO: Copied from output. Should mock instead.
@@ -925,7 +938,7 @@ exports.testGetStatic_ifNoneMatch_nonMatchingEtagValues_should200WithUpdatedCont
     const getStatic = lib.static('assets');
 
     const request = {
-        path: 'my/endpoint/asset-test-target.txt',
+        rawPath: 'my/endpoint/asset-test-target.txt',
         contextPath: 'my/endpoint',
         headers: {
             'If-None-Match': 'oldEtagValue87654321'
@@ -936,7 +949,8 @@ exports.testGetStatic_ifNoneMatch_nonMatchingEtagValues_should200WithUpdatedCont
 
     t.assertEquals("I am a test asset\n", ioLib.readText(result.body));
     t.assertEquals(200, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
 
     t.assertTrue(!!result.headers);
     t.assertEquals('object', typeof result.headers);
@@ -945,45 +959,51 @@ exports.testGetStatic_ifNoneMatch_nonMatchingEtagValues_should200WithUpdatedCont
     t.assertNotEquals("oldEtagValue87654321", (result.headers || {}).ETag); // a NEW ETag header should be generated
 };
 
-exports.testGetStatic_option_arg2_contextPathOverride = () => {
-    const getStatic = lib.static('assets', {contextPathOverride: 'my/endpoint'});
+exports.testGetStatic_option_arg2_getCleanPath = () => {
+    const getStatic = lib.static('assets', {
+        getCleanPath: request =>  request.rawPath.substring('my/endpoint'.length)
+    });
 
     // Simulate an XP GET request from a frontend that's NOT a prefix that leaves a relative asset path:
     const request = {
-        path: 'my/endpoint/asset-test-target.txt',              // This path, in context of contextPathOVERRIDE ABOVE, yields the relative path 'asset-test-target.txt',
-        contextPath: 'a/different/endpoint'                     // which together with the root folder 'assets' becomes the full asset path: 'assets/asset-test-target.txt'
+        rawPath: 'my/endpoint/asset-test-target.txt',               // Uses the getCleanPath option instead of the contextPath, to return the relative path 'asset-test-target.txt',
+        contextPath: 'this/is/ignored'                              // which together with the root folder 'assets' becomes the full asset rawPath: 'assets/asset-test-target.txt'
     };
 
     const result = getStatic(request);
 
     t.assertEquals("I am a test asset\n", ioLib.readText(result.body));
     t.assertEquals(200, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
 };
 
-exports.testGetStatic_option_arg1_contextPathOverride = () => {
-    const getStatic = lib.static({root: 'assets', contextPathOverride: 'my/endpoint'});
+exports.testGetStatic_option_arg1_getCleanPath = () => {
+    const getStatic = lib.static({
+        root: 'assets',
+        getCleanPath: request =>  request.rawPath.substring('my/endpoint'.length)
+    });
 
     // Simulate an XP GET request from a frontend that's NOT a prefix that leaves a relative asset path:
     const request = {
-        path: 'my/endpoint/asset-test-target.txt',              // This path, in context of contextPathOVERRIDE ABOVE, yields the relative path 'asset-test-target.txt',
-        contextPath: 'a/different/endpoint'                     // which together with the root folder 'assets' becomes the full asset path: 'assets/asset-test-target.txt'
+        rawPath: 'my/endpoint/asset-test-target.txt',               // Uses the getCleanPath option instead of the contextPath, to return the relative path 'asset-test-target.txt',
+        contextPath: 'this/is/ignored'                              // which together with the root folder 'assets' becomes the full asset rawPath: 'assets/asset-test-target.txt'
     };
 
     const result = getStatic(request);
 
     t.assertEquals("I am a test asset\n", ioLib.readText(result.body));
     t.assertEquals(200, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
 };
-
 
 
 exports.testGetStatic_HTML_FullDefaultResponse = () => {
 
     const getStatic = lib.static('static');
     const request = {
-        path: 'my/endpoint/static-test-html.html',
+        rawPath: 'my/endpoint/static-test-html.html',
         contextPath: 'my/endpoint'
     };                                                  // --> /static/static-test-html.html
 
@@ -991,7 +1011,8 @@ exports.testGetStatic_HTML_FullDefaultResponse = () => {
 
     t.assertEquals("<html><body><p>I am a test HTML</p></body></html>\n", ioLib.readText(result.body));
     t.assertEquals(200, result.status);
-    t.assertEquals("text/html", result.contentType);
+    t.assertTrue(!!result.contentType);
+    t.assertTrue(result.contentType.indexOf("text/html") !== -1);
 
     t.assertTrue(!!result.headers);
     t.assertEquals('object', typeof result.headers);
@@ -1003,13 +1024,14 @@ exports.testGetStatic_HTML_FullDefaultResponse = () => {
 exports.testGetStatic_Css = () => {
     const getStatic = lib.static('static');
     const request = {
-        path: 'my/endpoint/static-test-css.css',
+        rawPath: 'my/endpoint/static-test-css.css',
         contextPath: 'my/endpoint'
     };                                                  // --> /static/static-test-css.css
 
     const result = getStatic(request);
 
-    t.assertEquals("text/css", result.contentType);
+    t.assertTrue(!!result.contentType);
+    t.assertTrue(result.contentType.indexOf("text/css") !== -1);
     t.assertEquals(".i.am.a.test.css {\n\n}\n", ioLib.readText(result.body));
 
     t.assertTrue(!!result.headers);
@@ -1022,14 +1044,15 @@ exports.testGetStatic_Css = () => {
 exports.testGetStatic_JS = () => {
     const getStatic = lib.static('static');
     const request = {
-        path: 'my/endpoint/static-test-js.js',
+        rawPath: 'my/endpoint/static-test-js.js',
         contextPath: 'my/endpoint'
     };                                                  // --> /static/static-test-js.js
 
     const result = getStatic(request);
 
 
-    t.assertEquals("application/javascript", result.contentType);
+    t.assertTrue(!!result.contentType);
+    t.assertTrue(result.contentType.indexOf("application/javascript") !== -1);
     t.assertEquals("console.log(\"I am a test js\");\n", ioLib.readText(result.body));
 
     t.assertTrue(!!result.headers);
@@ -1042,13 +1065,14 @@ exports.testGetStatic_JS = () => {
 exports.testGetStatic_JSON = () => {
     const getStatic = lib.static('static');
     const request = {
-        path: 'my/endpoint/static-test-json.json',
+        rawPath: 'my/endpoint/static-test-json.json',
         contextPath: 'my/endpoint'
     };                                                  // --> /static/static-test-json.json
 
     const result = getStatic(request);
 
-    t.assertEquals("application/json", result.contentType);
+    t.assertTrue(!!result.contentType);
+    t.assertTrue(result.contentType.indexOf("application/json") !== -1);
     t.assertEquals(`{
   "I": {
     "am": "a",
@@ -1067,13 +1091,14 @@ exports.testGetStatic_JSON = () => {
 exports.testGetStatic_XML = () => {
     const getStatic = lib.static('static');
     const request = {
-        path: 'my/endpoint/static-test-xml.xml',
+        rawPath: 'my/endpoint/static-test-xml.xml',
         contextPath: 'my/endpoint'
     };                                                  // --> /static/static-test-xml.xml
 
     const result = getStatic(request);
 
-    t.assertEquals("text/xml", result.contentType);
+    t.assertTrue(!!result.contentType);
+    t.assertTrue(result.contentType.indexOf("text/xml") !== -1);
     t.assertEquals(`<I>
     <am>a</am>
     <test>xml</test>
@@ -1090,13 +1115,14 @@ exports.testGetStatic_XML = () => {
 exports.testGetStatic_Text = () => {
     const getStatic = lib.static('static');
     const request = {
-        path: 'my/endpoint/static-test-text.txt',
+        rawPath: 'my/endpoint/static-test-text.txt',
         contextPath: 'my/endpoint'
     };                                                  // --> /static/static-test-text.txt
 
     const result = getStatic(request);
 
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertEquals("I am a test text\n", ioLib.readText(result.body));
 
     t.assertTrue(!!result.headers);
@@ -1109,14 +1135,15 @@ exports.testGetStatic_Text = () => {
 exports.testGetStatic_JPG = () => {
     const getStatic = lib.static('static');
     const request = {
-        path: 'my/endpoint/w3c_home.jpg',
+        rawPath: 'my/endpoint/w3c_home.jpg',
         contextPath: 'my/endpoint'
     };                                                  // --> /static/w3c_home.jpg
 
     const result = getStatic(request);
 
     t.assertEquals(200, result.status);
-    t.assertEquals("image/jpeg", result.contentType);
+    t.assertTrue(!!result.contentType);
+    t.assertTrue(result.contentType.indexOf("image/jpeg") !== -1);
 
     t.assertTrue(!!result.headers);
     t.assertEquals('object', typeof result.headers);
@@ -1128,14 +1155,15 @@ exports.testGetStatic_JPG = () => {
 exports.testGetStatic_GIF = () => {
     const getStatic = lib.static('static');
     const request = {
-        path: 'my/endpoint/w3c_home.gif',
+        rawPath: 'my/endpoint/w3c_home.gif',
         contextPath: 'my/endpoint'
     };                                                  // --> /static/w3c_home.gif
 
     const result = getStatic(request);
 
     t.assertEquals(200, result.status);
-    t.assertEquals("image/gif", result.contentType);
+    t.assertTrue(!!result.contentType);
+    t.assertTrue(result.contentType.indexOf("image/gif") !== -1);
 
     t.assertTrue(!!result.headers);
     t.assertEquals('object', typeof result.headers);
@@ -1145,15 +1173,13 @@ exports.testGetStatic_GIF = () => {
 };
 
 
-
-
 /////////////  Test getStatic errorHandling
 
 
 exports.testGetStatic_fail_rootArg_NotFoundFile_should404 = () => {
     const getStatic = lib.static('static');
     const request = {
-        path: 'my/endpoint/doesNotExist.txt',
+        rawPath: 'my/endpoint/doesNotExist.txt',
         contextPath: 'my/endpoint'
     };                                                  // --> /static/doesNotExist.txt
 
@@ -1161,7 +1187,8 @@ exports.testGetStatic_fail_rootArg_NotFoundFile_should404 = () => {
 
     t.assertTrue(!!result.body);
     t.assertEquals(404, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
     t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
 
@@ -1170,7 +1197,7 @@ exports.testGetStatic_fail_rootArg_NotFoundFile_should404 = () => {
 exports.testGetStatic_fail_optionsArg_NotFoundFile_should404 = () => {
     const getStatic = lib.static({root: 'static'});              // Same as above, just root as named parameter
     const request = {
-        path: 'my/endpoint/doesNotExist.txt',
+        rawPath: 'my/endpoint/doesNotExist.txt',
         contextPath: 'my/endpoint'
     };
 
@@ -1178,7 +1205,8 @@ exports.testGetStatic_fail_optionsArg_NotFoundFile_should404 = () => {
 
     t.assertTrue(!!result.body);
     t.assertEquals(404, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']);
     t.assertTrue(!(result.headers || {}).ETag);
 
@@ -1187,7 +1215,7 @@ exports.testGetStatic_fail_optionsArg_NotFoundFile_should404 = () => {
 exports.testGetStatic_fail_NotFoundInRoot_should404 = () => {
     const getStatic = lib.static('assets');
     const request = {
-        path: 'my/endpoint/static-test-text.txt',
+        rawPath: 'my/endpoint/static-test-text.txt',
         contextPath: 'my/endpoint'
     };                                                  // --> /assets/static-test-text.txt does not exist
 
@@ -1195,7 +1223,8 @@ exports.testGetStatic_fail_NotFoundInRoot_should404 = () => {
 
     t.assertTrue(!!result.body);
     t.assertEquals(404, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
     t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
 
@@ -1205,7 +1234,7 @@ exports.testGetStatic_fail_NotFoundInRoot_should404 = () => {
 exports.testGetStatic_fail_empty_should400 = () => {
     const getStatic = lib.static('assets');
     const request = {
-        path: 'my/endpoint',                                // --> /assets/ yields empty relative path
+        rawPath: 'my/endpoint',                                // --> /assets/ yields empty relative path
         contextPath: 'my/endpoint'
     };
 
@@ -1213,7 +1242,8 @@ exports.testGetStatic_fail_empty_should400 = () => {
 
     t.assertTrue(!!result.body);
     t.assertEquals(400, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
     t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
 
@@ -1223,7 +1253,7 @@ exports.testGetStatic_fail_empty_should400 = () => {
 exports.testGetStatic_fail_slash_should400 = () => {
     const getStatic = lib.static('assets');
     const request = {
-        path: 'my/endpoint/',                                // --> yields relative path '/'
+        rawPath: 'my/endpoint/',                                // --> yields relative path '/'
         contextPath: 'my/endpoint'
     };
 
@@ -1231,7 +1261,8 @@ exports.testGetStatic_fail_slash_should400 = () => {
 
     t.assertTrue(!!result.body);
     t.assertEquals(400, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
     t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
 
@@ -1240,7 +1271,7 @@ exports.testGetStatic_fail_slash_should400 = () => {
 exports.testGetStatic_fail_slashes_should400 = () => {
     const getStatic = lib.static('assets');
     const request = {
-        path: 'my/endpoint///',                                // --> yields relative path '///', counts as empty
+        rawPath: 'my/endpoint///',                                // --> yields relative path '///', counts as empty
         contextPath: 'my/endpoint'
     };
 
@@ -1248,7 +1279,8 @@ exports.testGetStatic_fail_slashes_should400 = () => {
 
     t.assertTrue(!!result.body);
     t.assertEquals(400, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
     t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
 
@@ -1257,7 +1289,7 @@ exports.testGetStatic_fail_slashes_should400 = () => {
 exports.testGetStatic_fail_illegalChars_should400 = () => {
     const getStatic = lib.static('assets');
     const request = {
-        path: 'my/endpoint/the_characters>and<are_no_good',
+        rawPath: 'my/endpoint/the_characters>and<are_no_good',
         contextPath: 'my/endpoint'
     };
 
@@ -1265,7 +1297,8 @@ exports.testGetStatic_fail_illegalChars_should400 = () => {
 
     t.assertTrue(!!result.body);
     t.assertEquals(400, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']);
     t.assertTrue(!(result.headers || {}).ETag);
 
@@ -1274,7 +1307,7 @@ exports.testGetStatic_fail_illegalChars_should400 = () => {
 exports.testGetStatic_fail_illegalDoubledots_should400 = () => {
     const getStatic = lib.static('assets');
     const request = {
-        path: 'my/endpoint/trying/to/../hack/this',
+        rawPath: 'my/endpoint/trying/to/../hack/this',
         contextPath: 'my/endpoint'
     };
 
@@ -1282,7 +1315,8 @@ exports.testGetStatic_fail_illegalDoubledots_should400 = () => {
 
     t.assertTrue(!!result.body);
     t.assertEquals(400, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']);
     t.assertTrue(!(result.headers || {}).ETag);
 
@@ -1291,7 +1325,7 @@ exports.testGetStatic_fail_illegalDoubledots_should400 = () => {
 exports.testGetStatic_fail_illegalWildcards_should400 = () => {
     const getStatic = lib.static('assets');
     const request = {
-        path: 'my/endpoint/trying/to/???/hack/*.this',
+        rawPath: 'my/endpoint/trying/to/???/hack/*.this',
         contextPath: 'my/endpoint'
     };
 
@@ -1299,7 +1333,8 @@ exports.testGetStatic_fail_illegalWildcards_should400 = () => {
 
     t.assertTrue(!!result.body);
     t.assertEquals(400, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']);
     t.assertTrue(!(result.headers || {}).ETag);
 
@@ -1308,7 +1343,7 @@ exports.testGetStatic_fail_illegalWildcards_should400 = () => {
 exports.testGetStatic_fail_pathNotUnderContextPath_should500 = () => {
     const getStatic = lib.static('assets');
     const request = {
-        path: 'another/endpoint/trying/to/???/hack/*.this',
+        rawPath: 'another/endpoint/trying/to/???/hack/*.this',
         contextPath: 'my/endpoint'
     };
 
@@ -1316,7 +1351,8 @@ exports.testGetStatic_fail_pathNotUnderContextPath_should500 = () => {
 
     t.assertTrue(!!result.body);
     t.assertEquals(500, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']);
     t.assertTrue(!(result.headers || {}).ETag);
 
@@ -1332,7 +1368,7 @@ exports.testGetStatic_fail_contentTypeFunc_runtimeError_should500withMessage = (
     });
 
     const request = {
-        path: 'another/endpoint/asset-test-target.txt',
+        rawPath: 'my/endpoint/asset-test-target.txt',
         contextPath: 'my/endpoint'
     };
 
@@ -1340,7 +1376,8 @@ exports.testGetStatic_fail_contentTypeFunc_runtimeError_should500withMessage = (
 
     t.assertTrue(!!result.body);
     t.assertEquals(500, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
     t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
 
@@ -1355,7 +1392,7 @@ exports.testGetStatic_fail_contentTypeFunc_runtimeError_throwErrors = () => {
     });
 
     const request = {
-        path: 'another/endpoint/asset-test-target.txt',
+        rawPath: 'my/endpoint/asset-test-target.txt',
         contextPath: 'my/endpoint'
     };
 
@@ -1381,7 +1418,7 @@ exports.testGetStatic_fail_cacheControlFunc_runtimeError_should500withMessage = 
     });
 
     const request = {
-        path: 'another/endpoint/asset-test-target.txt',
+        rawPath: 'my/endpoint/asset-test-target.txt',
         contextPath: 'my/endpoint'
     };
 
@@ -1389,7 +1426,8 @@ exports.testGetStatic_fail_cacheControlFunc_runtimeError_should500withMessage = 
 
     t.assertTrue(!!result.body);
     t.assertEquals(500, result.status);
-    t.assertEquals("text/plain", result.contentType);
+    t.assertTrue(typeof result.contentType === 'string');
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
     t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
     t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
 
@@ -1404,7 +1442,7 @@ exports.testGetStatic_fail_cacheControlFunc_runtimeError_throwErrors = () => {
     });
 
     const request = {
-        path: 'another/endpoint/asset-test-target.txt',
+        rawPath: 'my/endpoint/asset-test-target.txt',
         contextPath: 'my/endpoint'
     };
 
@@ -1424,50 +1462,53 @@ exports.testGetStatic_fail_cacheControlFunc_runtimeError_throwErrors = () => {
 
 // Verify that a even if the getStatic function fails once, it will keep working for new requests later
 exports.testGetStatic_fail_failuresShouldNotDestroyGetstaticFunction = () => {
-    const getStatic = lib.static({root: 'static', contextPathOverride: 'my/endpoint'});
+    const getStatic = lib.static({
+        root: 'static',
+        getCleanPath: req => req.rawPath.substring('my/endpoint'.length)
+    });
 
     let result;
 
-    result = getStatic({ path: 'my/endpoint/static-test-text.txt' });                // <-- This and many below are fine
-    t.assertEquals(200,result.status);
+    result = getStatic({rawPath: 'my/endpoint/static-test-text.txt'});                // <-- This and many below are fine, those should keep working on the same path
+    t.assertEquals(200, result.status, "Expected 200 OK. Result: " + JSON.stringify(result));
 
-    result = getStatic({ path: 'my/endpoint/bad<character'});
-    t.assertTrue(result.status >= 400, "Expected a failing getStatic call: illegal char <");
+    result = getStatic({rawPath: 'my/endpoint/bad<character'});
+    t.assertTrue(result.status >= 400, "Expected a failing getStatic call: illegal char '<'. Result: " + JSON.stringify(result));
     log.info(`OK: ${result.status} - ${result.body}`);
 
-    result = getStatic({ path: 'my/endpoint/static-test-css.css' });
-    t.assertEquals(200,result.status);
+    result = getStatic({rawPath: 'my/endpoint/static-test-css.css'});
+    t.assertEquals(200, result.status, "Expected 200 OK. Result: " + JSON.stringify(result));
 
-    result = getStatic({ path: 'my/endpoint/static-test-json.json' });
-    t.assertEquals(200,result.status);
+    result = getStatic({rawPath: 'my/endpoint/static-test-json.json'});
+    t.assertEquals(200, result.status, "Expected 200 OK. Result: " + JSON.stringify(result));
 
-    result = getStatic({ path: 'my/endpoint/bad>character'});
-    t.assertTrue(result.status >= 400, "Expected a failing getStatic call: illegal char >");
+    result = getStatic({rawPath: 'my/endpoint/bad>character'});
+    t.assertTrue(result.status >= 400, "Expected a failing getStatic call: illegal char '>'. Result: " + JSON.stringify(result));
     log.info(`OK: ${result.status} - ${result.body}`);
 
-    result = getStatic({ path: 'my/endpoint/bad/../characters'});
-    t.assertTrue(result.status >= 400, "Expected a failing getStatic call: illegal char ..");
+    result = getStatic({rawPath: 'my/endpoint/bad/../characters'});
+    t.assertTrue(result.status >= 400, "Expected a failing getStatic call: illegal chars '..'. Result: " + JSON.stringify(result));
     log.info(`OK: ${result.status} - ${result.body}`);
 
-    result = getStatic({ path: 'my/endpoint/w3c_home.gif' });
-    t.assertEquals(200,result.status);
+    result = getStatic({rawPath: 'my/endpoint/w3c_home.gif'});
+    t.assertEquals(200, result.status, "Expected 200 OK. Result: " + JSON.stringify(result));
 
-    result = getStatic({ path: 'my/endpoint/w3c_no_exist.gif'});
-    t.assertTrue(result.status >= 400, "Expected a failing getStatic call: not exist");
+    result = getStatic({rawPath: 'my/endpoint/w3c_no_exist.gif'});
+    t.assertTrue(result.status >= 400, "Expected a failing getStatic call: not exist. Result: " + JSON.stringify(result));
     log.info(`OK: ${result.status} - ${result.body}`);
 
-    result = getStatic({ path: 'my/endpoint/w3c_home.gif'});
-    t.assertEquals(200,result.status);
+    result = getStatic({rawPath: 'my/endpoint/w3c_home.gif'});
+    t.assertEquals(200, result.status, "Expected 200 OK. Result: " + JSON.stringify(result));
 
-    result = getStatic({ path: 'my/endpoint/'});
-    t.assertTrue(result.status >= 400, "Expected a failing getStatic call: missing path");
+    result = getStatic({rawPath: 'my/endpoint/'});
+    t.assertTrue(result.status >= 400, "Expected a failing getStatic call: missing path. Result: " + JSON.stringify(result));
     log.info(`OK: ${result.status} - ${result.body}`);
 
-    result = getStatic({ path: 'my/endpoint/w3c_home.jpg' });
-    t.assertEquals(200,result.status);
+    result = getStatic({rawPath: 'my/endpoint/w3c_home.jpg'});
+    t.assertEquals(200, result.status, "Expected 200 OK. Result: " + JSON.stringify(result));
 
-    result = getStatic({ path: 'why/is/this/here'});
-    t.assertTrue(result.status >= 400, "Expected a failing getStatic call: path not under contextPath");
+    result = getStatic({rawPath: 'why/is/this/here'});
+    t.assertTrue(result.status >= 400, "Expected a failing getStatic call: path not under contextPath. Result: " + JSON.stringify(result));
     log.info(`OK: ${result.status} - ${result.body}`);
 
 }

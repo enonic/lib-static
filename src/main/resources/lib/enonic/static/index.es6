@@ -1,8 +1,7 @@
 const etagReader = require('/lib/enonic/static/etagReader');
 const optionsParser = require('/lib/enonic/static/options');
 const ioLib = require('/lib/enonic/static/io');
-
-var IS_DEV = Java.type('com.enonic.xp.server.RunMode').get().toString() !== 'PROD';
+const runMode = require('/lib/enonic/static/runMode');
 
 const getResponse200 = (path, resource, contentTypeFunc, cacheControlFunc, etag) => {
     const contentType = contentTypeFunc(path, resource);
@@ -75,11 +74,11 @@ const errorLogAndResponse500 = (e, throwErrors, stringOrOptions, options, method
 
 const getResourceOr400 = (path, pathError) => {
     if (pathError) {
-        if (!IS_DEV) {
+        if (!runMode.isDev()) {
             log.warning(pathError);
         }
         return {
-            response400: (IS_DEV)
+            response400: (runMode.isDev())
                 ? {
                     status: 400,
                     body: pathError,
@@ -93,11 +92,11 @@ const getResourceOr400 = (path, pathError) => {
 
     const resource = ioLib.getResource(path);
     if (!resource.exists()) {
-        if (!IS_DEV) {
+        if (!runMode.isDev()) {
             log.warning(`Not found: ${path}`);
         }
         return {
-            response400: (IS_DEV)
+            response400: (runMode.isDev())
                 ? {
                     status: 404,
                     body: `Not found: ${path}`,
@@ -184,7 +183,6 @@ const getRelativeResourcePath = (request) => {
     return request.rawPath
         .trim()
         .substring(removePrefix.length)
-        .replace(/^\/+/, '');
 }
 
 
@@ -246,7 +244,8 @@ exports.static = (rootOrOptions, options) => {
 
     return function getStatic(request) {
         try {
-            const relativePath = getRelativePathFunc(request);
+            const relativePath = getRelativePathFunc(request)
+                .replace(/^\/+/, '');;
 
             const error = getPathError(relativePath);
             const pathError = (error)

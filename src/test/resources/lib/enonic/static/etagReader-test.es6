@@ -6,7 +6,7 @@ const ioLib = require('/lib/enonic/static/io');
 
 // HELPERS
 
-/* Maps etag keys and corresponding content values, in order to guarantee that one content always corresponds to the same etag and vice versa. */
+/* Maps etag keys and corresponding content values, in order to guarantee that one content always corresponds to the same unique etag and vice versa. */
 let verifierMap = {};
 
 const verifyEtagAndContent = (etag, content) => {
@@ -65,7 +65,7 @@ exports.testHelper_ETag_collision = () => {
     verifierMap = {};
 }
 
-exports.testHelper_Content_deviasion = () => {
+exports.testHelper_Content_deviation = () => {
     verifyEtagAndContent("a", "if i");
     verifyEtagAndContent("b", "had an");
     verifyEtagAndContent("c", "umbrella");
@@ -87,115 +87,73 @@ exports.testHelper_Content_deviasion = () => {
 
 exports.testRead_Asset = () => {
     const path = '/assets/asset-test-target.txt';
-    const result = lib.read(path);
+    const etagValue = lib.read(path);
 
-    t.assertEquals(200, result.status);
-    t.assertTrue(!result.error);
+    const content = ioLib.getResource(path).readString();
 
-    const resource = ioLib.getResource(path);
-    const content = ioLib.readText(resource.getStream());
-    verifyEtagAndContent(result.etagValue, content);
+    verifyEtagAndContent(etagValue, content);
 };
 
 exports.testRead_HTML = () => {
     const path = '/static/static-test-html.html';
-    const result = lib.read(path);
+    const etagValue = lib.read(path);
 
-    t.assertEquals(200, result.status);
-    t.assertTrue(!result.error);
+    const content = ioLib.getResource(path).readString();
 
-    const resource = ioLib.getResource(path);
-    const content = ioLib.readText(resource.getStream());
-    verifyEtagAndContent(result.etagValue, content);
+    verifyEtagAndContent(etagValue, content);
 };
 
 exports.testRead_CSS = () => {
     const path = '/static/static-test-css.css';
-    const result = lib.read(path);
+    const etagValue = lib.read(path);
 
-    t.assertEquals(200, result.status);
-    t.assertTrue(!result.error);
+    const content = ioLib.getResource(path).readString();
 
-    const resource = ioLib.getResource(path);
-    const content = ioLib.readText(resource.getStream());
-    verifyEtagAndContent(result.etagValue, content);
+    verifyEtagAndContent(etagValue, content);
 };
 
 exports.testRead_JS = () => {
     const path = '/static/static-test-js.js';
-    const result = lib.read(path);
+    const etagValue = lib.read(path);
 
-    t.assertEquals(200, result.status);
-    t.assertTrue(!result.error);
+    const content = ioLib.getResource(path).readString();
 
-    const resource = ioLib.getResource(path);
-    const content = ioLib.readText(resource.getStream());
-    verifyEtagAndContent(result.etagValue, content);
+    verifyEtagAndContent(etagValue, content);
 };
 
 exports.testRead_JSON = () => {
     const path = '/static/static-test-json.json';
-    const result = lib.read(path);
+    const etagValue = lib.read(path);
 
-    t.assertEquals(200, result.status);
-    t.assertTrue(!result.error);
+    const content = ioLib.getResource(path).readString();
 
-    const resource = ioLib.getResource(path);
-    const content = ioLib.readText(resource.getStream());
-    verifyEtagAndContent(result.etagValue, content);
+    verifyEtagAndContent(etagValue, content);
 };
 
 exports.testRead_XML = () => {
     const path = '/static/static-test-xml.xml';
-    const result = lib.read(path);
+    const etagValue = lib.read(path);
 
-    t.assertEquals(200, result.status);
-    t.assertTrue(!result.error);
+    const content = ioLib.getResource(path).readString();
 
-    const resource = ioLib.getResource(path);
-    const content = ioLib.readText(resource.getStream());
-    verifyEtagAndContent(result.etagValue, content);
+    verifyEtagAndContent(etagValue, content);
 };
 
 exports.testRead_Text = () => {
     const path = '/static/static-test-text.txt';
-    const result = lib.read(path);
+    const etagValue = lib.read(path);
 
-    t.assertEquals(200, result.status);
-    t.assertTrue(!result.error);
+    const content = ioLib.getResource(path).readString();
 
-    const resource = ioLib.getResource(path);
-    const content = ioLib.readText(resource.getStream());
-    verifyEtagAndContent(result.etagValue, content);
+    verifyEtagAndContent(etagValue, content);
 };
 
 exports.testRead_JPG = () => {
     const path = '/static/w3c_home.jpg';
-    const result = lib.read(path);
+    const etagValue = lib.read(path);
 
-    t.assertEquals(200, result.status);
-    t.assertTrue(!result.error);
+    const content = ioLib.getResource(path).readString();
 
-    const resource = ioLib.getResource(path);
-    const content = ioLib.readText(resource.getStream());
-    verifyEtagAndContent(result.etagValue, content);
+    verifyEtagAndContent(etagValue, content);
 };
 
-
-// Path error handling
-
-exports.testRead_NotFound_should404 = () => {
-    const result = lib.read('/static/thisDoesNotExist.txt');
-
-    t.assertTrue(!!result.error);
-    t.assertEquals(404, result.status);
-    t.assertTrue(!result.etagValue); // No etag on 404!
-}
-
-exports.testGet_fail_path_EmptyString_should400_Thorough = () => {
-    const result = lib.read('');
-
-    t.assertTrue(!!result.error);
-    t.assertEquals(400, result.status);
-    t.assertTrue(!result.etagValue); // No etag on 400!
-}

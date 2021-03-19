@@ -1,20 +1,21 @@
 package lib.enonic.libStatic.etag;
 
-import java.util.Map;
-import java.util.function.Supplier;
-
+import com.enonic.xp.resource.ResourceKey;
+import com.enonic.xp.resource.ResourceService;
+import com.enonic.xp.testing.ScriptTestSupport;
+import com.enonic.xp.testing.resource.ClassLoaderResourceService;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.enonic.xp.resource.ResourceKey;
-import com.enonic.xp.resource.ResourceService;
-import com.enonic.xp.testing.ScriptTestSupport;
-import com.enonic.xp.testing.resource.ClassLoaderResourceService;
+import java.util.Map;
+import java.util.function.Supplier;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class EtagServiceTest extends ScriptTestSupport {
     private final static Logger LOG = LoggerFactory.getLogger( EtagServiceTest.class );
@@ -109,6 +110,6 @@ public class EtagServiceTest extends ScriptTestSupport {
 
         assertNotNull( getError( result ) );
         assertNull( getETag( result ) );
+        LOG.info("OK: " + getError( result ));
     }
-
 }
