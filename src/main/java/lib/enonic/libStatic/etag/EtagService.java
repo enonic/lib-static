@@ -46,15 +46,16 @@ public class EtagService
      */
     public Map<String, String> getEtag( String path, Integer etagOverrideMode )
     {
-        final ResourceService resourceService = resourceServiceSupplier.get();
         try
         {
+            final ResourceService resourceService = resourceServiceSupplier.get();
+
             // 0: true in prod, false in dev. 1 forces true in dev, -1 forces false in prod:
             boolean doProcessEtag = etagOverrideMode > ( isDev ? 0 : -1 );
 
             if ( doProcessEtag )
             {
-                // Leaving getResource( resourceKey ) to the processor:
+                // Leaving getResource( resourceKey ) and the actual hasher to the processor:
                 ResourceProcessor<ResourceKey, String> processor =  processorFactory.createEtagProcessor( ResourceKey.from(path) );
                 final String etag = resourceService.processResource( processor );
                 return Map.of( ETAG_KEY, etag );
@@ -79,6 +80,4 @@ public class EtagService
     {
         this.resourceServiceSupplier = context.getService( ResourceService.class );
     }
-
-
 }
