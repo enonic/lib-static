@@ -1,30 +1,47 @@
 package lib.enonic.libStatic.etag;
 
+import com.enonic.xp.resource.Resource;
 import com.enonic.xp.resource.ResourceKey;
+import com.enonic.xp.resource.ResourceProcessor;
 import com.enonic.xp.resource.ResourceService;
 import com.enonic.xp.testing.ScriptTestSupport;
-import com.enonic.xp.testing.resource.ClassLoaderResourceService;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 public class EtagServiceTest extends ScriptTestSupport {
     private final static Logger LOG = LoggerFactory.getLogger( EtagServiceTest.class );
 
     private EtagService service;
 
-    private final Supplier<ResourceService> resourceServiceSupplierMock =
-        () -> new ClassLoaderResourceService( EtagService.class.getClassLoader() );
+    private Supplier<ResourceService> resourceServiceSupplierMock;
+    private ResourceService resourceServiceMock;
 
+    private ProcessorFactory processorFactoryMock = Mockito.mock(ProcessorFactory.class);
+    private ResourceProcessor
+            staticTextProcessorMock,
+            hugeAssetProcessorMock;
+
+    private Resource
+            staticTextResourceMock,
+            hugeAssetResourceMock;
+
+    private final byte[]
+            staticTextMockBytes = "I am a mock asset text".getBytes(StandardCharsets.UTF_8),
+            hugeAssetMockBytes = "Svært, svært, svært, svært, magisk, episk, spektakulært, heilt overjordisk og uordinært, me e det sværast' i heile verda".getBytes(StandardCharsets.UTF_8);
+    private ResourceKey
+            staticTextResourceKey = ResourceKey.from("myapplication:static/static-test-text.txt"),
+            hugeAssetResourceKey = ResourceKey.from("myapplication:static/hugh.jazzit.blob");
 
     private String getETag(Map<String, String> result) {
         return result.get(lib.enonic.libStatic.etag.EtagService.ETAG_KEY);
@@ -43,58 +60,125 @@ public class EtagServiceTest extends ScriptTestSupport {
         service = new EtagService();
         service.initialize( newBeanContext(ResourceKey.from("myapplication:/test")));
 
+        resourceServiceSupplierMock = Mockito.mock(Supplier.class);
+        resourceServiceMock = Mockito.mock(ResourceService.class);
+        staticTextResourceMock = Mockito.mock(Resource.class);
+        hugeAssetResourceMock = Mockito.mock(Resource.class);
+
+        Mockito.when(resourceServiceSupplierMock.get()).thenReturn(resourceServiceMock);
+
+        Mockito.when(resourceServiceMock.getResource( staticTextResourceKey )).thenReturn(staticTextResourceMock);
+        Mockito.when(staticTextResourceMock.exists()).thenReturn(true);
+        Mockito.when(staticTextResourceMock.getKey()).thenReturn( staticTextResourceKey );
+        Mockito.when(staticTextResourceMock.readBytes()).thenReturn(staticTextMockBytes);
+        Mockito.when(processorFactoryMock.createEtagProcessor(staticTextResourceKey)).thenReturn(staticTextProcessorMock);
+        Mockito.when(resourceServiceMock.processResource(staticTextProcessorMock)).thenReturn("Static text hash");
+
+        Mockito.when(resourceServiceMock.getResource( hugeAssetResourceKey )).thenReturn(hugeAssetResourceMock);
+        Mockito.when(hugeAssetResourceMock.exists()).thenReturn(true);
+        Mockito.when(hugeAssetResourceMock.getKey()).thenReturn( hugeAssetResourceKey );
+        Mockito.when(hugeAssetResourceMock.readBytes()).thenReturn(hugeAssetMockBytes);
+        Mockito.when(processorFactoryMock.createEtagProcessor(hugeAssetResourceKey)).thenReturn(hugeAssetProcessorMock);
+        Mockito.when(resourceServiceMock.processResource(hugeAssetProcessorMock)).thenReturn("Huge asset hash");
+
+
         service.resourceServiceSupplier = resourceServiceSupplierMock;
+        service.processorFactory = processorFactoryMock;
     }
 
     @Test
-    public void testGetEtag_defaultETag_prod_EtagExpected() {
+    public void testGetEtag_text_prod_defaultETag_shouldReturnTextEtag() {
         service.isDev = false;
         Map<String, String> result = service.getEtag("myapplication:static/static-test-text.txt", 0);
         assertNull( getError( result ) );
-        assertTrue(getETag(result).trim().length() > 0); //, "The returned ETag should not be empty");
+        assertEquals("Static text hash", getETag(result));
+    }
+    @Test
+    public void testGetEtag_huge_prod_defaultETag_shouldReturnHugeEtag() {
+        service.isDev = false;
+        Map<String, String> result = service.getEtag("myapplication:static/hugh.jazzit.blob", 0);
+        assertNull( getError( result ) );
+        assertEquals("Huge asset hash", getETag(result));
     }
 
     @Test
-    public void testGetEtag_defaultETag_dev_noEtagExpected() {
+    public void testGetEtag_text_prod_posEtagOverride_shouldReturnTextEtag() {
+        service.isDev = false;
+        Map<String, String> result = service.getEtag("myapplication:static/static-test-text.txt", 1);
+        assertNull( getError( result ) );
+        assertEquals("Static text hash", getETag(result));
+    }
+    @Test
+    public void testGetEtag_huge_prod_posEtagOverride_shouldReturnHugeEtag() {
+        service.isDev = false;
+        Map<String, String> result = service.getEtag("myapplication:static/hugh.jazzit.blob", 1);
+        assertNull( getError( result ) );
+        assertEquals("Huge asset hash", getETag(result));
+    }
+
+    @Test
+    public void testGetEtag_text_prod_negEtagOverride_shouldNotReturnAnyEtag() {
+        service.isDev = false;
+        Map<String, String> result = service.getEtag("myapplication:static/static-test-text.txt", -1);
+        assertNull( getError( result ) );
+        assertNull( getETag(result));
+    }
+    @Test
+    public void testGetEtag_huge_prod_negEtagOverride_shouldNotReturnAnyEtag() {
+        service.isDev = false;
+        Map<String, String> result = service.getEtag("myapplication:static/hugh.jazzit.blob", -1);
+        assertNull( getError( result ) );
+        assertNull( getETag(result) );
+    }
+
+
+    @Test
+    public void testGetEtag_text_dev_defaultETag_shouldNotReturnAnyEtag() {
         service.isDev = true;
         Map<String, String> result = service.getEtag("myapplication:static/static-test-text.txt", 0);
         assertNull( getError( result ) );
-        assertNull( getETag( result ) );
+        assertNull( getETag(result));
     }
-
-
     @Test
-    public void testGetEtag_positiveETagOverride_prod_EtagExpected() {
-        service.isDev = false;
-        Map<String, String> result = service.getEtag("myapplication:static/static-test-text.txt", 1);
+    public void testGetEtag_huge_dev_defaultETag_shouldNotReturnAnyEtag() {
+        service.isDev = true;
+        Map<String, String> result = service.getEtag("myapplication:static/hugh.jazzit.blob", 0);
         assertNull( getError( result ) );
-        assertTrue(getETag(result).length() > 0); // "Positive etagOverride, so the ETag should be returned");
+        assertNull( getETag(result));
     }
 
     @Test
-    public void testGetEtag_positiveETagOverride_dev_EtagExpected() {
+    public void testGetEtag_text_dev_posEtagOverride_shouldReturnTextEtag() {
         service.isDev = true;
         Map<String, String> result = service.getEtag("myapplication:static/static-test-text.txt", 1);
         assertNull( getError( result ) );
-        assertTrue(getETag(result).length() > 0);//, "Positive etagOverride, so EVEN IN DEV the ETag should be returned");
+        assertEquals("Static text hash", getETag(result));
     }
-
-
     @Test
-    public void testGetEtag_negativeETagOverride_prod_noEtagOrErrorExpected() {
-        service.isDev = false;
-        Map<String, String> result = service.getEtag("myapplication:static/static-test-text.txt", -1);
+    public void testGetEtag_huge_dev_posEtagOverride_shouldReturnHugeEtag() {
+        service.isDev = true;
+        Map<String, String> result = service.getEtag("myapplication:static/hugh.jazzit.blob", 1);
         assertNull( getError( result ) );
-        assertNull( getETag( result ) ); //, "Negative etagOverride, so EVEN IN PROD the ETag should be skipped");
+        assertEquals("Huge asset hash", getETag(result));
     }
 
     @Test
-    public void testGetEtag_negativeETagOverride_dev_noEtagOrErrorExpected() {
+    public void testGetEtag_text_dev_negEtagOverride_shouldNotReturnAnyEtag() {
         service.isDev = true;
         Map<String, String> result = service.getEtag("myapplication:static/static-test-text.txt", -1);
         assertNull( getError( result ) );
-        assertNull( getETag( result ) ); //, "Negative etagOverride, so no ETag");
+        assertNull( getETag(result));
     }
+    @Test
+    public void testGetEtag_huge_dev_negEtagOverride_shouldNotReturnAnyEtag() {
+        service.isDev = true;
+        Map<String, String> result = service.getEtag("myapplication:static/hugh.jazzit.blob", -1);
+        assertNull( getError( result ) );
+        assertNull( getETag(result) );
+    }
+
+
+
 
 
     ////////////////////////////////////////////  Error handling

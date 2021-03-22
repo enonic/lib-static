@@ -89,6 +89,13 @@ exports.testRead_Asset = () => {
     const path = '/assets/asset-test-target.txt';
     const etagValue = lib.read(path);
 
+    log.info("etagValue (" +
+    	(Array.isArray(etagValue) ?
+    		("array[" + etagValue.length + "]") :
+    		(typeof etagValue + (etagValue && typeof etagValue === 'object' ? (" with keys: " + JSON.stringify(Object.keys(etagValue))) : ""))
+    	) + "): " + JSON.stringify(etagValue, null, 2)
+    );
+
     const content = ioLib.getResource(path).readString();
 
     verifyEtagAndContent(etagValue, content);

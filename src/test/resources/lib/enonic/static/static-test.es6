@@ -1,24 +1,34 @@
 const ioLib = require('/lib/enonic/static/io');
 
-const lib = require('./index');
-const t = require('/lib/xp/testing');
-
-
 const optionsParser = require('/lib/enonic/static/options');
 
+const t = require('/lib/xp/testing');
 
+/*
 t.mock('/lib/enonic/static/runMode.js', {
-    isDev: function () {
-        return true;
-    }
+    isDev: () => true;
 });
-
+const lib = require('./index');
+*/
 
 //////////////////////////////////////////////////////////////////  TEST .get
+
+// Specific mocking for each unit test, since doing it in the global namespace affects other tests.
+// E.g.: const lib = require('./index');
+/*const requireMockedTestLib = params => {
+    t.mock('/lib/enonic/static/runMode.js', {
+        isDev: () => params.isDev
+    });
+    return require('./index');
+}*/
+
+
 
 // Path string argument
 
 exports.testGet_path_Asset_FullDefaultResponse = () => {
+    const lib = require('./index');
+
     const result = lib.get('/assets/asset-test-target.txt');
 
     t.assertEquals(200, result.status);
@@ -39,6 +49,8 @@ exports.testGet_path_Asset_FullDefaultResponse = () => {
 };
 
 exports.testGet_optionsPath = () => {
+    const lib = require('./index');
+
     const result = lib.get({path: '/assets/asset-test-target.txt'});
 
     t.assertEquals("I am a test asset\n", ioLib.readText(result.body));
@@ -54,6 +66,8 @@ exports.testGet_optionsPath = () => {
 };
 
 exports.testGet_path_HTML_FullDefaultResponse = () => {
+    const lib = require('./index');
+
     const result = lib.get('/static/static-test-html.html');
 
     t.assertEquals("<html><body><p>I am a test HTML</p></body></html>\n", ioLib.readText(result.body));
@@ -69,6 +83,8 @@ exports.testGet_path_HTML_FullDefaultResponse = () => {
 };
 
 exports.testGet_path_Css = () => {
+    const lib = require('./index');
+
     const result = lib.get('/static/static-test-css.css');
 
     t.assertTrue(!!result.contentType);
@@ -83,6 +99,8 @@ exports.testGet_path_Css = () => {
 };
 
 exports.testGet_path_JS = () => {
+    const lib = require('./index');
+
     const result = lib.get('/static/static-test-js.js');
 
     t.assertTrue(!!result.contentType);
@@ -97,6 +115,8 @@ exports.testGet_path_JS = () => {
 };
 
 exports.testGet_path_JSON = () => {
+    const lib = require('./index');
+
     const result = lib.get('/static/static-test-json.json');
 
     t.assertTrue(!!result.contentType);
@@ -117,6 +137,8 @@ exports.testGet_path_JSON = () => {
 };
 
 exports.testGet_path_XML = () => {
+    const lib = require('./index');
+
     const result = lib.get('/static/static-test-xml.xml');
 
     t.assertTrue(!!result.contentType);
@@ -135,6 +157,8 @@ exports.testGet_path_XML = () => {
 }
 
 exports.testGet_path_Text = () => {
+    const lib = require('./index');
+
     const result = lib.get('/static/static-test-text.txt');
 
     t.assertTrue(typeof result.contentType === 'string');
@@ -149,6 +173,8 @@ exports.testGet_path_Text = () => {
 }
 
 exports.testGet_path_JPG = () => {
+    const lib = require('./index');
+
     const result = lib.get('/static/w3c_home.jpg');
 
     t.assertEquals(200, result.status);
@@ -163,6 +189,8 @@ exports.testGet_path_JPG = () => {
 };
 
 exports.testGet_path_GIF = () => {
+    const lib = require('./index');
+
     const result = lib.get('/static/w3c_home.gif');
 
     t.assertEquals(200, result.status);
@@ -180,6 +208,8 @@ exports.testGet_path_GIF = () => {
 // Path error handling
 
 exports.testGet_fail_path_NotFound_should404 = () => {
+    const lib = require('./index');
+
     const result = lib.get('/static/doesNotExist.txt');
 
     t.assertTrue(!!result.body);
@@ -193,6 +223,8 @@ exports.testGet_fail_path_NotFound_should404 = () => {
 }
 
 exports.testGet_fail_path_empty_should400 = () => {
+    const lib = require('./index');
+
     const result = lib.get('');
 
     t.assertTrue(!!result.body);
@@ -206,6 +238,8 @@ exports.testGet_fail_path_empty_should400 = () => {
 }
 
 exports.testGet_fail_path_spaces_should400 = () => {
+    const lib = require('./index');
+
     const result = lib.get('  ');
 
     t.assertTrue(!!result.body);
@@ -219,6 +253,8 @@ exports.testGet_fail_path_spaces_should400 = () => {
 }
 
 exports.testGet_fail_path_slash_should400 = () => {
+    const lib = require('./index');
+
     const result = lib.get('/');
 
     t.assertTrue(!!result.body);
@@ -232,6 +268,8 @@ exports.testGet_fail_path_slash_should400 = () => {
 }
 
 exports.testGet_fail_path_slashes_should400 = () => {
+    const lib = require('./index');
+
     const result = lib.get('///');
 
     t.assertTrue(!!result.body);
@@ -245,6 +283,8 @@ exports.testGet_fail_path_slashes_should400 = () => {
 }
 
 exports.testGet_fail_path_optionsArg_NotFound_should404 = () => {
+    const lib = require('./index');
+
     const result = lib.get({path: '/static/doesNotExist.txt'});
 
     t.assertTrue(!!result.body);
@@ -258,6 +298,8 @@ exports.testGet_fail_path_optionsArg_NotFound_should404 = () => {
 }
 
 exports.testGet_fail_path_optionsArg_empty_should400 = () => {
+    const lib = require('./index');
+
     const result = lib.get({path: ''});
 
     t.assertTrue(!!result.body);
@@ -271,6 +313,8 @@ exports.testGet_fail_path_optionsArg_empty_should400 = () => {
 }
 
 exports.testGet_fail_path_optionsArg_spaces_should400 = () => {
+    const lib = require('./index');
+
     const result = lib.get({path: '  '});
 
     t.assertTrue(!!result.body);
@@ -284,6 +328,8 @@ exports.testGet_fail_path_optionsArg_spaces_should400 = () => {
 }
 
 exports.testGet_fail_path_optionsArg_slash_should400 = () => {
+    const lib = require('./index');
+
     const result = lib.get({path: '/'});
 
     t.assertTrue(!!result.body);
@@ -297,6 +343,8 @@ exports.testGet_fail_path_optionsArg_slash_should400 = () => {
 }
 
 exports.testGet_fail_path_optionsArg_slashes_should400 = () => {
+    const lib = require('./index');
+
     const result = lib.get({path: '///'});
 
     t.assertTrue(!!result.body);
@@ -310,6 +358,8 @@ exports.testGet_fail_path_optionsArg_slashes_should400 = () => {
 }
 
 exports.testGet_fail_optionParsingError_should500withMessage = () => {
+    const lib = require('./index');
+
     const result = lib.get('/assets/asset-test-target.txt', {
         etag: 0
     });
@@ -324,6 +374,8 @@ exports.testGet_fail_optionParsingError_should500withMessage = () => {
     log.info(`OK: ${result.status} - ${result.body}`)
 }
 exports.testGet_fail_optionParsingError_should500withMessage = () => {
+    const lib = require('./index');
+
     const result = lib.get();
 
     t.assertTrue(!!result.body);
@@ -336,6 +388,8 @@ exports.testGet_fail_optionParsingError_should500withMessage = () => {
     log.info(`OK: ${result.status} - ${result.body}`)
 }
 exports.testGet_fail_optionParsingError_throwErrors = () => {
+    const lib = require('./index');
+
     let result = null,
         failed = true;
     try {
@@ -352,6 +406,8 @@ exports.testGet_fail_optionParsingError_throwErrors = () => {
 }
 
 exports.testGet_fail_pathParsingError_should500withMessage = () => {
+    const lib = require('./index');
+
     const result = lib.get(["this", "can't", "be", "good"]);
 
     t.assertTrue(!!result.body);
@@ -364,6 +420,8 @@ exports.testGet_fail_pathParsingError_should500withMessage = () => {
     log.info(`OK: ${result.status} - ${result.body}`);
 }
 exports.testGet_fail_pathParsingError_throwErrors = () => {
+    const lib = require('./index');
+
     let result = null,
         failed = true;
     try {
@@ -379,6 +437,8 @@ exports.testGet_fail_pathParsingError_throwErrors = () => {
 }
 
 exports.testGet_fail_contentTypeFunc_runtimeError_should500withMessage = () => {
+    const lib = require('./index');
+
     const result = lib.get('/assets/asset-test-target.txt', {
         contentType: () => {
             throw Error("This will be thrown outside of parsePathAndFunctions. Should still be handled.");
@@ -395,6 +455,8 @@ exports.testGet_fail_contentTypeFunc_runtimeError_should500withMessage = () => {
     log.info(`OK: ${result.status} - ${result.body}`)
 }
 exports.testGet_fail_contentTypeFunc_runtimeError_throwErrors = () => {
+    const lib = require('./index');
+
     let result = null,
         failed = true;
     try {
@@ -415,6 +477,8 @@ exports.testGet_fail_contentTypeFunc_runtimeError_throwErrors = () => {
 }
 
 exports.testGet_fail_cacheControlFunc_runtimeError_should500withMessage = () => {
+    const lib = require('./index');
+
     const result = lib.get('/assets/asset-test-target.txt', {
         cacheControl: () => {
             throw Error("This will be thrown outside of parsePathAndFunctions. Should still be handled.");
@@ -431,6 +495,8 @@ exports.testGet_fail_cacheControlFunc_runtimeError_should500withMessage = () => 
     log.info(`OK: ${result.status} - ${result.body}`)
 }
 exports.testGet_fail_cacheControlFunc_runtimeError_throwErrors = () => {
+    const lib = require('./index');
+
     let result = null,
         failed = true;
     try {
@@ -470,6 +536,8 @@ exports.testResolvePath = () => {
 
 
 exports.testGetPathError_valid_shouldReturnUndefined = () => {
+    const lib = require('./index');
+
     t.assertEquals(undefined, lib.getPathError('hey'));
     t.assertEquals(undefined, lib.getPathError('æøå'));
     t.assertEquals(undefined, lib.getPathError('foo/bar'));
@@ -478,6 +546,8 @@ exports.testGetPathError_valid_shouldReturnUndefined = () => {
 }
 
 exports.testGetPathError_empty_shouldReturnNonEmptyErrorMessage = () => {
+    const lib = require('./index');
+
     const errorMessage = lib.getPathError('');
     t.assertEquals('string', typeof errorMessage);
     t.assertNotEquals('', errorMessage.trim());
@@ -486,11 +556,15 @@ exports.testGetPathError_empty_shouldReturnNonEmptyErrorMessage = () => {
 }
 
 exports.testGetPathError_allSpaces_shouldPassSinceStringShouldBeTrimmedFirst = () => {
+    const lib = require('./index');
+
     const errorMessage = lib.getPathError('   ');
     t.assertEquals(undefined, errorMessage);
 }
 
 exports.testGetPathError_doubleDot_shouldReturnNonEmptyErrorMessage = () => {
+    const lib = require('./index');
+
     const errorMessage = lib.getPathError('foo/../bar');
     t.assertEquals('string', typeof errorMessage);
     t.assertNotEquals('', errorMessage.trim());
@@ -502,6 +576,8 @@ exports.testGetPathError_doubleDot_shouldReturnNonEmptyErrorMessage = () => {
 }
 
 exports.testGetPathError_asterisk_shouldReturnNonEmptyErrorMessage = () => {
+    const lib = require('./index');
+
     const errorMessage = lib.getPathError('foo/*bar');
     t.assertEquals('string', typeof errorMessage);
     t.assertNotEquals('', errorMessage.trim());
@@ -513,6 +589,8 @@ exports.testGetPathError_asterisk_shouldReturnNonEmptyErrorMessage = () => {
 }
 
 exports.testGetPathError_questionmark_shouldReturnNonEmptyErrorMessage = () => {
+    const lib = require('./index');
+
     const errorMessage = lib.getPathError('foo/?bar');
     t.assertEquals('string', typeof errorMessage);
     t.assertNotEquals('', errorMessage.trim());
@@ -524,6 +602,8 @@ exports.testGetPathError_questionmark_shouldReturnNonEmptyErrorMessage = () => {
 }
 
 exports.testGetPathError_backslash_shouldReturnNonEmptyErrorMessage = () => {
+    const lib = require('./index');
+
     const errorMessage = lib.getPathError('foo/\\bar');
     t.assertEquals('string', typeof errorMessage);
     t.assertNotEquals('', errorMessage.trim());
@@ -535,6 +615,8 @@ exports.testGetPathError_backslash_shouldReturnNonEmptyErrorMessage = () => {
 }
 
 exports.testGetPathError_quote_shouldReturnNonEmptyErrorMessage = () => {
+    const lib = require('./index');
+
     const errorMessage = lib.getPathError("foo/'bar");
     t.assertEquals('string', typeof errorMessage);
     t.assertNotEquals('', errorMessage.trim());
@@ -547,6 +629,8 @@ exports.testGetPathError_quote_shouldReturnNonEmptyErrorMessage = () => {
 }
 
 exports.testGetPathError_doublequote_shouldReturnNonEmptyErrorMessage = () => {
+    const lib = require('./index');
+
     const errorMessage = lib.getPathError('foo/"bar');
     t.assertEquals('string', typeof errorMessage);
     t.assertNotEquals('', errorMessage.trim());
@@ -559,6 +643,8 @@ exports.testGetPathError_doublequote_shouldReturnNonEmptyErrorMessage = () => {
 }
 
 exports.testGetPathError_tick_shouldReturnNonEmptyErrorMessage = () => {
+    const lib = require('./index');
+
     const errorMessage = lib.getPathError('foo´bar');
     t.assertEquals('string', typeof errorMessage);
     t.assertNotEquals('', errorMessage.trim());
@@ -571,6 +657,8 @@ exports.testGetPathError_tick_shouldReturnNonEmptyErrorMessage = () => {
 }
 
 exports.testGetPathError_backtick_shouldReturnNonEmptyErrorMessage = () => {
+    const lib = require('./index');
+
     const errorMessage = lib.getPathError('foo`bar');
     t.assertEquals('string', typeof errorMessage);
     t.assertNotEquals('', errorMessage.trim());
@@ -583,6 +671,8 @@ exports.testGetPathError_backtick_shouldReturnNonEmptyErrorMessage = () => {
 }
 
 exports.testGetPathError_lesserthan_shouldReturnNonEmptyErrorMessage = () => {
+    const lib = require('./index');
+
     const errorMessage = lib.getPathError('foo<bar');
     t.assertEquals('string', typeof errorMessage);
     t.assertNotEquals('', errorMessage.trim());
@@ -594,6 +684,8 @@ exports.testGetPathError_lesserthan_shouldReturnNonEmptyErrorMessage = () => {
 }
 
 exports.testGetPathError_greaterthan_shouldReturnNonEmptyErrorMessage = () => {
+    const lib = require('./index');
+
     const errorMessage = lib.getPathError('foo>bar');
     t.assertEquals('string', typeof errorMessage);
     t.assertNotEquals('', errorMessage.trim());
@@ -605,6 +697,8 @@ exports.testGetPathError_greaterthan_shouldReturnNonEmptyErrorMessage = () => {
 }
 
 exports.testGetPathError_colon_shouldReturnNonEmptyErrorMessage = () => {
+    const lib = require('./index');
+
     const errorMessage = lib.getPathError('foo:bar');
     t.assertEquals('string', typeof errorMessage);
     t.assertNotEquals('', errorMessage.trim());
@@ -620,6 +714,8 @@ exports.testGetPathError_colon_shouldReturnNonEmptyErrorMessage = () => {
 
 
 exports.testStatic_fail_missingRoot_shouldThrowError = () => {
+    const lib = require('./index');
+
     let getStatic, failed = true;
     try {
         getStatic = lib.static();
@@ -632,6 +728,8 @@ exports.testStatic_fail_missingRoot_shouldThrowError = () => {
 }
 
 exports.testStatic_fail_missingRoot_shouldThrowErrorEvenOnFalseThrowerrorsOption = () => {
+    const lib = require('./index');
+
     let getStatic, failed = true;
     try {
         getStatic = lib.static({throwErrors: false});
@@ -644,6 +742,8 @@ exports.testStatic_fail_missingRoot_shouldThrowErrorEvenOnFalseThrowerrorsOption
 }
 
 exports.testStatic_fail_emptyRoot_argRoot_shouldThrowError = () => {
+    const lib = require('./index');
+
     let getStatic, failed = true;
     try {
         getStatic = lib.static('');
@@ -656,6 +756,8 @@ exports.testStatic_fail_emptyRoot_argRoot_shouldThrowError = () => {
 }
 
 exports.testStatic_fail_emptyRoot_argOption_shouldThrowError = () => {
+    const lib = require('./index');
+
     let getStatic, failed = true;
     try {
         getStatic = lib.static({root: ''});
@@ -668,6 +770,8 @@ exports.testStatic_fail_emptyRoot_argOption_shouldThrowError = () => {
 }
 
 exports.testStatic_fail_emptyRoot_argOption_shouldThrowErrorEvenOnFalseThrowerrorsOption = () => {
+    const lib = require('./index');
+
     let getStatic, failed = true;
     try {
         getStatic = lib.static({root: '', throwErrors: false});
@@ -680,6 +784,8 @@ exports.testStatic_fail_emptyRoot_argOption_shouldThrowErrorEvenOnFalseThrowerro
 }
 
 exports.testStatic_fail_spacesRoot_argRoot_shouldThrowError = () => {
+    const lib = require('./index');
+
     let getStatic, failed = true;
     try {
         getStatic = lib.static('  ');
@@ -691,6 +797,8 @@ exports.testStatic_fail_spacesRoot_argRoot_shouldThrowError = () => {
     t.assertTrue(!getStatic, "Should not have produced a getStatic function");
 }
 exports.testStatic_fail_spacesRoot_argOption_shouldThrowError = () => {
+    const lib = require('./index');
+
     let getStatic, failed = true;
     try {
         getStatic = lib.static({root: '  '});
@@ -703,6 +811,8 @@ exports.testStatic_fail_spacesRoot_argOption_shouldThrowError = () => {
 }
 
 exports.testStatic_fail_illegalCharRoot_argRoot_shouldThrowError = () => {
+    const lib = require('./index');
+
     let getStatic, failed = true;
     try {
         getStatic = lib.static('illegal:path');
@@ -714,6 +824,8 @@ exports.testStatic_fail_illegalCharRoot_argRoot_shouldThrowError = () => {
     t.assertTrue(!getStatic, "Should not have produced a getStatic function");
 }
 exports.testStatic_fail_illegalCharRoot_argOption_shouldThrowError = () => {
+    const lib = require('./index');
+
     let getStatic, failed = true;
     try {
         getStatic = lib.static({root: 'illegal:path'});
@@ -726,6 +838,8 @@ exports.testStatic_fail_illegalCharRoot_argOption_shouldThrowError = () => {
 }
 
 exports.testStatic_fail_illegalDoubleDotRoot_argRoot_shouldThrowError = () => {
+    const lib = require('./index');
+
     let getStatic, failed = true;
     try {
         getStatic = lib.static('illegal/../path');
@@ -737,6 +851,8 @@ exports.testStatic_fail_illegalDoubleDotRoot_argRoot_shouldThrowError = () => {
     t.assertTrue(!getStatic, "Should not have produced a getStatic function");
 }
 exports.testStatic_fail_illegalDoubleDotRoot_argOption_shouldThrowError = () => {
+    const lib = require('./index');
+
     let getStatic, failed = true;
     try {
         getStatic = lib.static({root: 'illegal/../path'});
@@ -749,6 +865,8 @@ exports.testStatic_fail_illegalDoubleDotRoot_argOption_shouldThrowError = () => 
 }
 
 exports.testStatic_fail_illegalSlashRoot_argRoot_shouldThrowError = () => {
+    const lib = require('./index');
+
     let getStatic, failed = true;
     try {
         getStatic = lib.static('/');
@@ -760,6 +878,8 @@ exports.testStatic_fail_illegalSlashRoot_argRoot_shouldThrowError = () => {
     t.assertTrue(!getStatic, "Should not have produced a getStatic function");
 }
 exports.testStatic_fail_illegalSlashRoot_argOption_shouldThrowError = () => {
+    const lib = require('./index');
+
     let getStatic, failed = true;
     try {
         getStatic = lib.static({root: '/'});
@@ -772,6 +892,8 @@ exports.testStatic_fail_illegalSlashRoot_argOption_shouldThrowError = () => {
 }
 
 exports.testStatic_fail_illegalTypeRoot_argRoot_shouldThrowError = () => {
+    const lib = require('./index');
+
     let getStatic, failed = true;
     try {
         getStatic = lib.static(42);
@@ -783,6 +905,8 @@ exports.testStatic_fail_illegalTypeRoot_argRoot_shouldThrowError = () => {
     t.assertTrue(!getStatic, "Should not have produced a getStatic function");
 }
 exports.testStatic_fail_illegalTypeRoot_argOption_shouldThrowError = () => {
+    const lib = require('./index');
+
     let getStatic, failed = true;
     try {
         getStatic = lib.static({root: 42});
@@ -795,6 +919,8 @@ exports.testStatic_fail_illegalTypeRoot_argOption_shouldThrowError = () => {
 }
 
 exports.testStatic_fail_illegalArrayRoot_argRoot_shouldThrowError = () => {
+    const lib = require('./index');
+
     let getStatic, failed = true;
     try {
         getStatic = lib.static(["this", "is", "no", "good"]);
@@ -806,6 +932,8 @@ exports.testStatic_fail_illegalArrayRoot_argRoot_shouldThrowError = () => {
     t.assertTrue(!getStatic, "Should not have produced a getStatic function");
 }
 exports.testStatic_fail_illegalZeroRoot_argOption_shouldThrowError = () => {
+    const lib = require('./index');
+
     let getStatic, failed = true;
     try {
         getStatic = lib.static({root: 0});
@@ -819,6 +947,8 @@ exports.testStatic_fail_illegalZeroRoot_argOption_shouldThrowError = () => {
 
 
 exports.testStatic_fail_optionParsingError_arg2_shouldThrowError = () => {
+    const lib = require('./index');
+
     let getStatic, failed = true;
     try {
         getStatic = lib.static('assets', {etag: ["not", "valid"]});
@@ -830,6 +960,8 @@ exports.testStatic_fail_optionParsingError_arg2_shouldThrowError = () => {
     t.assertTrue(!getStatic, "Should not have produced a getStatic function");
 }
 exports.testStatic_fail_optionParsingError_arg2_shouldThrowErrorEvenWithThrowErrorsFalse = () => {
+    const lib = require('./index');
+
     let getStatic, failed = true;
     try {
         getStatic = lib.static('assets', {etag: ["not", "valid"], throwErrors: false});
@@ -841,6 +973,8 @@ exports.testStatic_fail_optionParsingError_arg2_shouldThrowErrorEvenWithThrowErr
     t.assertTrue(!getStatic, "Should not have produced a getStatic function");
 }
 exports.testStatic_fail_optionParsingError_arg1_shouldThrowError = () => {
+    const lib = require('./index');
+
     let getStatic, failed = true;
     try {
         getStatic = lib.static({root: 'assets', etag: ["not", "valid"]});
@@ -852,6 +986,8 @@ exports.testStatic_fail_optionParsingError_arg1_shouldThrowError = () => {
     t.assertTrue(!getStatic, "Should not have produced a getStatic function");
 }
 exports.testStatic_fail_optionParsingError_arg1_shouldThrowErrorEvenWithThrowErrorsFalse = () => {
+    const lib = require('./index');
+
     let getStatic, failed = true;
     try {
         getStatic = lib.static({root: 'assets', etag: ["not", "valid"], throwErrors: false});
@@ -867,6 +1003,8 @@ exports.testStatic_fail_optionParsingError_arg1_shouldThrowErrorEvenWithThrowErr
 //////////////////////////////////////////////////////////////////////////////////  Test the returned getStatic func
 
 exports.testGetStatic_root_Asset_FullDefaultResponse = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static('assets');            // Root folder: '/assets/'
 
     // Simulate an XP GET request from frontend
@@ -896,6 +1034,8 @@ exports.testGetStatic_root_Asset_FullDefaultResponse = () => {
 
 
 exports.testGetStatic_optionsRoot = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static({root: 'assets'});            // Root folder: '/assets/'
 
     // Simulate an XP GET request from frontend
@@ -919,6 +1059,8 @@ exports.testGetStatic_optionsRoot = () => {
 };
 
 exports.testGetStatic_ifNoneMatch_matchingEtagValues_should304 = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static('assets');
 
     const request = {
@@ -935,6 +1077,8 @@ exports.testGetStatic_ifNoneMatch_matchingEtagValues_should304 = () => {
 };
 
 exports.testGetStatic_ifNoneMatch_nonMatchingEtagValues_should200WithUpdatedContentAndEtag = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static('assets');
 
     const request = {
@@ -960,6 +1104,8 @@ exports.testGetStatic_ifNoneMatch_nonMatchingEtagValues_should200WithUpdatedCont
 };
 
 exports.testGetStatic_option_arg2_getCleanPath = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static('assets', {
         getCleanPath: request =>  request.rawPath.substring('my/endpoint'.length)
     });
@@ -979,6 +1125,8 @@ exports.testGetStatic_option_arg2_getCleanPath = () => {
 };
 
 exports.testGetStatic_option_arg1_getCleanPath = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static({
         root: 'assets',
         getCleanPath: request =>  request.rawPath.substring('my/endpoint'.length)
@@ -1000,6 +1148,8 @@ exports.testGetStatic_option_arg1_getCleanPath = () => {
 
 
 exports.testGetStatic_HTML_FullDefaultResponse = () => {
+    const lib = require('./index');
+
 
     const getStatic = lib.static('static');
     const request = {
@@ -1022,6 +1172,8 @@ exports.testGetStatic_HTML_FullDefaultResponse = () => {
 };
 
 exports.testGetStatic_Css = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static('static');
     const request = {
         rawPath: 'my/endpoint/static-test-css.css',
@@ -1042,6 +1194,8 @@ exports.testGetStatic_Css = () => {
 };
 
 exports.testGetStatic_JS = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static('static');
     const request = {
         rawPath: 'my/endpoint/static-test-js.js',
@@ -1063,6 +1217,8 @@ exports.testGetStatic_JS = () => {
 };
 
 exports.testGetStatic_JSON = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static('static');
     const request = {
         rawPath: 'my/endpoint/static-test-json.json',
@@ -1089,6 +1245,8 @@ exports.testGetStatic_JSON = () => {
 };
 
 exports.testGetStatic_XML = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static('static');
     const request = {
         rawPath: 'my/endpoint/static-test-xml.xml',
@@ -1113,6 +1271,8 @@ exports.testGetStatic_XML = () => {
 }
 
 exports.testGetStatic_Text = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static('static');
     const request = {
         rawPath: 'my/endpoint/static-test-text.txt',
@@ -1133,6 +1293,8 @@ exports.testGetStatic_Text = () => {
 }
 
 exports.testGetStatic_JPG = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static('static');
     const request = {
         rawPath: 'my/endpoint/w3c_home.jpg',
@@ -1153,6 +1315,8 @@ exports.testGetStatic_JPG = () => {
 };
 
 exports.testGetStatic_GIF = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static('static');
     const request = {
         rawPath: 'my/endpoint/w3c_home.gif',
@@ -1177,6 +1341,8 @@ exports.testGetStatic_GIF = () => {
 
 
 exports.testGetStatic_fail_rootArg_NotFoundFile_should404 = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static('static');
     const request = {
         rawPath: 'my/endpoint/doesNotExist.txt',
@@ -1195,6 +1361,8 @@ exports.testGetStatic_fail_rootArg_NotFoundFile_should404 = () => {
     log.info(`OK: ${result.status} - ${result.body}`);
 }
 exports.testGetStatic_fail_optionsArg_NotFoundFile_should404 = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static({root: 'static'});              // Same as above, just root as named parameter
     const request = {
         rawPath: 'my/endpoint/doesNotExist.txt',
@@ -1213,6 +1381,8 @@ exports.testGetStatic_fail_optionsArg_NotFoundFile_should404 = () => {
     log.info(`OK: ${result.status} - ${result.body}`);
 }
 exports.testGetStatic_fail_NotFoundInRoot_should404 = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static('assets');
     const request = {
         rawPath: 'my/endpoint/static-test-text.txt',
@@ -1232,6 +1402,8 @@ exports.testGetStatic_fail_NotFoundInRoot_should404 = () => {
 }
 
 exports.testGetStatic_fail_empty_should400 = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static('assets');
     const request = {
         rawPath: 'my/endpoint',                                // --> /assets/ yields empty relative path
@@ -1251,6 +1423,8 @@ exports.testGetStatic_fail_empty_should400 = () => {
 }
 
 exports.testGetStatic_fail_slash_should400 = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static('assets');
     const request = {
         rawPath: 'my/endpoint/',                                // --> yields relative path '/'
@@ -1269,6 +1443,8 @@ exports.testGetStatic_fail_slash_should400 = () => {
     log.info(`OK: ${result.status} - ${result.body}`)
 }
 exports.testGetStatic_fail_slashes_should400 = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static('assets');
     const request = {
         rawPath: 'my/endpoint///',                                // --> yields relative path '///', counts as empty
@@ -1287,6 +1463,8 @@ exports.testGetStatic_fail_slashes_should400 = () => {
     log.info(`OK: ${result.status} - ${result.body}`)
 }
 exports.testGetStatic_fail_illegalChars_should400 = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static('assets');
     const request = {
         rawPath: 'my/endpoint/the_characters>and<are_no_good',
@@ -1305,6 +1483,8 @@ exports.testGetStatic_fail_illegalChars_should400 = () => {
     log.info(`OK: ${result.status} - ${result.body}`)
 }
 exports.testGetStatic_fail_illegalDoubledots_should400 = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static('assets');
     const request = {
         rawPath: 'my/endpoint/trying/to/../hack/this',
@@ -1323,6 +1503,8 @@ exports.testGetStatic_fail_illegalDoubledots_should400 = () => {
     log.info(`OK: ${result.status} - ${result.body}`)
 }
 exports.testGetStatic_fail_illegalWildcards_should400 = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static('assets');
     const request = {
         rawPath: 'my/endpoint/trying/to/???/hack/*.this',
@@ -1331,7 +1513,7 @@ exports.testGetStatic_fail_illegalWildcards_should400 = () => {
 
     const result = getStatic(request);
 
-    t.assertTrue(!!result.body);
+    t.assertTrue(!!result.body, "Should have returned a body in dev mode. Result: " + JSON.stringify(result));
     t.assertEquals(400, result.status);
     t.assertTrue(typeof result.contentType === 'string');
     t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
@@ -1341,6 +1523,8 @@ exports.testGetStatic_fail_illegalWildcards_should400 = () => {
     log.info(`OK: ${result.status} - ${result.body}`)
 }
 exports.testGetStatic_fail_pathNotUnderContextPath_should500 = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static('assets');
     const request = {
         rawPath: 'another/endpoint/trying/to/???/hack/*.this',
@@ -1361,6 +1545,8 @@ exports.testGetStatic_fail_pathNotUnderContextPath_should500 = () => {
 
 
 exports.testGetStatic_fail_contentTypeFunc_runtimeError_should500withMessage = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static('assets', {
         contentType: () => {
             throw Error("This will be thrown outside of parsePathAndFunctions. Should still be handled.");
@@ -1384,6 +1570,8 @@ exports.testGetStatic_fail_contentTypeFunc_runtimeError_should500withMessage = (
     log.info(`OK: ${result.status} - ${result.body}`)
 }
 exports.testGetStatic_fail_contentTypeFunc_runtimeError_throwErrors = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static('assets', {
         contentType: () => {
             throw Error("This will be thrown outside of parsePathAndFunctions. Should still be handled.");
@@ -1411,6 +1599,8 @@ exports.testGetStatic_fail_contentTypeFunc_runtimeError_throwErrors = () => {
 
 
 exports.testGetStatic_fail_cacheControlFunc_runtimeError_should500withMessage = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static('assets', {
         cacheControl: () => {
             throw Error("This will be thrown outside of parsePathAndFunctions. Should still be handled.");
@@ -1434,6 +1624,8 @@ exports.testGetStatic_fail_cacheControlFunc_runtimeError_should500withMessage = 
     log.info(`OK: ${result.status} - ${result.body}`)
 }
 exports.testGetStatic_fail_cacheControlFunc_runtimeError_throwErrors = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static('assets', {
         cacheControl: () => {
             throw Error("This will be thrown outside of parsePathAndFunctions. Should still be handled.");
@@ -1462,6 +1654,8 @@ exports.testGetStatic_fail_cacheControlFunc_runtimeError_throwErrors = () => {
 
 // Verify that a even if the getStatic function fails once, it will keep working for new requests later
 exports.testGetStatic_fail_failuresShouldNotDestroyGetstaticFunction = () => {
+    const lib = require('./index');
+
     const getStatic = lib.static({
         root: 'static',
         getCleanPath: req => req.rawPath.substring('my/endpoint'.length)

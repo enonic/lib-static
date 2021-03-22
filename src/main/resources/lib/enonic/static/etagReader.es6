@@ -1,5 +1,9 @@
 const etagService = __.newBean('lib.enonic.libStatic.etag.EtagService');
 
+// Internal use only (mocking)
+exports.__getEtagFromService__ = (fullPath, etagOverride) =>
+    __.toNativeObject(etagService.getEtag(fullPath, etagOverride));
+
 
 /** Gets a content string and MD5-contenthash etag string.
  *  In XP prod mode, cache the etag by file path only.
@@ -18,7 +22,7 @@ exports.read = (path, etagOverrideOption) => {
             ? -1
             : 0;
 
-    let { error, etag } = __.toNativeObject(etagService.getEtag(`${app.name}:${path}`, etagOverride));
+    let { error, etag } = exports.__getEtagFromService__(`${app.name}:${path}`, etagOverride);
 
     if (error) {
         throw Error(error);

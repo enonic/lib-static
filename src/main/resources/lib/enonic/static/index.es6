@@ -73,6 +73,12 @@ const errorLogAndResponse500 = (e, throwErrors, stringOrOptions, options, method
 
 
 const getResourceOr400 = (path, pathError) => {
+    log.info("runMode.isDev() (" +
+    	(Array.isArray(runMode.isDev()) ?
+    		("array[" + runMode.isDev().length + "]") :
+    		(typeof runMode.isDev() + (runMode.isDev() && typeof runMode.isDev() === 'object' ? (" with keys: " + JSON.stringify(Object.keys(runMode.isDev()))) : ""))
+    	) + "): " + JSON.stringify(runMode.isDev(), null, 2)
+    );
     if (pathError) {
         if (!runMode.isDev()) {
             log.warning(pathError);

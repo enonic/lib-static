@@ -231,7 +231,7 @@ exports.testParsePathAndOptions_path_pathArg_emptyString_passThrough = () => {
     t.assertEquals(undefined, errorMessage);
     t.assertEquals('', path);
 
-    log.info("OK:: " + errorMessage);
+    log.info("OK: " + errorMessage);
 }
 exports.testParsePathAndOptions_path_optionsArg_emptyString_passThrough = () => {
     const { path, errorMessage } = lib.parsePathAndOptions({path: ""});
@@ -267,7 +267,7 @@ exports.testParsePathAndOptions_fail_shouldYieldErrorMessage = () => {
 
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
-    log.info("OK:: " + errorMessage);
+    log.info("OK: " + errorMessage);
 }
 
 exports.testParsePathAndOptions_fail_shouldKeepDefaultThrowErrors = () => {
@@ -301,7 +301,7 @@ exports.testParsePathAndOptions_fail_path_array_shouldYieldErrorMessage = () => 
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
 
-    log.info("OK:: " + errorMessage);
+    log.info("OK: " + errorMessage);
 }
 exports.testParsePathAndOptions_fail_path_array_throwError = () => {
     const { errorMessage, throwErrors } = lib.parsePathAndOptions(["my", "spoon", "is", "too", "big"], {throwErrors: true});
@@ -317,7 +317,7 @@ exports.testParsePathAndOptions_fail_path_emptyArray_shouldYieldErrorMessage = (
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
 
-    log.info("OK:: " + errorMessage);
+    log.info("OK: " + errorMessage);
 }
 exports.testParsePathAndOptions_fail_path_emptyArray_throwError = () => {
     const { errorMessage, throwErrors } = lib.parsePathAndOptions([], {throwErrors: true});
@@ -333,7 +333,7 @@ exports.testParsePathAndOptions_fail_path_boolean_shouldYieldErrorMessage = () =
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
 
-    log.info("OK:: " + errorMessage);
+    log.info("OK: " + errorMessage);
 }
 exports.testParsePathAndOptions_fail_path_boolean_throwError = () => {
     const { errorMessage, throwErrors } = lib.parsePathAndOptions(true, {throwErrors: true});
@@ -349,7 +349,7 @@ exports.testParsePathAndOptions_fail_path_number_shouldYieldErrorMessage = () =>
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
 
-    log.info("OK:: " + errorMessage);
+    log.info("OK: " + errorMessage);
 }
 exports.testParsePathAndOptions_fail_path_number_throwError = () => {
     const { errorMessage, throwErrors } = lib.parsePathAndOptions(42, {throwErrors: true});
@@ -365,7 +365,7 @@ exports.testParsePathAndOptions_fail_path_zero_shouldYieldErrorMessage = () => {
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
 
-    log.info("OK:: " + errorMessage);
+    log.info("OK: " + errorMessage);
 }
 exports.testParsePathAndOptions_fail_path_zero_throwError = () => {
     const { errorMessage, throwErrors } = lib.parsePathAndOptions(0, {throwErrors: true});
@@ -381,7 +381,7 @@ exports.testParsePathAndOptions_fail_path_null_shouldYieldErrorMessage = () => {
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
 
-    log.info("OK:: " + errorMessage);
+    log.info("OK: " + errorMessage);
 }
 exports.testParsePathAndOptions_fail_path_null_throwError = () => {
     const { errorMessage, throwErrors } = lib.parsePathAndOptions(null, {throwErrors: true});
@@ -406,7 +406,7 @@ exports.testParsePathAndOptions_fail_pathAttribute_missing_shouldYieldErrorMessa
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
 
-    log.info("OK:: " + errorMessage);
+    log.info("OK: " + errorMessage);
 }
 exports.testParsePathAndOptions_fail_pathAttribute_missing_shouldKeepDefaultThrowErrors = () => {
     const { throwErrors } = lib.parsePathAndOptions({});
@@ -441,7 +441,7 @@ exports.testParsePathAndOptions_fail_pathAttribute_array_shouldYieldErrorMessage
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
 
-    log.info("OK:: " + errorMessage);
+    log.info("OK: " + errorMessage);
 }
 exports.testParsePathAndOptions_fail_pathAttribute_array_throwError = () => {
     const { errorMessage, throwErrors } = lib.parsePathAndOptions(
@@ -464,7 +464,7 @@ exports.testParsePathAndOptions_fail_pathAttribute_emptyArray_shouldYieldErrorMe
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
 
-    log.info("OK:: " + errorMessage);
+    log.info("OK: " + errorMessage);
 }
 exports.testParsePathAndOptions_fail_pathAttribute_emptyArray_throwError = () => {
     const { errorMessage, throwErrors } = lib.parsePathAndOptions(
@@ -485,7 +485,7 @@ exports.testParsePathAndOptions_fail_pathAttribute_boolean_shouldYieldErrorMessa
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
 
-    log.info("OK:: " + errorMessage);
+    log.info("OK: " + errorMessage);
 }
 exports.testParsePathAndOptions_fail_pathAttribute_boolean_throwError = () => {
     const { errorMessage, throwErrors } = lib.parsePathAndOptions(
@@ -506,7 +506,7 @@ exports.testParsePathAndOptions_fail_pathAttribute_number_shouldYieldErrorMessag
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
 
-    log.info("OK:: " + errorMessage);
+    log.info("OK: " + errorMessage);
 }
 exports.testParsePathAndOptions_fail_pathAttribute_number_throwError = () => {
     const { errorMessage, throwErrors } = lib.parsePathAndOptions(
@@ -527,7 +527,7 @@ exports.testParsePathAndOptions_fail_pathAttribute_zero_shouldYieldErrorMessage 
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
 
-    log.info("OK:: " + errorMessage);
+    log.info("OK: " + errorMessage);
 }
 exports.testParsePathAndOptions_fail_pathAttribute_zero_throwError = () => {
     const { errorMessage, throwErrors } = lib.parsePathAndOptions(
@@ -548,7 +548,7 @@ exports.testParsePathAndOptions_fail_pathAttribute_null_shouldYieldErrorMessage 
     t.assertTrue('string', typeof errorMessage);
     t.assertTrue(!!(errorMessage.trim()), "Empty error message");
 
-    log.info("OK:: " + errorMessage);
+    log.info("OK: " + errorMessage);
 }
 exports.testParsePathAndOptions_fail_pathAttribute_null_throwError = () => {
     const { errorMessage, throwErrors } = lib.parsePathAndOptions(
