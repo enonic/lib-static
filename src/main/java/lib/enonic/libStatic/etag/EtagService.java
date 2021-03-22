@@ -1,6 +1,7 @@
 package lib.enonic.libStatic.etag;
 
 import com.enonic.xp.resource.ResourceKey;
+import com.enonic.xp.resource.ResourceProcessor;
 import com.enonic.xp.resource.ResourceService;
 import com.enonic.xp.script.bean.BeanContext;
 import com.enonic.xp.script.bean.ScriptBean;
@@ -54,14 +55,13 @@ public class EtagService
             if ( doProcessEtag )
             {
                 // Leaving getResource( resourceKey ) to the processor:
-                final String etag = resourceService.processResource( processorFactory.createEtagProcessor( ResourceKey.from( path ) ) );
-                LOG.info("1: " + ETAG_KEY + " -> " + etag);
+                ResourceProcessor<ResourceKey, String> processor =  processorFactory.createEtagProcessor( ResourceKey.from(path) );
+                final String etag = resourceService.processResource( processor );
                 return Map.of( ETAG_KEY, etag );
 
             }
             else
             {
-                LOG.info("2: Don't process.");
                 return NO_ETAG;
             }
 
@@ -70,8 +70,6 @@ public class EtagService
         {
             long errorRnd = (long) ( Math.random() * Long.MAX_VALUE );
             String errorMsg = "Couldn't process etag from resource '" + path + "' (error ID: " + Long.toString( errorRnd, 36 ) + ")";
-            LOG.error(errorMsg, e );
-            LOG.info("3: " + ERROR_KEY + " -> " + errorMsg);
             return Map.of( ERROR_KEY, errorMsg );
         }
     }

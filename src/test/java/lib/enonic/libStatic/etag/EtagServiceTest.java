@@ -1,6 +1,5 @@
 package lib.enonic.libStatic.etag;
 
-import com.enonic.xp.resource.Resource;
 import com.enonic.xp.resource.ResourceKey;
 import com.enonic.xp.resource.ResourceProcessor;
 import com.enonic.xp.resource.ResourceService;
@@ -11,7 +10,6 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -32,13 +30,6 @@ public class EtagServiceTest extends ScriptTestSupport {
             staticTextProcessorMock,
             hugeAssetProcessorMock;
 
-    private Resource
-            staticTextResourceMock,
-            hugeAssetResourceMock;
-
-    private final byte[]
-            staticTextMockBytes = "I am a mock asset text".getBytes(StandardCharsets.UTF_8),
-            hugeAssetMockBytes = "Svært, svært, svært, svært, magisk, episk, spektakulært, heilt overjordisk og uordinært, me e det sværast' i heile verda".getBytes(StandardCharsets.UTF_8);
     private ResourceKey
             staticTextResourceKey = ResourceKey.from("myapplication:static/static-test-text.txt"),
             hugeAssetResourceKey = ResourceKey.from("myapplication:static/hugh.jazzit.blob");
@@ -62,22 +53,15 @@ public class EtagServiceTest extends ScriptTestSupport {
 
         resourceServiceSupplierMock = Mockito.mock(Supplier.class);
         resourceServiceMock = Mockito.mock(ResourceService.class);
-        staticTextResourceMock = Mockito.mock(Resource.class);
-        hugeAssetResourceMock = Mockito.mock(Resource.class);
+
+        staticTextProcessorMock = Mockito.mock(ResourceProcessor.class);
+        hugeAssetProcessorMock = Mockito.mock(ResourceProcessor.class);
 
         Mockito.when(resourceServiceSupplierMock.get()).thenReturn(resourceServiceMock);
 
-        Mockito.when(resourceServiceMock.getResource( staticTextResourceKey )).thenReturn(staticTextResourceMock);
-        Mockito.when(staticTextResourceMock.exists()).thenReturn(true);
-        Mockito.when(staticTextResourceMock.getKey()).thenReturn( staticTextResourceKey );
-        Mockito.when(staticTextResourceMock.readBytes()).thenReturn(staticTextMockBytes);
         Mockito.when(processorFactoryMock.createEtagProcessor(staticTextResourceKey)).thenReturn(staticTextProcessorMock);
         Mockito.when(resourceServiceMock.processResource(staticTextProcessorMock)).thenReturn("Static text hash");
 
-        Mockito.when(resourceServiceMock.getResource( hugeAssetResourceKey )).thenReturn(hugeAssetResourceMock);
-        Mockito.when(hugeAssetResourceMock.exists()).thenReturn(true);
-        Mockito.when(hugeAssetResourceMock.getKey()).thenReturn( hugeAssetResourceKey );
-        Mockito.when(hugeAssetResourceMock.readBytes()).thenReturn(hugeAssetMockBytes);
         Mockito.when(processorFactoryMock.createEtagProcessor(hugeAssetResourceKey)).thenReturn(hugeAssetProcessorMock);
         Mockito.when(resourceServiceMock.processResource(hugeAssetProcessorMock)).thenReturn("Huge asset hash");
 
