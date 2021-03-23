@@ -1,16 +1,11 @@
-const ioService = __.newBean('lib.enonic.libStatic.IoService');
+const ioMock = __.newBean('lib.enonic.libStatic.IoMock');
 
 exports.getMimeType = (name) => {
-    return ioService.getMimeType(name);
-};
-
-exports.getResource = (key) => {
-    const res = ioService.getResource(key);
-    return new Resource(res);
+    return ioMock.getMimeType(name);
 };
 
 exports.readText = (stream) => {
-    return ioService.readText(stream);
+    return ioMock.readText(stream);
 };
 
 function Resource(native) {
@@ -34,7 +29,7 @@ Resource.prototype.readString = function () {
 };
 
 // Test use only
-exports.__getResourceDummy__ = (key, exists, content) => {
-    const dummy = ioService.__getResourceDummy__(key, exists, content);
+exports.getResource = (key, exists, content) => {
+    const dummy = ioMock.getResource(app.name+":"+key, !(exists===false), content);
     return new Resource(dummy);
 }

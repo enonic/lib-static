@@ -1,53 +1,111 @@
-const ioLib = require('/lib/enonic/static/io');
+const DEFAULT_CACHE_CONTROL = require('/lib/enonic/static/options').DEFAULT_CACHE_CONTROL;
 
-const optionsParser = require('/lib/enonic/static/options');
+const ioMock = require('/lib/enonic/static/ioMock');
 
 const t = require('/lib/xp/testing');
 
-/*
-t.mock('/lib/enonic/static/runMode.js', {
-    isDev: () => true;
-});
-const lib = require('./index');
-*/
 
 //////////////////////////////////////////////////////////////////  TEST .get
 
 // Specific mocking for each unit test, since doing it in the global namespace affects other tests.
 // E.g.: const lib = require('./index');
-/*const requireMockedTestLib = params => {
+const mockLib = (params={}) => {
+    const runMode = params.runMode || {};
     t.mock('/lib/enonic/static/runMode.js', {
-        isDev: () => params.isDev
+        isDev: () => runMode.isDev || false
     });
+
+    const io = params.io || {};
+    t.mock('/lib/enonic/static/io.js', {
+        getResource: (path) => {
+            log.info("ioMock.getResource path: " + JSON.stringify(path));
+            return ioMock.getResource(io.path || path, io.exists, io.content);
+        },
+        readText: (stream) => {
+            log.info("ioMock.readText");
+            return io.readText || ioMock.readText(stream)
+        },
+        getMimeType: (name) => {
+            log.info("ioMock.getMimeType name: " + JSON.stringify(name));
+            return io.mimeType || ioMock.getMimeType(name)
+        },
+    });
+
+    const etagReader = params.etagReader || {};
+    t.mock('/lib/enonic/static/etagReader.js', {
+        read: (path, etagOverride) => {
+            log.info("etagReaderMock.read: " + JSON.stringify({path, etagOverride}));
+            return etagReader.etag;
+        }
+    });
+
+    const defaultOptions = {
+        contentTypeFunc: ioMock.getMimeType,
+        cacheControlFunc: () => DEFAULT_CACHE_CONTROL
+    };
+    t.mock('/lib/enonic/static/options.js', {
+        // DEFAULT_CACHE_CONTROL: DEFAULT_CACHE_CONTROL,
+        parsePathAndOptions: (pathOrOptions, options) => {
+            const parsed = (typeof pathOrOptions === 'string')
+                ? { path: pathOrOptions, ...defaultOptions, ...options }
+                : { ...pathOrOptions };
+            log.info("optionsParserMock.parsePathAndOptions - parsed: " + JSON.stringify(parsed));
+            return parsed;
+
+        },
+        parseRootAndOptions: (rootOrOptions, options) => {
+            const parsed = (typeof rootOrOptions === 'string')
+                ? { root: rootOrOptions, ...defaultOptions, ...options }
+                : { ...rootOrOptions };
+            log.info("optionsParserMock.parseRootAndOptions - parsed: " + JSON.stringify(rootOrOptions));
+            return parsed;
+        }
+    });
+
     return require('./index');
-}*/
+}
 
 
 
 // Path string argument
 
-exports.testGet_path_Asset_FullDefaultResponse = () => {
-    const lib = require('./index');
+exports.testGet_path_FullDefaultResponse = () => {
+    const lib = mockLib({
+        io: {
+            content: "I am the content of /assets/asset-test-target.txt"
+        },
+        etagReader: {
+            etag: "expectedEtag1234567890"
+        }
+    });
 
     const result = lib.get('/assets/asset-test-target.txt');
 
-    t.assertEquals(200, result.status);
-    t.assertTrue(typeof result.contentType === 'string');
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
-    t.assertEquals("I am a test asset\n", ioLib.readText(result.body));
-
-    t.assertTrue(!!result.headers);
-    t.assertEquals('object', typeof result.headers);
-    t.assertEquals('string', typeof result.headers.ETag);
-    t.assertTrue(result.headers.ETag.length > 0);
-    t.assertEquals(optionsParser.DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"]);
-
     log.info(".get: full get response readout (" +
-        (typeof result + (result && typeof result === 'object' ? (" with keys: " + JSON.stringify(Object.keys(result))) : "")
-        ) + "): " + JSON.stringify(result, null, 2)
+        (typeof result +
+            (result && typeof result === 'object'
+                ? (" with keys: " + JSON.stringify(Object.keys(result)))
+                : ""
+            )
+        ) +
+        "): " + JSON.stringify(result, null, 2)
     );
+
+    t.assertEquals(200, result.status, result.status);
+    t.assertTrue(typeof result.contentType === 'string', "Expected string contentType containing 'text/plain'");
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain'");
+    t.assertEquals("I am the content of /assets/asset-test-target.txt", ioMock.readText(result.body), "result.body");
+
+    t.assertTrue(!!result.headers, "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals('object', typeof result.headers, "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals( "expectedEtag1234567890", result.headers.ETag, "result.headers should be an object with ETag and Cache-Control");
+    t.assertTrue(result.headers.ETag.length > 0, "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals(DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
+
+
 };
 
+/*
 exports.testGet_optionsPath = () => {
     const lib = require('./index');
 
@@ -532,7 +590,7 @@ exports.testResolvePath = () => {
     t.assertEquals("../will/be/lost/in/time", lib.resolvePath("../will/be/lost/in/time/like/../tears/../in/../rain/.."));
     t.assertEquals("will/be/lost/in/time", lib.resolvePath("will/be/lost/../in/time/"))
 }
-*/
+
 
 
 exports.testGetPathError_valid_shouldReturnUndefined = () => {
@@ -582,8 +640,8 @@ exports.testGetPathError_asterisk_shouldReturnNonEmptyErrorMessage = () => {
     t.assertEquals('string', typeof errorMessage);
     t.assertNotEquals('', errorMessage.trim());
 
-    t.assertNotEquals('', lib.getPathError('*/foo/bar').trim());
-    t.assertNotEquals('', lib.getPathError('foo/*.bar').trim());
+    //t.assertNotEquals('', lib.getPathError('f*oo/bar').trim());
+    //t.assertNotEquals('', lib.getPathError('foo/*.bar').trim());
 
     log.info("OK: " + errorMessage);
 }
@@ -1706,3 +1764,4 @@ exports.testGetStatic_fail_failuresShouldNotDestroyGetstaticFunction = () => {
     log.info(`OK: ${result.status} - ${result.body}`);
 
 }
+//*/

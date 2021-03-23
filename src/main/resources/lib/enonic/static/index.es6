@@ -7,7 +7,7 @@ const getResponse200 = (path, resource, contentTypeFunc, cacheControlFunc, etag)
     const contentType = contentTypeFunc(path, resource);
     const cacheControlHeader = cacheControlFunc(path, resource, contentType);
 
-    // Preventing any keys at all with null/undefined values in header (since those cause NPE):
+    // Preventing any keys under 'header' with null/undefined values (since those cause NPE):
     const headers = {};
     if (cacheControlHeader) {
         headers['Cache-Control'] = cacheControlHeader;
