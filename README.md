@@ -80,11 +80,7 @@ const libStatic = require('/lib/enonic/static');
 
 One way to use lib-static is in an [XP service](https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service), and use it to fetch the resource and serve the entire response object to the front end.
 
-Say you have some resources under a folder _/my/folder_ in your app.
-
-> ℹ️  That is, _/my/folder_ at the root of the built JAR for the app. In the XP project source code this would usually come from _/src/main/resources/my/folder_, but of course that can depend on varieties of the local build setup. 
-
-Making a service serve these as resources to the frontend can be as simple as:
+Say you have some resources under a folder _/my/folder_ in your app. Making a service serve these as resources to the frontend can be as simple as:
 
 ```
 const libStatic = require('/lib/enonic/static');
@@ -101,7 +97,9 @@ exports.get = function(request) {
 #### Resource path and URL
 If this was the entire content of _src/main/resources/services/servemyfolder/servemyfolder.js_ in an app with the app name/key `my.xp.app`, then XP would respond to GET requests at the URL `**/_/service/my.xp.app/servemyfolder` (`**` is the domain or other prefix, depending on vhosts etc).
 
-Calling `libStatic.static` returns a reusable function (`libStatic`) that takes `request` as argument. Lib-static resolves the resource path relative to the service's own URL, from the request. So when calling `**/_/service/**/_/service/my.xp.app/servemyfolder/some/subdir/some.file`, the resource path would be `some/subdir/some.file`. And since we initially used `root` to set up `getStatic` to look for resource files under the folder _my/folder_, it will look for _my/folder/some/subdir/some.file_. 
+Calling `libStatic.static` returns a reusable function (`libStatic`) that takes `request` as argument. Lib-static uses the request to resolve the resource path relative to the service's own URL. So when calling `**/_/service/**/_/service/my.xp.app/servemyfolder/some/subdir/some.file`, the resource path would be `some/subdir/some.file`. And since we initially used `root` to set up `getStatic` to look for resource files under the folder _my/folder_, it will look for _my/folder/some/subdir/some.file_. 
+
+> NOTE: That is, _/my/folder_ at the root of the built JAR for the app. In the XP project source code this would usually come from _/src/main/resources/my/folder_, but of course that can depend on varieties of the local build setup. 
 
 #### Output
 If _my/folder/some/subdir/some.file_ exists as a (readable) file, a full [XP response object](https://developer.enonic.com/docs/xp/stable/framework/http#http-response) is returned:
@@ -111,13 +109,13 @@ If _my/folder/some/subdir/some.file_ exists as a (readable) file, a full [XP res
 ...and there will be headers for Cache-Control, ETag and MIME-type. If it doesn't exist (or for other circumstances), other statuses are returned: `304`, `400`, `404` and `500`. And of course, `body` can be text or binary, depending on the file and type. See [Default behaviour](#behaviour) for details.
 
 #### Variations
-Above, `'my/folder'` is provided as a named `root` attribute in a parameters object. It's also possible to provide `root` by a first-positional argument if you prefer: 
+Above, `'my/folder'` is provided to `libStatic.static` as a named `root` attribute in a parameters object. If you prefer a simpler syntax (and don't need additional [options](#options)), just use a string as a first-positional argument: 
 
 ```
 const getStatic = libStatic.static('my/folder');
 ```
 
-Also, since `libStatic.static` returns a function that takes a `request` argument, it's directly interchangable with `exports.get`. So if you're into one-liners, **the entire service above could be**: 
+Also, since `getStatic` is a function that takes a `request` argument, it's directly interchangable with `exports.get`. So if you're into one-liners, **the entire service above could be**: 
 
 ```
 const libStatic = require('/lib/enonic/static');
