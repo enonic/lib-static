@@ -1,4 +1,44 @@
-# lib-static
+# Lib-static
+
+
+## Contents
+- [Intro](#intro)
+    - [Why use lib-static?](#why)
+- [Getting started](#get-started)
+    - [Install](#install)
+    - [Import](#import)
+- [Usage examples](#examples)
+    - [Simple service](#example-service)
+    - [Resource URLs](#example-urls)
+    - [Options and syntax](#example-options)
+    - [Other endpoints and path resolution](#example-path)
+    - [Custom Cache-Control headers](#example-cache)
+    - [Custom content type handling](#example-content)
+    - [ETag switch](#example-etag)
+    - [Errors: throw instead of return](#example-errors)
+    - [Multiple instances](#example-multi)
+    - [Versioned resources](#example-versioned)
+    - [Content-hashed resources](#example-hashed)
+    - [Low-level: .get](#example-get)
+- [API](#api)
+    - [static](#api-static)
+    - [get](#api-get)
+- [Default behaviour and response](#behaviour)
+    - [path handling](#path)
+    - [status](#status)
+    - [body](#body)
+    - [contentType](#content-type)
+    - [headers](#headers)
+- [Overrides: the options object](#options)
+- [Important: assets and mutability](#mutable-assets)
+    - [Headers](#mutable-headers)
+    - [Implementation tips](#mutable-implementation)
+
+<br/>
+<br/>
+
+<a name="intro"></a>
+## Intro
 
 [Enonic XP](https://enonic.com/developer-tour) library for serving assets from a folder in the application resource structure. The aim is _"perfect client-side and network caching"_ via response headers - with basic error handling included, and a simple basic usage but highly configurable (modelled akin to [serve-static](https://www.npmjs.com/package/serve-static)).
 
@@ -7,35 +47,17 @@ Intended for setting up XP endpoints that serve static files in a cache-optimize
 Some relevant sources: [web.dev](https://web.dev/http-cache/), [facebook](https://engineering.fb.com/2017/01/26/web/this-browser-tweak-saved-60-of-requests-to-facebook/), [mozilla](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching), [imagekit](https://imagekit.io/blog/ultimate-guide-to-http-caching-for-static-assets/), [freecontent.manning.com](https://freecontent.manning.com/caching-assets/).
 
 <br/>
-<br/>
 
-## Contents
+<a name="why"></a>
+### Why use lib-static instead of portal.assetUrl?
 
-- [Getting started](#get-started)
-  - [Install](#install)
-  - [Import](#import)
-- [Usage examples](#examples)
-  - [Simple service](#example-service)
-  - [Webapp](#example-webapp)
-  - [Custom path resolution](#example-path)
-  - [Custom Cache-Control headers](#example-cache)
-  - [Custom content type handling](#example-content)
-  - [ETag switch](#example-etag)
-  - [Errors: throw instead of return](#example-errors)
-  - [Low-level: .get](#example-get)
-- [API](#api)
-  - [static](#api-static)
-  - [get](#api-get)
-- [Default behaviour and response](#behaviour)
-  - [path handling](#path) 
-  - [status](#status)
-  - [body](#body)
-  - [contentType](#content-type)
-  - [headers](#headers)
-- [Overrides: the options object](#options)
-- [Important: assets and mutability](#mutable-assets)
-  - [Headers](#mutable-headers)
-  - [Implementation tips](#mutable-implementation)
+Enonic XP already comes with an [asset service](https://developer.enonic.com/docs/xp/stable/runtime/engines/asset-service), where you can just put resources in the _/assets_ root folder and use `portal.assetUrl(resourcePath)` to generate URLs from where to fetch them. Lib-static basically does the same thing, but allows you more control:
+- **Caching behaviour:** With `assetUrl`, you get a URL where the current installation/version of the app is baked in as a hash. It will change whenever the app is updated, forcing browsers to skip their locally cached resources and request new ones, even if the resource wasn't changed during the update. Using lib-static with [immutable assets](#mutable-assets) retains stable URLs and has sevral ways to adapt the header to direct browsers' caching behavior more effectively, even for mutable assets.
+- **Endpoint URLs:** make your resource endpoints anywhere, 
+- **Response headers**: override and control the MIME-type resolution, or the Cache-Control headers more specifically
+- **Control resource folders:** As long as the resources are built into the app JAR, resources can be served from anywhere - even with multiple lib-static instances at once: serve from multiple specific-purpose folders, or use multi-instances to specify multiple rules from the same folder. 
+  - Security issues around this are handled in the standard usage: a set root folder is required (and not at the JAR root), and URL navigation out from it is prevented. But if you still REALLY want to circumvent this, there is a lower-level API too.
+- **Error handling:** 500-type errors can be set to throw instead of returning an error response - leaving the handling to you.
 
 <br/>
 <br/>
@@ -61,7 +83,7 @@ repositories {
 ### Import
 In any XP controller, import the library:
 
-```
+```javascript
 const libStatic = require('/lib/enonic/static');
 ```
 
@@ -72,9 +94,6 @@ const libStatic = require('/lib/enonic/static');
 <a name="examples"></a>
 ## Usage examples
 
-
-<br/>
-
 <a name="example-service"></a>
 ### A simple service
 
@@ -82,7 +101,7 @@ One way to use lib-static is in an [XP service](https://developer.enonic.com/doc
 
 Say you have some resources under a folder _/my/folder_ in your app. Making a service serve these as resources to the frontend can be as simple as:
 
-```
+```javascript
 const libStatic = require('/lib/enonic/static');
 
 const getStatic = libStatic.static({
@@ -94,50 +113,219 @@ exports.get = function(request) {
 }
 ```
 
+<a name="example-service-urls"></a>
 #### Resource path and URL
-If this was the entire content of _src/main/resources/services/servemyfolder/servemyfolder.js_ in an app with the app name/key `my.xp.app`, then XP would respond to GET requests at the URL `**/_/service/my.xp.app/servemyfolder` (`**` is the domain or other prefix, depending on vhosts etc).
+If this was the entire content of _src/main/resources/services/servemyfolder/servemyfolder.js_ in an app with the app name/key `my.xp.app`, then XP would respond to GET requests at the URL `**/_/service/my.xp.app/servemyfolder` (where `**` is the domain or other prefix, depending on vhosts etc. Also, using `serviceUrl('servemyfolder')` from the [portal lib](https://developer.enonic.com/docs/xp/stable/api/lib-portal#serviceurl) is recommended).
 
-Calling `libStatic.static` returns a reusable function (`libStatic`) that takes `request` as argument. Lib-static uses the request to resolve the resource path relative to the service's own URL. So when calling `**/_/service/**/_/service/my.xp.app/servemyfolder/some/subdir/some.file`, the resource path would be `some/subdir/some.file`. And since we initially used `root` to set up `getStatic` to look for resource files under the folder _my/folder_, it will look for _my/folder/some/subdir/some.file_. 
+Calling `libStatic.static` returns a reusable function (`libStatic`) that takes `request` as argument. Lib-static [uses the request](#example-path) to resolve the resource path relative to the service's own URL. So when calling `**/_/service/my.xp.app/servemyfolder/some/subdir/some.file`, the resource path would be `some/subdir/some.file`. And since we initially used `root` to set up `getStatic` to look for resource files under the folder _my/folder_, it will look for _my/folder/some/subdir/some.file_. 
 
-> NOTE: That is, _/my/folder_ at the root of the built JAR for the app. In the XP project source code this would usually come from _/src/main/resources/my/folder_, but of course that can depend on varieties of the local build setup. 
+> NOTE
+> 
+> That is, _/my/folder_ at the root of the built JAR for the app. In the XP project source code this would usually come from _/src/main/resources/my/folder_, but of course that can depend on varieties of the local build setup. 
 
 #### Output
 If _my/folder/some/subdir/some.file_ exists as a (readable) file, a full [XP response object](https://developer.enonic.com/docs/xp/stable/framework/http#http-response) is returned:
+
+```json
+{ 
+  status: 200, 
+  body: "<file content from some/subdir/some.file>"
+}
 ```
-{ status: 200, body: "<file content from some/subdir/some.file>" }
-```
-...and there will be headers for Cache-Control, ETag and MIME-type. If it doesn't exist (or for other circumstances), other statuses are returned: `304`, `400`, `404` and `500`. And of course, `body` can be text or binary, depending on the file and type. See [Default behaviour](#behaviour) for details.
+
+There will also be headers for Cache-Control, ETag and contentType. If the file doesn't exist (or other circumstances), other statuses are returned: `304`, `400`, `404` and `500`. And of course, `body` can be text or binary, depending on the file and type. See [Default behaviour](#behaviour) for details.
 
 #### Variations
 Above, `'my/folder'` is provided to `libStatic.static` as a named `root` attribute in a parameters object. If you prefer a simpler syntax (and don't need additional [options](#options)), just use a string as a first-positional argument: 
 
-```
+```javascript
 const getStatic = libStatic.static('my/folder');
 ```
 
 Also, since `getStatic` is a function that takes a `request` argument, it's directly interchangable with `exports.get`. So if you're into one-liners, **the entire service above could be**: 
 
-```
+```javascript
 const libStatic = require('/lib/enonic/static');
 exports.get = libStatic.static('my/folder');
 ```
 
 <br/>
 
-<a name="example-webapp"></a>
-### Webapp
+<a name="example-urls"></a>
+### Resource URLs
+Once a service (or a [different endpoint](#example-path)) has been set up like this, it can serve the resources as regular assets to the frontend. An [XP webapp](https://developer.enonic.com/docs/xp/stable/runtime/engines/webapp-engine) for example just needs to resolve the base URL. In the previous example we used a service, so we can just use `serviceUrl` for that: 
 
+```javascript
+exports.get = function(req) {
+    const myFolderUrl = libPortal.serviceUrl({service: 'servemyfolder'});
+    
+    return {
+        body: `
+            <html>
+              <head>
+                <title>It works</title>
+                <link rel="stylesheet" type="text/css" href="${staticServiceUrl}/styles.css"/>
+              </head>
+              
+              <body>
+                  <h1>It works!</h1>
+                  <img src="${staticServiceUrl}/logo.jpg" />
+                  <script src="${staticServiceUrl}/js/myscript.js"></script>
+              </body>
+            </html>
+        `
+    };
+};
+```
 
 <br/>
 
-<a name="example-path"></a>
-### Custom path resolution
 
+<a name="example-options"></a>
+### Options and syntax
+
+In the following examples, note that the general behavior of the returned getter function from `libStatic.static` can be controlled with more [options](#options), in addition to the `root`.
+
+If you set `root` with a pure string as the first argument, add a second argument object for the options. If you use the named-parameter way to set `root`, the options must be in the same first-argument object - _never use two object parameters_. 
+
+These are equivalent:
+```javascript
+libStatic.static({
+      root: 'my/folder',
+      option1: ...,
+      option2: ...
+});
+```
+...and:
+```javascript
+libStatic.static('my/folder', {
+      option1: ...,
+      option2: ...
+});
+```
+
+<br />
+
+<a name="example-path"></a>
+### Other endpoints and path resolution
+
+Usually, the path to the resource file (relative to the root folder) is [determinied from the request](#example-service-urls). But this depends on several things: the request object must contain a `rawPath` and `contextPath` attribute to compare, and there must be some routing involved: the controller must be able to accept requests from sub-URIs. In [XP services](https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service) (and [XP webapps](https://developer.enonic.com/docs/xp/stable/runtime/engines/webapp-engine), but with caveats) this is supported out of the box, making it easiest to use a service to implement an endpoint.
+
+Example request:
+```json
+{
+  ...,
+  rawPath: "/_/service/my.xp.app/servemyfolder/some/subdir/some.file",
+  contextPath: "/_/service/my.xp.app/servemyfolder",
+  ...
+}
+```
+From this request, the relative resource path is resolved to _some/subdir/some.file_, expected to be found below the `root` folder set with `libStatic.static`.
+
+#### getCleanPath
+However, there can be cases where you need to customize the relative-asset-path resolution - for example, using an [XP controller mapping](https://developer.enonic.com/docs/xp/stable/cms/mappings) for setting up an endpoint that uses lib-static. 
+
+Send an [option](#example-options) function `getCleanPath` to `libStatic.static`. `getCleanPath` takes the `request` argument and returns a relative asset path. The rest is up to you:
+
+```javascript
+exports.get = libStatic.static({
+    root: 'my/folder', 
+    getCleanPath: function(request) {
+        // In a perfect imaginary example world, all requests handled here have a 
+        // request.path (URL after the domain) that start with '/i/am/a/prefix`, so just
+        // remove it, hardcoded, to get the correct relative path. 
+        // You should probably make more of an effort though:
+        return request.path.substring('/i/am/a/prefix'.length);
+    }
+    
+    // Request path: **/i/am/a/prefix/subdir/myFile.txt 
+    // --> Relative resource path: subdir/myFile.txt 
+    // --> lib-static looks up my/folder/subdir/myFile.txt
+});
+```
+
+...or...
+
+```javascript
+exports.get = libStatic.static({
+    root: 'my/folder', 
+    getCleanPath: function(request) {
+        return request.params.filename + ".txt";
+    }
+
+    // Request: **/this/is/an/endpoint?filename=myFile
+    // --> Relative resource path: myFile.txt 
+    // --> lib-static looks up my/folder/myFile.txt
+});
+```
+
+...etc.
+
+#### With lib-router in a webapp
+
+Combining this with [lib-router](https://developer.enonic.com/docs/router-library/master) can be an easy alternative to setting up separate services - just let the webapp itself use lib-router to detect sub-URI's and handle the resource serving too, all from the same controller: 
+
+_webapp.js:_
+```javascript
+const libStatic = require('/lib/enonic/static');
+
+const libRouter = require('/lib/router')();
+
+exports.all = function(req) {
+    return libRouter.dispatch(req);
+};
+
+// Handling <webappURL>/getResource/...
+libRouter.get( `/getResource/{resourcePath:.+}`, 
+    libStatic.static({
+        root: `'my/folder`,
+        // Override relative path resolution (since request.contextPath is the root of the webapp, 
+        // not <webappURL>/getResource/... which is what resource paths should be relative to).
+        // Lib-router provides what we're after - everything after getResource - as 
+        // request.pathParams.resourcePath, since we defined that in `/getResource/{resourcePath:.+}`:
+        getCleanPath: request => request.pathParams.resourcePath
+    }
+));
+
+// <webappURL> and <webappURL>/
+libRouter.get( `/`, function (request) {
+    return {
+        body: `
+            <html>
+              <head>
+                <title>It still works</title>
+                <link   rel="stylesheet" 
+                        type="text/css" 
+                        href="${request.contextPath}/getResource/styles.css"
+                />
+              </head>
+              
+              <body>
+                  <h1>It still works!</h1>
+                  <img src="${request.contextPath}/getResource/logo.jpg" />
+                  <script src="${request.contextPath}/getResource/js/myscript.js"></script>
+              </body>
+            </html>
+            `
+    };
+});
+```
+
+<br/>
+
+> NOTE
+> 
+> It seems tempting to let the links in the HTML (`${request.contextPath}/getResource/...`) just start with `getResource/`. That looks neater and simpler and could just let the browser append them as relative links, and resolve its requests to `<webappURL>/getResource/...`. 
+> 
+> However, in XP, the webapp will respond to both `<webappURL>` and `<webappURL>/` - note the trailing slash, which makes the relative link behave in two different ways, only one of which is right. And adding a `/` at the beginning, `/getResource/...`, is of course no solution either, just an absolute path from the domain root.
+> 
+> Prefixing with `request.contextPath` solves it in this case. Your mileage may vary. 
 
 <br/>
 
 <a name="example-cache"></a>
 ### Custom Cache-Control headers
+
 
 
 <br/>
@@ -155,6 +343,21 @@ exports.get = libStatic.static('my/folder');
 
 <a name="example-errors"></a>
 ### Errors: throw instead of return
+
+<br/>
+
+<a name="example-multi"></a>
+### Multiple instances
+
+<br/>
+
+<a name="example-versioned"></a>
+### Versioned resources
+
+<br/>
+
+<a name="example-hashed"></a>
+### Content-hashed resources
 
 <br/>
 
