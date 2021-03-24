@@ -12,8 +12,8 @@
     - [Resource URLs](#example-urls)
     - [Options and syntax](#example-options)
     - [Other endpoints and path resolution](#example-path)
-    - [Custom Cache-Control headers](#example-cache)
-    - [Custom content type handling](#example-content)
+    - [Content-type handling](#example-content)
+    - [Cache-Control headers](#example-cache)
     - [ETag switch](#example-etag)
     - [Errors: throw instead of return](#example-errors)
     - [Multiple instances](#example-multi)
@@ -323,16 +323,95 @@ libRouter.get( `/`, function (request) {
 
 <br/>
 
-<a name="example-cache"></a>
-### Custom Cache-Control headers
+<a name="example-content"></a>
+### Custom content type handling
 
+Lib-static detects [MIME-type](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types) automatically - unless you use the `contentType` [option](#example-options) to override it. Either way, the result is a string returned with the response object.
+
+If set as the **boolean** `false`, the detection and handling is switched off and no `Content-Type` header is returned:
+```javascript
+const getStatic = libStatic.static({
+    root: 'my/folder',
+    contentType: false // <-- Empty string does the same
+});
+```
+
+If set as a (non-empty) **string**, there will be no processing, but that string will be returned as a fixed content type (a bad idea for handling multiple resource types, of course):
+```javascript
+const getStatic = libStatic.static({
+    root: 'my/folder',
+    contentType: "everything/thismimetype"
+});
+```
+
+If set as an **object**, keys are file types (that is, the extensions of the requested asset file names, so beware of file extensions changing during compilation. To be clear, you want the post-compilation extension) and values are the returned MIME-type strings:
+```javascript
+const getStatic = libStatic.static({
+    root: 'my/folder',
+    contentType: {json: "application/json", mp3: "audio/mpeg", TTF: "font/ttf"}
+});
+```
+For any extension not found here, it will fall back to automatically detecting the type, so you can override only the ones you're interested in and leave the rest.
+
+It can also be set as a **function**: `(path, resource) => mimeTypeString?` for fine-grained control: for each circumstance, return a specific mime-type string value, or `false` to leave the `contentType` out of the response, or `null` to fall back to lib-static's built-in detection:
+```javascript
+const getStatic = libStatic.static({
+    root: 'my, folder',
+    contentType: function(path, resource) {
+        if (path.endsWith('.untyped')) {
+            return false;
+        }
+        if (resource.getSize() > 10000000) {
+            return "media/myspoonistoobig";
+        }
+        return null;
+    } 
+});
+```
 
 
 <br/>
 
-<a name="example-content"></a>
-### Custom content type handling
+<a name="example-cache"></a>
+### Custom Cache-Control headers
 
+The `cacheControl` [option](#example-options) controls the ['Cache-Control'](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control) string that's returned in the header with a successful resource fetch. The string value, if any, directs the intraction between a browser and the server on subsequent requests for the same resource. By [default](#behavior) the string `"public, max-age=31536000, immutable"` is returned, the `cacheControl` option overrides this to return a different string, or switch it off:
+
+Setting it to the **boolean** `false` means turning the entire cache-control header off in the response:
+```javascript
+const getStatic = libStatic.static({
+    root: 'my/folder',
+    cacheControl: false
+});
+```
+
+Setting it as a **string** instead, always returns that string:
+```javascript
+const getStatic = libStatic.static({
+    root: 'my/folder',
+    cacheControl: 'immutable'
+});
+```
+
+It can also be set as a **function**: `(path, resource, mimeType) => cacheControlString?`, for fine-grained control. For particular circumstances, return a cache-control string for override, or `false` for leaving it out, or `null` to fall back to the default cache-control string `"public, max-age=31536000, immutable"`:
+
+```javascript
+const getStatic = libStatic.static({
+    root: 'my, folder',
+    cacheControl: function(path, resource, mimeType) {
+        if (path.startsWith('/uncached')) {
+            return false;
+        }
+        if (mimeType==='text/plain') {
+            return "max-age=3600";
+        }
+        if (resource.getSize() < 100) {
+            return "must-revalidate";
+        }
+        return null;
+    } 
+});
+```
 
 <br/>
 
