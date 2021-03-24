@@ -1,14 +1,12 @@
 # lib-static
 
-[Enonic XP](https://enonic.com/developer-tour) library for serving assets from a folder in the application resource structure. 
+[Enonic XP](https://enonic.com/developer-tour) library for serving assets from a folder in the application resource structure. The aim is _"perfect client-side and network caching"_ via response headers - with basic error handling included, and a simple basic usage but highly configurable (modelled akin to [serve-static](https://www.npmjs.com/package/serve-static)).
 
-Intended for setting up endpoints that serve static files in a cache-optimized way, mainly **immutable files**: files whose content aren't meant to change (i.e. can be trusted to never change without changing the file name). As such, developers must [content-hash](https://survivejs.com/webpack/optimizing/adding-hashes-to-filenames/) (or at least [version](https://cloud.google.com/cdn/docs/best-practices#versioned-urls)) the resource file names when updating them. Many build toolchains can do this automatically, for example Webpack.
+Intended for setting up XP endpoints that serve static files in a cache-optimized way. Optimally, these should be **immutable files** (files whose content aren't meant to change, that is, can be trusted to never change without changing the file name), but lib-static also handles ETags which provide caching with dynamic files too ([more about handling mutability](#mutable-assets)).
 
-The aim is "perfect client-side and network caching" via response headers. Some relevant sources: [web.dev](https://web.dev/http-cache/), [facebook](https://engineering.fb.com/2017/01/26/web/this-browser-tweak-saved-60-of-requests-to-facebook/), [mozilla](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching), [imagekit](https://imagekit.io/blog/ultimate-guide-to-http-caching-for-static-assets/), [freecontent.manning.com](https://freecontent.manning.com/caching-assets/).
+Some relevant sources: [web.dev](https://web.dev/http-cache/), [facebook](https://engineering.fb.com/2017/01/26/web/this-browser-tweak-saved-60-of-requests-to-facebook/), [mozilla](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching), [imagekit](https://imagekit.io/blog/ultimate-guide-to-http-caching-for-static-assets/), [freecontent.manning.com](https://freecontent.manning.com/caching-assets/).
 
-Modelled akin to [serve-static](https://www.npmjs.com/package/serve-static): a simple basic usage but highly configurable.
-
-
+<br/>
 <br/>
 
 ## Contents
@@ -35,7 +33,7 @@ Modelled akin to [serve-static](https://www.npmjs.com/package/serve-static): a s
   - [contentType](#content-type)
   - [headers](#headers)
 - [Overrides: the options object](#options)
-- [Important: mutable assets](#mutable-assets)
+- [Important: assets and mutability](#mutable-assets)
   - [Headers](#mutable-headers)
   - [Implementation tips](#mutable-implementation)
 
@@ -78,47 +76,92 @@ const libStatic = require('/lib/enonic/static');
 <br/>
 
 <a name="example-service"></a>
-## Simple service
+### A simple service
 
+One way to use lib-static is in an [XP service](https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service), and use it to fetch the resource and serve the entire response object to the front end.
+
+Say you have some resources under a folder _/my/folder_ in your app.
+
+> ℹ️  That is, _/my/folder_ at the root of the built JAR for the app. In the XP project source code this would usually come from _/src/main/resources/my/folder_, but of course that can depend on varieties of the local build setup. 
+
+Making a service serve these as resources to the frontend can be as simple as:
+
+```
+const libStatic = require('/lib/enonic/static');
+
+const getStatic = libStatic.static({
+    root: 'my/folder',
+});
+
+exports.get = function(request) {
+    return getStatic(request);
+}
+```
+
+#### Resource path and URL
+If this was the entire content of _src/main/resources/services/servemyfolder/servemyfolder.js_ in an app with the app name/key `my.xp.app`, then XP would respond to GET requests at the URL `**/_/service/my.xp.app/servemyfolder` (`**` is the domain or other prefix, depending on vhosts etc).
+
+Calling `libStatic.static` returns a reusable function (`libStatic`) that takes `request` as argument. Lib-static resolves the resource path relative to the service's own URL, from the request. So when calling `**/_/service/**/_/service/my.xp.app/servemyfolder/some/subdir/some.file`, the resource path would be `some/subdir/some.file`. And since we initially used `root` to set up `getStatic` to look for resource files under the folder _my/folder_, it will look for _my/folder/some/subdir/some.file_. 
+
+#### Output
+If _my/folder/some/subdir/some.file_ exists as a (readable) file, a full [XP response object](https://developer.enonic.com/docs/xp/stable/framework/http#http-response) is returned:
+```
+{ status: 200, body: "<file content from some/subdir/some.file>" }
+```
+...and there will be headers for Cache-Control, ETag and MIME-type. If it doesn't exist (or for other circumstances), other statuses are returned: `304`, `400`, `404` and `500`. And of course, `body` can be text or binary, depending on the file and type. See [Default behaviour](#behaviour) for details.
+
+#### Variations
+Above, `'my/folder'` is provided as a named `root` attribute in a parameters object. It's also possible to provide `root` by a first-positional argument if you prefer: 
+
+```
+const getStatic = libStatic.static('my/folder');
+```
+
+Also, since `libStatic.static` returns a function that takes a `request` argument, it's directly interchangable with `exports.get`. So if you're into one-liners, **the entire service above could be**: 
+
+```
+const libStatic = require('/lib/enonic/static');
+exports.get = libStatic.static('my/folder');
+```
 
 <br/>
 
 <a name="example-webapp"></a>
-## Webapp
+### Webapp
 
 
 <br/>
 
 <a name="example-path"></a>
-## Custom path resolution
+### Custom path resolution
 
 
 <br/>
 
 <a name="example-cache"></a>
-## Custom Cache-Control headers
+### Custom Cache-Control headers
 
 
 <br/>
 
 <a name="example-content"></a>
-## Custom content type handling
+### Custom content type handling
 
 
 <br/>
 
 <a name="example-etag"></a>
-## ETag switch
+### ETag switch
 
 <br/>
 
 <a name="example-errors"></a>
-## Errors: throw instead of return
+### Errors: throw instead of return
 
 <br/>
 
 <a name="example-get"></a>
-## Low-level: .get
+### Low-level: .get
 
 
 
@@ -336,9 +379,11 @@ In addition, you may supply a `path` or `root` param ([.get](#api-get) or [.stat
 <br/>
 
 <a name="mutable-assets"></a>
-## Important: mutable assets
+## Important: assets and mutability
 
-**Immutable assets**, in our context, are files whose content can be _trusted to never change_ without changing the file name. **Mutable assets** on the other hand are any files whose content _may_ change and still keep the same filename/path/URL. 
+**Immutable assets**, in our context, are files whose content can be _trusted to never change_ without changing the file name. To ensure this, developers should adapt their build setup to [content-hash](https://survivejs.com/webpack/optimizing/adding-hashes-to-filenames/) (or at least [version](https://cloud.google.com/cdn/docs/best-practices#versioned-urls)) the resource file names when updating them. Many build toolchains can do this automatically, for example Webpack.
+
+**Mutable assets** on the other hand are any files whose content _may_ change and still keep the same filename/path/URL. 
 
 <a name="mutable-headers"></a>
 ### Headers
@@ -436,7 +481,7 @@ If you have mutable assets in your project, there are several ways you could imp
 - `'Accept-Ranges': 'bytes'` header. Implement range handling.
 
 ### .resolvePath(globPath, root)
-Probably not in this lib, but worth mentioning:
+Probably not in this lib? Worth mentioning though:
 
 To save huge complexity (detecting at buildtime what the output and unpredictable hash will be and hooking those references up to output), there should be a function that can resolve a fingerprinted asset filename at XP runtime: `resolvePath(globPath, root)`. 
 
