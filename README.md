@@ -6,7 +6,7 @@ Intended for setting up endpoints that serve static files in a cache-optimized w
 
 The aim is "perfect client-side and network caching" via response headers. Some relevant sources: [web.dev](https://web.dev/http-cache/), [facebook](https://engineering.fb.com/2017/01/26/web/this-browser-tweak-saved-60-of-requests-to-facebook/), [mozilla](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching), [imagekit](https://imagekit.io/blog/ultimate-guide-to-http-caching-for-static-assets/), [freecontent.manning.com](https://freecontent.manning.com/caching-assets/).
 
-Modelled akin to [serve-static](https://www.npmjs.com/package/serve-static), with a simple but configurable usage.
+Modelled akin to [serve-static](https://www.npmjs.com/package/serve-static): a simple basic usage but highly configurable.
 
 
 <br/>
@@ -16,10 +16,20 @@ Modelled akin to [serve-static](https://www.npmjs.com/package/serve-static), wit
 - [Getting started](#get-started)
   - [Install](#install)
   - [Import](#import)
-- [API and examples](#api)
+- [Usage examples](#examples)
+  - [Simple service](#example-service)
+  - [Webapp](#example-webapp)
+  - [Custom path resolution](#example-path)
+  - [Custom Cache-Control headers](#example-cache)
+  - [Custom content type handling](#example-content)
+  - [ETag switch](#example-etag)
+  - [Errors: throw instead of return](#example-errors)
+  - [Low-level: .get](#example-get)
+- [API](#api)
   - [static](#api-static)
   - [get](#api-get)
-- [Response: default behaviour](#behaviour)
+- [Default behaviour and response](#behaviour)
+  - [path handling](#path) 
   - [status](#status)
   - [body](#body)
   - [contentType](#content-type)
@@ -58,6 +68,57 @@ const libStatic = require('/lib/enonic/static');
 ```
 
 
+<br/>
+<br/>
+
+<a name="examples"></a>
+## Usage examples
+
+
+<br/>
+
+<a name="example-service"></a>
+## Simple service
+
+
+<br/>
+
+<a name="example-webapp"></a>
+## Webapp
+
+
+<br/>
+
+<a name="example-path"></a>
+## Custom path resolution
+
+
+<br/>
+
+<a name="example-cache"></a>
+## Custom Cache-Control headers
+
+
+<br/>
+
+<a name="example-content"></a>
+## Custom content type handling
+
+
+<br/>
+
+<a name="example-etag"></a>
+## ETag switch
+
+<br/>
+
+<a name="example-errors"></a>
+## Errors: throw instead of return
+
+<br/>
+
+<a name="example-get"></a>
+## Low-level: .get
 
 
 
@@ -180,6 +241,9 @@ Response signature:
 ```
 { status, body, contentType, headers }
 ```
+
+<a name="path"></a>
+### Path handling
 
 <a name="status"></a>
 ### status
