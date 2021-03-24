@@ -126,7 +126,7 @@ Calling `libStatic.static` returns a reusable function (`libStatic`) that takes 
 #### Output
 If _my/folder/some/subdir/some.file_ exists as a (readable) file, a full [XP response object](https://developer.enonic.com/docs/xp/stable/framework/http#http-response) is returned:
 
-```json
+```javascript
 { 
   status: 200, 
   body: "<file content from some/subdir/some.file>"
@@ -188,21 +188,23 @@ In the following examples, note that the general behavior of the returned getter
 
 If you set `root` with a pure string as the first argument, add a second argument object for the options. If you use the named-parameter way to set `root`, the options must be in the same first-argument object - _never use two object parameters_. 
 
-These are equivalent:
+These are valid and equivalent:
 ```javascript
 libStatic.static({
-      root: 'my/folder',
-      option1: ...,
-      option2: ...
+    root: 'my/folder',
+    option1: "option value 1",
+    option2: "option value 2"
 });
 ```
 ...and:
 ```javascript
 libStatic.static('my/folder', {
-      option1: ...,
-      option2: ...
+    option1: "option value 1",
+    option2: "option value 2"
 });
 ```
+
+Options [API reference](#options).
 
 <br />
 
@@ -211,13 +213,11 @@ libStatic.static('my/folder', {
 
 Usually, the path to the resource file (relative to the root folder) is [determinied from the request](#example-service-urls). But this depends on several things: the request object must contain a `rawPath` and `contextPath` attribute to compare, and there must be some routing involved: the controller must be able to accept requests from sub-URIs. In [XP services](https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service) (and [XP webapps](https://developer.enonic.com/docs/xp/stable/runtime/engines/webapp-engine), but with caveats) this is supported out of the box, making it easiest to use a service to implement an endpoint.
 
-Example request:
-```json
+Example from a request object:
+```javascript
 {
-  ...,
   rawPath: "/_/service/my.xp.app/servemyfolder/some/subdir/some.file",
-  contextPath: "/_/service/my.xp.app/servemyfolder",
-  ...
+  contextPath: "/_/service/my.xp.app/servemyfolder"
 }
 ```
 From this request, the relative resource path is resolved to _some/subdir/some.file_, expected to be found below the `root` folder set with `libStatic.static`.
@@ -321,6 +321,8 @@ libRouter.get( `/`, function (request) {
 > 
 > Prefixing with `request.contextPath` solves it in this case. Your mileage may vary. 
 
+`getCleanPath` details in the [API reference](#options).
+
 <br/>
 
 <a name="example-content"></a>
@@ -369,6 +371,7 @@ const getStatic = libStatic.static({
 });
 ```
 
+`contentType` details in the [API reference](#options).
 
 <br/>
 
@@ -412,6 +415,8 @@ const getStatic = libStatic.static({
     } 
 });
 ```
+
+`cacheControl` details in the [API reference](#options).
 
 <br/>
 
