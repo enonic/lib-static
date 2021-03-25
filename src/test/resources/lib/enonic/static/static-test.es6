@@ -30,67 +30,128 @@ mockOptionsparser();
 
 const lib = require('./index');
 
-//////////////////////////////////////////////////////////////////  TEST .get
+//////////////////////////////////////////////////////////////////  HELPERS
 
+
+/* Mocks runMode.js, io.js, etagReader.js and options.js.
+  Optional params: {
+    isDev: boolean,
+    io: {
+        getResource: function [(path) => resource], or instead, the following 3 can be used:
+        path: string,
+        exists: boolean,
+        content: string,
+
+        readText: function [(stream) => string], or instead, the following 1:
+        text: string
+
+        getMimeType: function[(name) => string], or instead, the following 1:
+        mimeType: string
+    },
+    etagReader: {
+        read: function[(path, etagOverride) => string], or instead, the following 1:
+        etag: string
+    },
+    options: {
+        parsePathAndOptions: function[(pathOrOptions, options) => {path,cacheControlFunc,contentTypeFunc,etagOverride,throwErrors,errorMessage}],
+        parseRootAndOptions: function[(rootOrOptions, options) => {root,cacheControlFunc,contentTypeFunc,etagOverride,getCleanPath,throwErrors,errorMessage}]
+            Instead of those two, the following can be used:
+        contentTypeFunc: function [(filePathAndName, resource, mimeType) => string]
+        cacheControlFunc: function [(filePathAndName, resource) => string]
+        cacheControl: string or boolean
+        contentType: string or boolean
+        etag: string
+        throwErrors: boolean
+        getCleanPath
+    }
+ */
 const doMocks = (params={}) => {
-    mockedRunmodeFuncs.isDev = (typeof params.runMode === 'object' )
-        ? () => params.runMode.isDev
+    log.info("\n\nMOCKING with params (" +
+    	(Array.isArray(params) ?
+    		("array[" + params.length + "]") :
+    		(typeof params + (params && typeof params === 'object' ? (" with keys: " + JSON.stringify(Object.keys(params))) : ""))
+    	) + "): " + JSON.stringify(params, null, 2)
+    );
+
+    mockedRunmodeFuncs.isDev = (typeof params.isDev === 'boolean' )
+        ? () => params.isDev
         : () => false;
     mockRunmode();
 
-    const ioParams = params.io || {};
-    mockedIoFuncs.getResource = (path) => {
-        log.info("ioMock.getResource: " + JSON.stringify(path));
-        return ioMock.getResource(
-            ioParams.path || path,
-            ioParams.exists || true,
-            ioParams.content || `Mocked content of '${ioParams.path || path}'`
-        );
-    };
-    mockedIoFuncs.readText = (stream) => {
-        log.info("ioMock.readText");
-        return ioParams.readText || ioMock.readText(stream)
-    };
-    mockedIoFuncs.getMimeType = (name) => {
-        log.info("ioMock.getMimeType name: " + JSON.stringify(name));
-        return ioParams.mimeType || ioMock.getMimeType(name)
-    };
+    const io = params.io || {};
+    mockedIoFuncs.getResource = io.getResource || (
+        (path) => {
+            log.info("ioMock.getResource: " + JSON.stringify(path));
+            return ioMock.getResource(
+                io.path || path,
+                io.exists || true,
+                io.content || `Mocked content of '${io.path || path}'`
+            );
+        }
+    );
+    mockedIoFuncs.readText = io.readText || (
+        (stream) => {
+            log.info("ioMock.readText");
+            return io.text || ioMock.readText(stream);
+        }
+    );
+    mockedIoFuncs.getMimeType = io.getMimeType || (
+        (name) => {
+            log.info("ioMock.getMimeType name: " + JSON.stringify(name));
+            return io.mimeType || ioMock.getMimeType(name);
+        }
+    );
     mockIo();
 
     const etagReader = params.etagReader || {};
-    mockedEtagreaderFuncs.read = (path, etagOverride) => {
-        log.info("etagReaderMock.read: " + JSON.stringify({path, etagOverride}));
-        return etagReader.etag;
-    };
+    mockedEtagreaderFuncs.read = etagReader.read || (
+        (path, etagOverride) => {
+            log.info("etagReaderMock.read: " + JSON.stringify({path, etagOverride}));
+            return etagReader.etag || "MockedETagPlaceholder";
+        }
+    );
     mockEtagreader();
 
-    const defaultOptions = {
-        contentTypeFunc: ioMock.getMimeType,
-        cacheControlFunc: () => DEFAULT_CACHE_CONTROL
-    };
     const optionParams = params.options || {};
-    mockedOptionsparserFuncs.parsePathAndOptions = (pathOrOptions, options) => {
-        const parsed = (typeof pathOrOptions === 'string')
-            ? { path: pathOrOptions, ...defaultOptions, ...options, ...optionParams }
-            : { ...defaultOptions, ...pathOrOptions, ...optionParams };
-        log.info("optionsParserMock.parsePathAndOptions: " + JSON.stringify(parsed));
-        return parsed;
+    const defaultOptions = {
+        contentTypeFunc: (optionParams.contentType !== undefined)
+            ? () => optionParams.contentType
+            : ioMock.getMimeType,
+        cacheControlFunc: (optionParams.cacheControl !== undefined)
+            ? () => optionParams.cacheControl
+            : () => DEFAULT_CACHE_CONTROL
     };
-    mockedOptionsparserFuncs.parseRootAndOptions = (rootOrOptions, options) => {
-        const parsed = (typeof rootOrOptions === 'string')
-            ? { root: rootOrOptions, ...defaultOptions, ...options, ...optionParams }
-            : { ...defaultOptions, ...rootOrOptions, ...optionParams };
-        log.info("optionsParserMock.parseRootAndOptions: " + JSON.stringify(rootOrOptions));
-        return parsed;
-    };
+    mockedOptionsparserFuncs.parsePathAndOptions = optionParams.parsePathAndOptions || (
+        (pathOrOptions, options) => {
+            const parsed = (typeof pathOrOptions === 'string')
+                ? { path: pathOrOptions, ...defaultOptions, ...options, ...optionParams }
+                : { ...defaultOptions, ...pathOrOptions, ...optionParams };
+            log.info("optionsParserMock.parsePathAndOptions: " + JSON.stringify(parsed));
+            return parsed;
+        }
+    );
+    mockedOptionsparserFuncs.parseRootAndOptions = optionParams.parseRootAndOptions || (
+        (rootOrOptions, options) => {
+            const parsed = (typeof rootOrOptions === 'string')
+                ? { root: rootOrOptions, ...defaultOptions, ...options, ...optionParams }
+                : { ...defaultOptions, ...rootOrOptions, ...optionParams };
+            log.info("optionsParserMock.parseRootAndOptions: " + JSON.stringify(rootOrOptions));
+            return parsed;
+        }
+    );
     mockOptionsparser();
 }
 
 
 
+
+
+//////////////////////////////////////////////////////////////////  TEST .get
+
 // Path string argument
 
-exports.testGet_path_FullDefaultResponse = () => {
+exports.testGet_path_string_FullDefaultResponse = () => {
+    log.info("\n\ntestGet_path_string_FullDefaultResponse:\n\n");
     doMocks({
         etagReader: {
             etag: "expectedEtag1234567890"
@@ -102,8 +163,8 @@ exports.testGet_path_FullDefaultResponse = () => {
     log.info(".get: full get response readout (" +
         (typeof result +
             (result && typeof result === 'object'
-                ? (" with keys: " + JSON.stringify(Object.keys(result)))
-                : ""
+                    ? (" with keys: " + JSON.stringify(Object.keys(result)))
+                    : ""
             )
         ) +
         "): " + JSON.stringify(result, null, 2)
@@ -120,8 +181,138 @@ exports.testGet_path_FullDefaultResponse = () => {
     t.assertEquals( "expectedEtag1234567890", result.headers.ETag, "result.headers should be an object with ETag and Cache-Control");
     t.assertTrue(result.headers.ETag.length > 0, "result.headers should be an object with ETag and Cache-Control");
     t.assertEquals(DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
+};
+exports.testGet_path_option_FullDefaultResponse = () => {
+    log.info("\n\ntestGet_path_option_FullDefaultResponse:\n\n");
+    doMocks({
+        etagReader: {
+            etag: "expectedEtag1234567890"
+        }
+    });
 
+    const result = lib.get({path: '/assets/asset-test-target.txt'});
 
+    log.info(".get: full get response readout (" +
+        (typeof result +
+            (result && typeof result === 'object'
+                    ? (" with keys: " + JSON.stringify(Object.keys(result)))
+                    : ""
+            )
+        ) +
+        "): " + JSON.stringify(result, null, 2)
+    );
+
+    t.assertEquals(200, result.status, result.status);
+    t.assertEquals("Mocked content of '/assets/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
+
+    t.assertTrue(typeof result.contentType === 'string', "Expected string contentType containing 'text/plain'");
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain'");
+
+    t.assertTrue(!!result.headers, "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals('object', typeof result.headers, "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals( "expectedEtag1234567890", result.headers.ETag, "result.headers should be an object with ETag and Cache-Control");
+    t.assertTrue(result.headers.ETag.length > 0, "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals(DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
+};
+
+exports.testGet_path_string_FullDefaultResponse_DEV = () => {
+    log.info("\n\ntestGet_path_string_FullDefaultResponse_DEV:\n\n");
+    doMocks({
+        isDev: true,
+        etagReader: {
+            etag: "expectedEtag1234567890"
+        }
+    });
+
+    const result = lib.get('/assets/asset-test-target.txt');
+
+    log.info(".get: full get response readout (" +
+        (typeof result +
+            (result && typeof result === 'object'
+                    ? (" with keys: " + JSON.stringify(Object.keys(result)))
+                    : ""
+            )
+        ) +
+        "): " + JSON.stringify(result, null, 2)
+    );
+
+    t.assertEquals(200, result.status, result.status);
+    t.assertEquals("Mocked content of '/assets/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
+
+    t.assertTrue(typeof result.contentType === 'string', "Expected string contentType containing 'text/plain'");
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain'");
+
+    t.assertTrue(!!result.headers, "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals('object', typeof result.headers, "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals( "expectedEtag1234567890", result.headers.ETag, "result.headers should be an object with ETag and Cache-Control");
+    t.assertTrue(result.headers.ETag.length > 0, "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals(DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
+};
+exports.testGet_path_option_FullDefaultResponse_DEV = () => {
+    log.info("\n\ntestGet_path_string_FullDefaultResponse_DEV:\n\n");
+    doMocks({
+        isDev: true,
+        etagReader: {
+            etag: "expectedEtag1234567890"
+        }
+    });
+
+    const result = lib.get({path: '/assets/asset-test-target.txt'});
+
+    log.info(".get: full get response readout (" +
+        (typeof result +
+            (result && typeof result === 'object'
+                    ? (" with keys: " + JSON.stringify(Object.keys(result)))
+                    : ""
+            )
+        ) +
+        "): " + JSON.stringify(result, null, 2)
+    );
+
+    t.assertEquals(200, result.status, result.status);
+    t.assertEquals("Mocked content of '/assets/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
+
+    t.assertTrue(typeof result.contentType === 'string', "Expected string contentType containing 'text/plain'");
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain'");
+
+    t.assertTrue(!!result.headers, "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals('object', typeof result.headers, "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals( "expectedEtag1234567890", result.headers.ETag, "result.headers should be an object with ETag and Cache-Control");
+    t.assertTrue(result.headers.ETag.length > 0, "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals(DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
+};
+
+exports.testGet_path_noExist_should404 = () => {
+    log.info("\n\ntestGet_path_noExist_should404:\n\n");
+    doMocks({
+        io: {
+            exists: false
+        }
+    });
+
+    const result = lib.get('/assets/asset-test-target.txt');
+
+    log.info(".get: full noExist get response readout (" +
+        (typeof result +
+            (result && typeof result === 'object'
+                    ? (" with keys: " + JSON.stringify(Object.keys(result)))
+                    : ""
+            )
+        ) +
+        "): " + JSON.stringify(result, null, 2)
+    );
+
+    t.assertEquals(200, result.status, result.status);
+    t.assertEquals("Mocked content of '/assets/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
+
+    t.assertTrue(typeof result.contentType === 'string', "Expected string contentType containing 'text/plain'");
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain'");
+
+    t.assertTrue(!!result.headers, "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals('object', typeof result.headers, "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals( "expectedEtag1234567890", result.headers.ETag, "result.headers should be an object with ETag and Cache-Control");
+    t.assertTrue(result.headers.ETag.length > 0, "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals(DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
 };
 
 /*

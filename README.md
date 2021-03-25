@@ -221,6 +221,12 @@ NOTE: mutable assets should not be served with this header! See [below](#mutable
 
 As described above, an object can be added with optional attributes to **override** the [default behaviour](#behaviour):
 
+For .get:
+```
+{ cacheControl, contentType, etag, throwErrors }
+```
+
+For .static:
 ```
 { cacheControl, contentType, etag, getCleanPath, throwErrors }
 ```
