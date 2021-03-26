@@ -32,9 +32,3 @@ Resource.prototype.exists = function () {
 Resource.prototype.readString = function () {
     return this.res.readString();
 };
-
-// Test use only
-exports.__getResourceDummy__ = (key, exists, content) => {
-    const dummy = ioService.__getResourceDummy__(key, exists, content);
-    return new Resource(dummy);
-}
