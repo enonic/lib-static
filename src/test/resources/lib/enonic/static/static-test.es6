@@ -32,20 +32,92 @@ const lib = require('./index');
 
 //////////////////////////////////////////////////////////////////  HELPERS
 
+                                                                                                                        const prettify = (obj, label, suppressCode= false, indent = 0) => {
+                                                                                                                            let str = " ".repeat(indent) + (
+                                                                                                                                label !== undefined
+                                                                                                                                    ? label + ": "
+                                                                                                                                    : ""
+                                                                                                                            );
+
+                                                                                                                            if (typeof obj === 'function') {
+                                                                                                                                if (!suppressCode) {
+                                                                                                                                    return `${str}···· (function)\n${" ".repeat(indent + 4)}` +
+                                                                                                                                        obj.toString()
+                                                                                                                                            .replace(
+                                                                                                                                                /\r?\n\r?/g,
+                                                                                                                                                `\n${" ".repeat(indent + 4)}`
+                                                                                                                                            ) +
+                                                                                                                                        "\n" + " ".repeat(indent) + "····"
+                                                                                                                                        ;
+                                                                                                                                } else {
+                                                                                                                                    return `${str}···· (function)`;
+                                                                                                                                }
+
+                                                                                                                            } else if (Array.isArray(obj)) {
+                                                                                                                                return obj.length === 0
+                                                                                                                                    ? `${str}[]`
+                                                                                                                                    : (
+                                                                                                                                        `${str}[\n` +
+                                                                                                                                        obj.map(
+                                                                                                                                            (item, i) =>
+                                                                                                                                                prettify(item, i, suppressCode, indent + 4)
+                                                                                                                                        )
+                                                                                                                                            .join(",\n") +
+                                                                                                                                        `\n${" ".repeat(indent)}]`
+                                                                                                                                    );
+
+                                                                                                                            } else if (obj && typeof obj === 'object') {
+                                                                                                                                try {
+                                                                                                                                    if (Object.keys(obj).length === 0) {
+                                                                                                                                        return `${str}{}`;
+                                                                                                                                    } else {
+                                                                                                                                        return `${str}{\n` +
+                                                                                                                                            Object.keys(obj).map(
+                                                                                                                                                key => prettify(obj[key], key, suppressCode, indent + 4)
+                                                                                                                                            ).join(",\n") +
+                                                                                                                                            `\n${" ".repeat(indent)}}`
+                                                                                                                                    }
+                                                                                                                                } catch (e) {
+                                                                                                                                    log.info(e);
+                                                                                                                                    return `${str}···· (${typeof obj})\n${" ".repeat(indent + 4)}` +
+                                                                                                                                        obj.toString()
+                                                                                                                                            .replace(
+                                                                                                                                                /\r?\n\r?/g,
+                                                                                                                                                `\n${" ".repeat(indent + 4)}`
+                                                                                                                                            ) +
+                                                                                                                                        "\n" + " ".repeat(indent) + `····`;
+                                                                                                                                }
+                                                                                                                            } else if (obj === undefined || obj === null) {
+                                                                                                                                return `${str}${obj}`;
+                                                                                                                            } else if (JSON.stringify(obj) !== undefined) {
+                                                                                                                                return `${str}` + JSON.stringify(obj, null, 2).replace(
+                                                                                                                                    /\r?\n\r?/g,
+                                                                                                                                    `\n${" ".repeat(indent + 2)}`
+                                                                                                                                );
+                                                                                                                            } else {
+                                                                                                                                return `${str}···· (${typeof obj})\n${" ".repeat(indent + 4)}` +
+                                                                                                                                    obj.toString()
+                                                                                                                                        .replace(
+                                                                                                                                            /\r?\n\r?/g,
+                                                                                                                                            `\n${" ".repeat(indent + 4)}`
+                                                                                                                                        ) +
+                                                                                                                                    "\n" + " ".repeat(indent) + `····`;
+                                                                                                                            }
+                                                                                                                        };
 
 /* Mocks runMode.js, io.js, etagReader.js and options.js.
   Optional params: {
     isDev: boolean,
     io: {
-        getResource: function [(path) => resource], or instead, the following 3 can be used:
+        getResource: function [(path) => resource], or instead, the following 3 can be used as args to mockIo.getResource:
         path: string,
         exists: boolean,
         content: string,
 
-        readText: function [(stream) => string], or instead, the following 1:
+        readText: function [(stream) => string], or instead, the following 1 can be used as arg to mockIo.readText:
         text: string
 
-        getMimeType: function[(name) => string], or instead, the following 1:
+        getMimeType: function[(name) => string], or instead, the following 1 can be used as arg to mockIo.getMimeType:
         mimeType: string
     },
     etagReader: {
@@ -55,7 +127,7 @@ const lib = require('./index');
     options: {
         parsePathAndOptions: function[(pathOrOptions, options) => {path,cacheControlFunc,contentTypeFunc,etagOverride,throwErrors,errorMessage}],
         parseRootAndOptions: function[(rootOrOptions, options) => {root,cacheControlFunc,contentTypeFunc,etagOverride,getCleanPath,throwErrors,errorMessage}]
-            Instead of those two, the following can be used:
+            Instead of those two, the following can be used override OUTPUT from mocked passthrough versions of those two:
         contentTypeFunc: function [(filePathAndName, resource, mimeType) => string]
         cacheControlFunc: function [(filePathAndName, resource) => string]
         cacheControl: string or boolean
@@ -65,40 +137,43 @@ const lib = require('./index');
         getCleanPath
     }
  */
-const doMocks = (params={}) => {
-    log.info("\n\nMOCKING with params (" +
-    	(Array.isArray(params) ?
-    		("array[" + params.length + "]") :
-    		(typeof params + (params && typeof params === 'object' ? (" with keys: " + JSON.stringify(Object.keys(params))) : ""))
-    	) + "): " + JSON.stringify(params, null, 2)
-    );
+const doMocks = (params={}, verbose= false) => {
 
     mockedRunmodeFuncs.isDev = (typeof params.isDev === 'boolean' )
-        ? () => params.isDev
+        ? () => {
+                                                                                                                        if (verbose) log.info(prettify(params.isDev, "Mocked isDev"));
+            return params.isDev
+        }
         : () => false;
     mockRunmode();
 
     const io = params.io || {};
     mockedIoFuncs.getResource = io.getResource || (
         (path) => {
-            log.info("ioMock.getResource: " + JSON.stringify(path));
-            return ioMock.getResource(
-                io.path || path,
-                io.exists || true,
-                io.content || `Mocked content of '${io.path || path}'`
-            );
+            const data = {
+                path: (io.path !== undefined) ? io.path : path,
+                exists: (io.exists !== undefined) ? io.exists : true,
+            };
+            data.content = (io.content !== undefined) ? io.content : `Mocked content of '${data.path}'`;
+
+            const res = ioMock.getResource(data.path, data.exists, data.content);
+
+                                                                                                                        if (verbose) log.info(prettify(data, "Mocked io.getResource(" + JSON.stringify(path) + ")"));
+            return res;
         }
     );
     mockedIoFuncs.readText = io.readText || (
         (stream) => {
-            log.info("ioMock.readText");
-            return io.text || ioMock.readText(stream);
+            const text = io.text || ioMock.readText(stream);
+                                                                                                                        if (verbose) log.info(prettify(text,"Mocked io.readText(stream)"));
+            return text;
         }
     );
     mockedIoFuncs.getMimeType = io.getMimeType || (
         (name) => {
-            log.info("ioMock.getMimeType name: " + JSON.stringify(name));
-            return io.mimeType || ioMock.getMimeType(name);
+            const mimeType = io.mimeType || ioMock.getMimeType(name);
+                                                                                                                        if (verbose) log.info(prettify(mimeType, "Mocked io.getMimeType(" + JSON.stringify(name) + ")"));
+            return mimeType;
         }
     );
     mockIo();
@@ -106,8 +181,9 @@ const doMocks = (params={}) => {
     const etagReader = params.etagReader || {};
     mockedEtagreaderFuncs.read = etagReader.read || (
         (path, etagOverride) => {
-            log.info("etagReaderMock.read: " + JSON.stringify({path, etagOverride}));
-            return etagReader.etag || "MockedETagPlaceholder";
+            const etag = etagReader.etag || "MockedETagPlaceholder";
+                                                                                                                        if (verbose) log.info(prettify(etag, "Mocked etagReader.read(" + JSON.stringify({path, etagOverride}) + ")"));
+            return etag;
         }
     );
     mockEtagreader();
@@ -126,7 +202,7 @@ const doMocks = (params={}) => {
             const parsed = (typeof pathOrOptions === 'string')
                 ? { path: pathOrOptions, ...defaultOptions, ...options, ...optionParams }
                 : { ...defaultOptions, ...pathOrOptions, ...optionParams };
-            log.info("optionsParserMock.parsePathAndOptions: " + JSON.stringify(parsed));
+                                                                                                                        if (verbose) log.info(prettify(parsed, "Mocked parseRootAndOptions(" + JSON.stringify({pathOrOptions, options}) + ")"));
             return parsed;
         }
     );
@@ -135,7 +211,7 @@ const doMocks = (params={}) => {
             const parsed = (typeof rootOrOptions === 'string')
                 ? { root: rootOrOptions, ...defaultOptions, ...options, ...optionParams }
                 : { ...defaultOptions, ...rootOrOptions, ...optionParams };
-            log.info("optionsParserMock.parseRootAndOptions: " + JSON.stringify(rootOrOptions));
+                                                                                                                        if (verbose) log.info(prettify(parsed, "Mocked parseRootAndOptions(" + JSON.stringify({rootOrOptions, options}) + ")"));
             return parsed;
         }
     );
@@ -146,31 +222,24 @@ const doMocks = (params={}) => {
 
 
 
+
 //////////////////////////////////////////////////////////////////  TEST .get
 
 // Path string argument
-
+const verbose = false;
 exports.testGet_path_string_FullDefaultResponse = () => {
-    log.info("\n\ntestGet_path_string_FullDefaultResponse:\n\n");
+                                                                                                                        if (verbose) log.info("\n\n\ntestGet_path_string_FullDefaultResponse:\n");
     doMocks({
-        etagReader: {
-            etag: "expectedEtag1234567890"
-        }
-    });
+            etagReader: {
+                etag: "expectedEtag1234567890"
+            }
+        },
+        verbose);
 
     const result = lib.get('/assets/asset-test-target.txt');
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
 
-    log.info(".get: full get response readout (" +
-        (typeof result +
-            (result && typeof result === 'object'
-                    ? (" with keys: " + JSON.stringify(Object.keys(result)))
-                    : ""
-            )
-        ) +
-        "): " + JSON.stringify(result, null, 2)
-    );
-
-    t.assertEquals(200, result.status, result.status);
+    t.assertEquals(200, result.status, "result.status");
     t.assertEquals("Mocked content of '/assets/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
 
     t.assertTrue(typeof result.contentType === 'string', "Expected string contentType containing 'text/plain'");
@@ -183,26 +252,18 @@ exports.testGet_path_string_FullDefaultResponse = () => {
     t.assertEquals(DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
 };
 exports.testGet_path_option_FullDefaultResponse = () => {
-    log.info("\n\ntestGet_path_option_FullDefaultResponse:\n\n");
+                                                                                                                        if (verbose) log.info("\n\n\ntestGet_path_option_FullDefaultResponse:\n");
     doMocks({
-        etagReader: {
-            etag: "expectedEtag1234567890"
-        }
-    });
+            etagReader: {
+                etag: "expectedEtag1234567890"
+            }
+        },
+        verbose);
 
     const result = lib.get({path: '/assets/asset-test-target.txt'});
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
 
-    log.info(".get: full get response readout (" +
-        (typeof result +
-            (result && typeof result === 'object'
-                    ? (" with keys: " + JSON.stringify(Object.keys(result)))
-                    : ""
-            )
-        ) +
-        "): " + JSON.stringify(result, null, 2)
-    );
-
-    t.assertEquals(200, result.status, result.status);
+    t.assertEquals(200, result.status, "result.status");
     t.assertEquals("Mocked content of '/assets/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
 
     t.assertTrue(typeof result.contentType === 'string', "Expected string contentType containing 'text/plain'");
@@ -216,27 +277,19 @@ exports.testGet_path_option_FullDefaultResponse = () => {
 };
 
 exports.testGet_path_string_FullDefaultResponse_DEV = () => {
-    log.info("\n\ntestGet_path_string_FullDefaultResponse_DEV:\n\n");
+                                                                                                                        if (verbose) log.info("\n\n\ntestGet_path_string_FullDefaultResponse_DEV:\n");
     doMocks({
-        isDev: true,
-        etagReader: {
-            etag: "expectedEtag1234567890"
-        }
-    });
+            isDev: true,
+            etagReader: {
+                etag: "expectedEtag1234567890"
+            }
+        },
+        verbose);
 
     const result = lib.get('/assets/asset-test-target.txt');
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
 
-    log.info(".get: full get response readout (" +
-        (typeof result +
-            (result && typeof result === 'object'
-                    ? (" with keys: " + JSON.stringify(Object.keys(result)))
-                    : ""
-            )
-        ) +
-        "): " + JSON.stringify(result, null, 2)
-    );
-
-    t.assertEquals(200, result.status, result.status);
+    t.assertEquals(200, result.status, "result.status");
     t.assertEquals("Mocked content of '/assets/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
 
     t.assertTrue(typeof result.contentType === 'string', "Expected string contentType containing 'text/plain'");
@@ -249,27 +302,19 @@ exports.testGet_path_string_FullDefaultResponse_DEV = () => {
     t.assertEquals(DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
 };
 exports.testGet_path_option_FullDefaultResponse_DEV = () => {
-    log.info("\n\ntestGet_path_string_FullDefaultResponse_DEV:\n\n");
+                                                                                                                        if (verbose) log.info("\n\n\ntestGet_path_option_FullDefaultResponse_DEV:\n");
     doMocks({
-        isDev: true,
-        etagReader: {
-            etag: "expectedEtag1234567890"
-        }
-    });
+            isDev: true,
+            etagReader: {
+                etag: "expectedEtag1234567890"
+            }
+        },
+        verbose);
 
     const result = lib.get({path: '/assets/asset-test-target.txt'});
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
 
-    log.info(".get: full get response readout (" +
-        (typeof result +
-            (result && typeof result === 'object'
-                    ? (" with keys: " + JSON.stringify(Object.keys(result)))
-                    : ""
-            )
-        ) +
-        "): " + JSON.stringify(result, null, 2)
-    );
-
-    t.assertEquals(200, result.status, result.status);
+    t.assertEquals(200, result.status, "result.status");
     t.assertEquals("Mocked content of '/assets/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
 
     t.assertTrue(typeof result.contentType === 'string', "Expected string contentType containing 'text/plain'");
@@ -282,39 +327,47 @@ exports.testGet_path_option_FullDefaultResponse_DEV = () => {
     t.assertEquals(DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
 };
 
-exports.testGet_path_noExist_should404 = () => {
-    log.info("\n\ntestGet_path_noExist_should404:\n\n");
+exports.testGet_path_noExist_shouldOnly404 = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGet_path_noExist_shouldOnly404:\n");
     doMocks({
-        io: {
-            exists: false
-        }
-    });
+            io: {
+                exists: false
+            }
+        },
+        verbose);
 
     const result = lib.get('/assets/asset-test-target.txt');
 
-    log.info(".get: full noExist get response readout (" +
-        (typeof result +
-            (result && typeof result === 'object'
-                    ? (" with keys: " + JSON.stringify(Object.keys(result)))
-                    : ""
-            )
-        ) +
-        "): " + JSON.stringify(result, null, 2)
-    );
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
 
-    t.assertEquals(200, result.status, result.status);
-    t.assertEquals("Mocked content of '/assets/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
+    t.assertEquals(404, result.status, "result.status");
+    t.assertEquals(undefined, result.body, "result.body");
+    t.assertEquals(undefined, result.contentType, "result.contentType");
+    t.assertEquals(undefined, result.headers, "result.headers");
+};
+
+exports.testGet_path_noExist_should404withInfo_DEV = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGet_path_noExist_should404withInfo_DEV:\n");
+    doMocks({
+            isDev: true,
+            io: {
+                exists: false
+            }
+        },
+        verbose);
+
+    const result = lib.get('/assets/asset-test-target.txt');
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+
+    t.assertEquals(404, result.status, result.status);
+    t.assertTrue(typeof result.body === 'string', "Expected string body containing path");
+    t.assertTrue(result.body.indexOf('/assets/asset-test-target.txt') !== -1, "Expected string body containing path");
 
     t.assertTrue(typeof result.contentType === 'string', "Expected string contentType containing 'text/plain'");
     t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain'");
 
-    t.assertTrue(!!result.headers, "result.headers should be an object with ETag and Cache-Control");
-    t.assertEquals('object', typeof result.headers, "result.headers should be an object with ETag and Cache-Control");
-    t.assertEquals( "expectedEtag1234567890", result.headers.ETag, "result.headers should be an object with ETag and Cache-Control");
-    t.assertTrue(result.headers.ETag.length > 0, "result.headers should be an object with ETag and Cache-Control");
-    t.assertEquals(DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals(undefined, result.headers, "result.headers");
 };
-
 /*
 exports.testGet_optionsPath = () => {
     const lib = require('./index');

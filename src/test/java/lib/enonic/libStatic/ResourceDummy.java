@@ -28,8 +28,6 @@ public class ResourceDummy implements Resource {
         this.key = key;
         this.exists = exists;
         this.content = content;
-
-        LOG.info(this.getClass().getSimpleName() + ": key='" + key + "'   |   exists=" + exists + "   |   content='" + content + "'");
     }
 
     private String getContent(String label) {
