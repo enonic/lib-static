@@ -269,7 +269,6 @@ exports.testGet_innerbehavior_mockedCall_parsePathAndOptions_1arg = () => {
 };
 
 exports.testGet_innerbehavior_mockedCall_parsePathAndOptions_2arg = () => {
-    const verbose = true;
 
                                                                                                                         if (verbose) log.info("\n\n\ntestGet_innerbehavior_mockedCall_parsePathAndOptions_2arg:\n");
     let parsePathAndOptionsWasCalled = false;
@@ -312,6 +311,27 @@ exports.testGet_innerbehavior_mockedCall_parsePathAndOptions_2arg = () => {
     log.info("OK.");
     t.assertTrue(parsePathAndOptionsWasCalled, "parsePathAndOptionsWasCalled");
 };
+
+
+exports.testGet_innerbehavior_parsePathAndOptions_shouldLogError = () => {
+    const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestGet_innerbehavior_mockedCall_parsePathAndOptions_1arg:\n");
+    let parsePathAndOptionsWasCalled = false;
+    doMocks({
+            options: {
+                errorMessage: "I will throw this now and this should be logged but not output"
+            }
+        },
+        verbose);
+
+    const result = lib.get("my/path");
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+    log.info("OK.");
+    t.assertEquals(500, result.status , "result.status");
+    t.assertTrue('string', typeof result.body, "result.body");
+    t.assertEquals(-1, result.body.indexOf("will throw this now"), "result.body");
+};
+
 
 
 // Path string argument
