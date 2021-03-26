@@ -264,12 +264,11 @@ exports.testGet_innerbehavior_mockedCall_parsePathAndOptions_1arg = () => {
         getCleanPath: 'getCleanPath/should/be/function/but/ok'
     });
                                                                                                                         if (verbose) log.info(prettify(result, "result"));
-    log.info("OK.");
     t.assertTrue(parsePathAndOptionsWasCalled, "parsePathAndOptionsWasCalled");
+    log.info("OK.");
 };
 
 exports.testGet_innerbehavior_mockedCall_parsePathAndOptions_2arg = () => {
-
                                                                                                                         if (verbose) log.info("\n\n\ntestGet_innerbehavior_mockedCall_parsePathAndOptions_2arg:\n");
     let parsePathAndOptionsWasCalled = false;
     doMocks({
@@ -308,30 +307,91 @@ exports.testGet_innerbehavior_mockedCall_parsePathAndOptions_2arg = () => {
         }
     );
                                                                                                                         if (verbose) log.info(prettify(result, "result"));
-    log.info("OK.");
     t.assertTrue(parsePathAndOptionsWasCalled, "parsePathAndOptionsWasCalled");
+    log.info("OK.");
 };
 
 
-exports.testGet_innerbehavior_parsePathAndOptions_shouldLogError = () => {
-    const verbose = true;
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_innerbehavior_mockedCall_parsePathAndOptions_1arg:\n");
-    let parsePathAndOptionsWasCalled = false;
+exports.testGet_innerbehavior_parsePathAndOptions_errorShouldLogAndAbort = () => {
+    //const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestGet_innerbehavior_parsePathAndOptions_errorShouldLogAndAbort:\n");
+    let getResourceWasCalled = false;
+    let etagReadWasCalled = false;
     doMocks({
             options: {
-                errorMessage: "I will throw this now and this should be logged but not output"
+                errorMessage: "Throw this error on purpose, should be logged but not output"
+            },
+            io: {
+                getResource: () => {
+                    getResourceWasCalled = true;
+                }
+            },
+            etag: {
+                read: () => {
+                    etagReadWasCalled = true;
+                }
             }
         },
         verbose);
 
     const result = lib.get("my/path");
                                                                                                                         if (verbose) log.info(prettify(result, "result"));
-    log.info("OK.");
+    t.assertFalse(getResourceWasCalled, "getResourceWasCalled");
+    t.assertFalse(etagReadWasCalled, "etagReadWasCalled");
     t.assertEquals(500, result.status , "result.status");
     t.assertTrue('string', typeof result.body, "result.body");
-    t.assertEquals(-1, result.body.indexOf("will throw this now"), "result.body");
+    t.assertEquals(-1, result.body.indexOf("on purpose"), "result.body");
+    log.info("OK.");
 };
 
+
+
+exports.testGet_innerbehavior_parsePathAndOptions_shouldUseOutputsNotDirectArgs = () => {
+    //const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestGet_innerbehavior_parsePathAndOptions_shouldUseOutputsNotDirectArgs:\n");
+    let getResourceWasCalled = false;
+    let etagReadWasCalled = false;
+    doMocks({
+            options: {
+                path: 'options/path/out',
+                etagOverride: 'options/etagOverride/out',
+                cacheControlFunc: () => 'options/cacheControl/out',
+                contentTypeFunc: () => 'options/contentType/out'
+            },
+            io: {
+                getResource: (path) => {
+                    // A slash is added to path in the index.js before getResource, since the pathAndOptionsParser trims and removes it - therefore '/options...'
+                    t.assertEquals('/options/path/out', path, "io.getResource.path");
+                    getResourceWasCalled = true;
+                    return ioMock.getResource(path, true, `Content for ${path}`);
+                }
+            },
+            etagReader: {
+                read: (path, etagOverride) => {
+                    t.assertEquals('/options/path/out', path, "etagReader.read.path");
+                    t.assertEquals('options/etagOverride/out', etagOverride, "etagReader.read.etagOverride");
+                    etagReadWasCalled = true;
+                    return "reader/etag/out";
+                }
+            }
+        },
+        verbose);
+
+    const result = lib.get('arg/path/in', {
+        etag: 'arg/etag/in',
+        cacheControl: 'arg/cacheControl/in',
+        contentType: 'arg/contentType/in'
+    });
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+    t.assertTrue(getResourceWasCalled, "getResourceWasCalled");
+    t.assertTrue(etagReadWasCalled, "etagReadWasCalled");
+    t.assertEquals(200, result.status , "result.status");
+    t.assertTrue('string', typeof result.body, "result.body");
+    t.assertEquals('options/cacheControl/out', result.headers['Cache-Control'], 'cacheControl');
+    t.assertEquals('reader/etag/out', result.headers.ETag, 'cacheControl');
+    t.assertEquals('options/contentType/out', result.contentType, 'contentType');
+    log.info("OK.");
+};
 
 
 // Path string argument
@@ -437,7 +497,7 @@ exports.testGet_DEV_path_option_FullDefaultResponse = () => {
 };
 
 exports.testGet_contentType_HTML = () => {
-    if (verbose) log.info("\n\n\ntestGet_path_HTML_FullDefaultResponse:\n");
+                                                                                                                        if (verbose) log.info("\n\n\ntestGet_path_HTML_FullDefaultResponse:\n");
     doMocks({
             io: {
                 mimeType: "text/html"
@@ -446,7 +506,7 @@ exports.testGet_contentType_HTML = () => {
         verbose);
 
     const result = lib.get('/assets/asset-test-target.html');
-    if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
 
     t.assertEquals(200, result.status, "result.status");
 
@@ -475,6 +535,7 @@ exports.testGet_path_noExist_shouldOnly404 = () => {
     t.assertEquals(undefined, result.body, "result.body");
     t.assertEquals(undefined, result.contentType, "result.contentType");
     t.assertEquals(undefined, result.headers, "result.headers");
+    log.info("OK.");
 };
 
 exports.testGet_DEV_path_noExist_should404withInfo = () => {
@@ -498,6 +559,7 @@ exports.testGet_DEV_path_noExist_should404withInfo = () => {
     t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain' in dev");
 
     t.assertEquals(undefined, result.headers, "result.headers");
+    log.info("OK.");
 };
 
 exports.testGet_path_empty_shouldOnly400 = () => {
@@ -514,6 +576,7 @@ exports.testGet_path_empty_shouldOnly400 = () => {
     t.assertEquals(undefined, result.body, "result.body");
     t.assertEquals(undefined, result.contentType, "result.contentType");
     t.assertEquals(undefined, result.headers, "result.headers");
+    log.info("OK.");
 }
 
 
@@ -535,6 +598,7 @@ exports.testGet_DEV_path_empty_should400WithInfo = () => {
     t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain' in dev");
 
     t.assertEquals(undefined, result.headers, "result.headers");
+    log.info("OK.");
 }
 
 exports.testGet_path_spaces_shouldOnly400 = () => {
@@ -554,6 +618,7 @@ exports.testGet_path_spaces_shouldOnly400 = () => {
     t.assertEquals(undefined, result.body, "result.body");
     t.assertEquals(undefined, result.contentType, "result.contentType");
     t.assertEquals(undefined, result.headers, "result.headers");
+    log.info("OK.");
 }
 
 
@@ -578,6 +643,7 @@ exports.testGet_DEV_path_spaces_should400WithInfo = () => {
     t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain' in dev");
 
     t.assertEquals(undefined, result.headers, "result.headers");
+    log.info("OK.");
 }
 
 
@@ -597,6 +663,7 @@ exports.testGet_path_missing_should500withErrorId = () => {
     t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/plain' in dev");
     t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain' in dev");
     t.assertEquals(undefined, result.headers, "result.headers");
+    log.info("OK.");
 }
 
 
@@ -615,6 +682,7 @@ exports.testGet_DEV_path_missing_should500withErrorId = () => {
     t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/plain' in dev");
     t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain' in dev");
     t.assertEquals(undefined, result.headers, "result.headers");
+    log.info("OK.");
 }
 
 
