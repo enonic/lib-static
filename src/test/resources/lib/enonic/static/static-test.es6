@@ -147,6 +147,8 @@ const doMocks = (params={}, verbose= false) => {
         : () => false;
     mockRunmode();
 
+
+
     const io = params.io || {};
     mockedIoFuncs.getResource = io.getResource || (
         (path) => {
@@ -178,6 +180,8 @@ const doMocks = (params={}, verbose= false) => {
     );
     mockIo();
 
+
+
     const etagReader = params.etagReader || {};
     mockedEtagreaderFuncs.read = etagReader.read || (
         (path, etagOverride) => {
@@ -187,6 +191,8 @@ const doMocks = (params={}, verbose= false) => {
         }
     );
     mockEtagreader();
+
+
 
     const optionParams = params.options || {};
     const defaultOptions = {
@@ -227,7 +233,6 @@ const verbose = false;
 //////////////////////////////////////////////////////////////////  TEST .get
 
 exports.testGet_innerbehavior_mockedCall_parsePathAndOptions_1arg = () => {
-
                                                                                                                         if (verbose) log.info("\n\n\ntestGet_innerbehavior_mockedCall_parsePathAndOptions_1arg:\n");
     let parsePathAndOptionsWasCalled = false;
     doMocks({
@@ -249,7 +254,11 @@ exports.testGet_innerbehavior_mockedCall_parsePathAndOptions_1arg = () => {
                     // Verify to the caller that this mock function was actually called and the above was verified:
                     parsePathAndOptionsWasCalled = true;
 
-                    return {};
+                    return {
+                        path: pathOrOptions.path,
+                        contentTypeFunc: () => pathOrOptions.contentType,
+                        cacheControlFunc: () => pathOrOptions.cacheControl
+                    };
                 },
             }
         },
@@ -290,7 +299,11 @@ exports.testGet_innerbehavior_mockedCall_parsePathAndOptions_2arg = () => {
                     // Verify to the caller that this mock function was actually called and the above was verified:
                     parsePathAndOptionsWasCalled = true;
 
-                    return {};
+                    return {
+                        path: pathOrOptions,
+                        contentTypeFunc: () => options.contentType,
+                        cacheControlFunc: () => options.cacheControl
+                    };
                 },
             }
         },
@@ -601,11 +614,12 @@ exports.testGet_DEV_path_empty_should400WithInfo = () => {
     log.info("OK.");
 }
 
+/* Skip these - path is verified and trimmed by parsePathAndOptions */
 exports.testGet_path_spaces_shouldOnly400 = () => {
                                                                                                                         if (verbose) log.info("\n\n\ntestGet_path_spaces_shouldOnly400:\n");
     doMocks({
             options: {
-                path: ''
+                path: '' // Trust the options parser to trim the path
             }
         },
         verbose);
@@ -627,7 +641,7 @@ exports.testGet_DEV_path_spaces_should400WithInfo = () => {
     doMocks({
             isDev: true,
             options: {
-                    path: ''
+                    path: '' // Trust the options parser to trim the path
             }
         },
         verbose);
@@ -647,7 +661,86 @@ exports.testGet_DEV_path_spaces_should400WithInfo = () => {
 }
 
 
+
+exports.testGet_path_slash_shouldOnly400 = () => {
+    if (verbose) log.info("\n\n\ntestGet_path_slash_shouldOnly400:\n");
+    doMocks({
+        },
+        verbose);
+
+    const result = lib.get('/');
+    if (verbose) log.info(prettify(result, "result"));
+
+    t.assertEquals(400, result.status, "result.status");
+
+    t.assertEquals(undefined, result.body, "result.body");
+    t.assertEquals(undefined, result.contentType, "result.contentType");
+    t.assertEquals(undefined, result.headers, "result.headers");
+    log.info("OK.");
+}
+
+exports.testGet_path_slashes_shouldOnly400 = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGet_path_slashes_shouldOnly400:\n");
+    doMocks({
+        },
+        verbose);
+
+    const result = lib.get('///');
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+
+    t.assertEquals(400, result.status, "result.status");
+
+    t.assertEquals(undefined, result.body, "result.body");
+    t.assertEquals(undefined, result.contentType, "result.contentType");
+    t.assertEquals(undefined, result.headers, "result.headers");
+    log.info("OK.");
+}
+
+
+exports.testGet_DEV_path_slash_should400WithInfo = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGet_DEV_path_slash_should400WithInfo:\n");
+    doMocks({
+            isDev: true
+        },
+        verbose);
+
+    const result = lib.get('/');
+    if (verbose) log.info(prettify(result, "result"));
+
+    t.assertEquals(400, result.status, "result.status");
+
+    t.assertEquals('string', typeof result.body, "Expected string body with error message in dev");
+
+    t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/plain' in dev");
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain' in dev");
+
+    t.assertEquals(undefined, result.headers, "result.headers");
+    log.info("OK.");
+}
+
+exports.testGet_DEV_path_slashes_should400WithInfo = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGet_DEV_path_slash_should400WithInfo:\n");
+    doMocks({
+            isDev: true
+        },
+        verbose);
+
+    const result = lib.get('///');
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+
+    t.assertEquals(400, result.status, "result.status");
+
+    t.assertEquals('string', typeof result.body, "Expected string body with error message in dev");
+
+    t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/plain' in dev");
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain' in dev");
+
+    t.assertEquals(undefined, result.headers, "result.headers");
+    log.info("OK.");
+}
+
 exports.testGet_path_missing_should500withErrorId = () => {
+    const verbose = true;
                                                                                                                         if (verbose) log.info("\n\n\ntestGet_path_missing_shouldOnly500:\n");
     doMocks({
         },
@@ -667,18 +760,77 @@ exports.testGet_path_missing_should500withErrorId = () => {
 }
 
 
-exports.testGet_DEV_path_missing_should500withErrorId = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_DEV_path_missing_should500WithInfo:\n");
+// Optionparser always collects its own errors and returns an errormessage. Log, and output error ID in body
+exports.testGet_optionParsingError_should500withErrorId = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGet_optionParsingError_should500withErrorId:\n");
     doMocks({
-            isDev: true,
+            options: {
+                parsePathAndOptions: () => ({
+                    errorMessage: "This was thrown on purpose when parsing path and options."
+                })
+            }
         },
         verbose);
 
-    const result = lib.get();
+    const result = lib.get("my/path");
                                                                                                                         if (verbose) log.info(prettify(result, "result"));
 
     t.assertEquals(500, result.status, "result.status");
-    t.assertEquals("string", typeof result.body, "Expected string body with error message in dev");
+
+    t.assertEquals("string", typeof result.body, "result.body error message");
+    t.assertTrue(result.body.indexOf !== "Server error", "result.body error message");
+    t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/plain' in dev");
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain' in dev");
+    t.assertEquals(undefined, result.headers, "result.headers");
+    log.info("OK.");
+}
+
+// contentTypeFunc is run outside pathAndOptions parser, but errors here should still be caught
+exports.testGet_contentTypeFuncError_should500withErrorId = () => {
+    const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestGet_contentTypeFuncError_should500withErrorId:\n");
+    doMocks({
+            options: {
+                contentTypeFunc: () => {
+                    throw Error("This was thrown on purpose when running contentTypeFunc.");
+                }
+            }
+        },
+        verbose);
+
+    const result = lib.get("my/path");
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+
+    t.assertEquals(500, result.status, "result.status");
+
+    t.assertEquals("string", typeof result.body, "result.body error message");
+    t.assertTrue(result.body.indexOf !== "Server error", "result.body error message");
+    t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/plain' in dev");
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain' in dev");
+    t.assertEquals(undefined, result.headers, "result.headers");
+    log.info("OK.");
+}
+
+// cacheControlFunc is run outside pathAndOptions parser, but errors here should still be caught
+exports.testGet_cacheControlFuncError_should500withErrorId = () => {
+    const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestGet_cacheControlFuncError_should500withErrorId:\n");
+    doMocks({
+            options: {
+                cacheControlFunc: () => {
+                    throw Error("This was thrown on purpose when running cacheControlFunc.");
+                }
+            }
+        },
+        verbose);
+
+    const result = lib.get("my/path");
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+
+    t.assertEquals(500, result.status, "result.status");
+
+    t.assertEquals("string", typeof result.body, "result.body error message");
+    t.assertTrue(result.body.indexOf !== "Server error", "result.body error message");
     t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/plain' in dev");
     t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain' in dev");
     t.assertEquals(undefined, result.headers, "result.headers");
@@ -686,174 +838,9 @@ exports.testGet_DEV_path_missing_should500withErrorId = () => {
 }
 
 
+
 /*
 
-
-exports.testGet_fail_path_empty_should400 = () => {
-    const lib = require('./index');
-
-    const result = lib.get('');
-
-    t.assertTrue(!!result.body);
-    t.assertEquals(400, result.status);
-    t.assertTrue(typeof result.contentType === 'string');
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
-    t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
-    t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
-
-    log.info(`OK: ${result.status} - ${result.body}`)
-}
-
-exports.testGet_fail_path_spaces_should400 = () => {
-    const lib = require('./index');
-
-    const result = lib.get('  ');
-
-    t.assertTrue(!!result.body);
-    t.assertEquals(400, result.status);
-    t.assertTrue(typeof result.contentType === 'string');
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
-    t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
-    t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
-
-    log.info(`OK: ${result.status} - ${result.body}`)
-}
-
-exports.testGet_fail_path_slash_should400 = () => {
-    const lib = require('./index');
-
-    const result = lib.get('/');
-
-    t.assertTrue(!!result.body);
-    t.assertEquals(400, result.status);
-    t.assertTrue(typeof result.contentType === 'string');
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
-    t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
-    t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
-
-    log.info(`OK: ${result.status} - ${result.body}`)
-}
-
-exports.testGet_fail_path_slashes_should400 = () => {
-    const lib = require('./index');
-
-    const result = lib.get('///');
-
-    t.assertTrue(!!result.body);
-    t.assertEquals(400, result.status);
-    t.assertTrue(typeof result.contentType === 'string');
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
-    t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
-    t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
-
-    log.info(`OK: ${result.status} - ${result.body}`)
-}
-
-exports.testGet_fail_path_optionsArg_NotFound_should404 = () => {
-    const lib = require('./index');
-
-    const result = lib.get({path: '/static/doesNotExist.txt'});
-
-    t.assertTrue(!!result.body);
-    t.assertEquals(404, result.status);
-    t.assertTrue(typeof result.contentType === 'string');
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
-    t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
-    t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
-
-    log.info(`OK: ${result.status} - ${result.body}`)
-}
-
-exports.testGet_fail_path_optionsArg_empty_should400 = () => {
-    const lib = require('./index');
-
-    const result = lib.get({path: ''});
-
-    t.assertTrue(!!result.body);
-    t.assertEquals(400, result.status);
-    t.assertTrue(typeof result.contentType === 'string');
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
-    t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
-    t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
-
-    log.info(`OK: ${result.status} - ${result.body}`)
-}
-
-exports.testGet_fail_path_optionsArg_spaces_should400 = () => {
-    const lib = require('./index');
-
-    const result = lib.get({path: '  '});
-
-    t.assertTrue(!!result.body);
-    t.assertEquals(400, result.status);
-    t.assertTrue(typeof result.contentType === 'string');
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
-    t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
-    t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
-
-    log.info(`OK: ${result.status} - ${result.body}`)
-}
-
-exports.testGet_fail_path_optionsArg_slash_should400 = () => {
-    const lib = require('./index');
-
-    const result = lib.get({path: '/'});
-
-    t.assertTrue(!!result.body);
-    t.assertEquals(400, result.status);
-    t.assertTrue(typeof result.contentType === 'string');
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
-    t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
-    t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
-
-    log.info(`OK: ${result.status} - ${result.body}`)
-}
-
-exports.testGet_fail_path_optionsArg_slashes_should400 = () => {
-    const lib = require('./index');
-
-    const result = lib.get({path: '///'});
-
-    t.assertTrue(!!result.body);
-    t.assertEquals(400, result.status);
-    t.assertTrue(typeof result.contentType === 'string');
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
-    t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
-    t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
-
-    log.info(`OK: ${result.status} - ${result.body}`)
-}
-
-exports.testGet_fail_optionParsingError_should500withMessage = () => {
-    const lib = require('./index');
-
-    const result = lib.get('/assets/asset-test-target.txt', {
-        etag: 0
-    });
-
-    t.assertTrue(!!result.body);
-    t.assertEquals(500, result.status);
-    t.assertTrue(typeof result.contentType === 'string');
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
-    t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
-    t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
-
-    log.info(`OK: ${result.status} - ${result.body}`)
-}
-exports.testGet_fail_optionParsingError_should500withMessage = () => {
-    const lib = require('./index');
-
-    const result = lib.get();
-
-    t.assertTrue(!!result.body);
-    t.assertEquals(500, result.status);
-    t.assertTrue(typeof result.contentType === 'string');
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
-    t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
-    t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
-
-    log.info(`OK: ${result.status} - ${result.body}`)
-}
 exports.testGet_fail_optionParsingError_throwErrors = () => {
     const lib = require('./index');
 
@@ -872,55 +859,6 @@ exports.testGet_fail_optionParsingError_throwErrors = () => {
     t.assertTrue(failed, "Should have failed. Instead, got a result: " + JSON.stringify(result));
 }
 
-exports.testGet_fail_pathParsingError_should500withMessage = () => {
-    const lib = require('./index');
-
-    const result = lib.get(["this", "can't", "be", "good"]);
-
-    t.assertTrue(!!result.body);
-    t.assertEquals(500, result.status);
-    t.assertTrue(typeof result.contentType === 'string');
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
-    t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
-    t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
-
-    log.info(`OK: ${result.status} - ${result.body}`);
-}
-exports.testGet_fail_pathParsingError_throwErrors = () => {
-    const lib = require('./index');
-
-    let result = null,
-        failed = true;
-    try {
-        result = lib.get(["this", "can't", "be", "good"], {
-            throwErrors: true
-        });
-        failed = false;
-    } catch (e) {
-        log.info("OK: " + e.message);
-    }
-
-    t.assertTrue(failed, "Should have failed. Instead, got a result: " + JSON.stringify(result));
-}
-
-exports.testGet_fail_contentTypeFunc_runtimeError_should500withMessage = () => {
-    const lib = require('./index');
-
-    const result = lib.get('/assets/asset-test-target.txt', {
-        contentType: () => {
-            throw Error("This will be thrown outside of parsePathAndFunctions. Should still be handled.");
-        }
-    });
-
-    t.assertTrue(!!result.body);
-    t.assertEquals(500, result.status);
-    t.assertTrue(typeof result.contentType === 'string');
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
-    t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
-    t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
-
-    log.info(`OK: ${result.status} - ${result.body}`)
-}
 exports.testGet_fail_contentTypeFunc_runtimeError_throwErrors = () => {
     const lib = require('./index');
 
@@ -943,24 +881,6 @@ exports.testGet_fail_contentTypeFunc_runtimeError_throwErrors = () => {
     t.assertTrue(failed, "Should have failed. Instead, got a result: " + JSON.stringify(result));
 }
 
-exports.testGet_fail_cacheControlFunc_runtimeError_should500withMessage = () => {
-    const lib = require('./index');
-
-    const result = lib.get('/assets/asset-test-target.txt', {
-        cacheControl: () => {
-            throw Error("This will be thrown outside of parsePathAndFunctions. Should still be handled.");
-        }
-    });
-
-    t.assertTrue(!!result.body);
-    t.assertEquals(500, result.status);
-    t.assertTrue(typeof result.contentType === 'string');
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
-    t.assertTrue(!(result.headers || {})['Cache-Control']); // No cache-control header should be generated
-    t.assertTrue(!(result.headers || {}).ETag); // No ETag header should be generated
-
-    log.info(`OK: ${result.status} - ${result.body}`)
-}
 exports.testGet_fail_cacheControlFunc_runtimeError_throwErrors = () => {
     const lib = require('./index');
 
@@ -999,187 +919,259 @@ exports.testResolvePath = () => {
     t.assertEquals("../will/be/lost/in/time", lib.resolvePath("../will/be/lost/in/time/like/../tears/../in/../rain/.."));
     t.assertEquals("will/be/lost/in/time", lib.resolvePath("will/be/lost/../in/time/"))
 }
+ */
 
 
 
-exports.testGetPathError_valid_shouldReturnUndefined = () => {
+
+
+
+exports.testGet_innerbehaviour_getPathError_stringArg_isCalled = () => {
+    const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestGet_innerbehaviour_getPathError_stringArg_isCalled:\n");
+    doMocks({
+        },
+        verbose);
     const lib = require('./index');
 
-    t.assertEquals(undefined, lib.getPathError('hey'));
-    t.assertEquals(undefined, lib.getPathError('æøå'));
-    t.assertEquals(undefined, lib.getPathError('foo/bar'));
-    t.assertEquals(undefined, lib.getPathError('/slash/start'));
-    t.assertEquals(undefined, lib.getPathError('slash/end/'));
+    let target = undefined;
+
+    // Mock an inner function to verify it's called with the path param
+    lib.__getPathError__ = (path) => {
+        target = path;
+    }
+
+    const result = lib.get("my/unique/testing/path");
+
+    t.assertEquals(target, "my/unique/testing/path");
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+
+}
+
+
+exports.testGet_innerbehaviour_getPathError_optionArg_isCalled = () => {
+    const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestGet_innerbehaviour_getPathError_optionArg_isCalled:\n");
+    doMocks({
+        },
+        verbose);
+    const lib = require('./index');
+
+    let target = undefined;
+
+    // Mock an inner function to verify it's called with the path param
+    lib.__getPathError__ = (path) => {
+        target = path;
+    }
+
+    const result = lib.get({path: "another/unique/testing/path"});
+
+    t.assertEquals(target, "another/unique/testing/path");
+    if (verbose) log.info(prettify(result, "result"));
+
+}
+
+
+exports.testGet_innerbehaviour_getPathError_isUsed = () => {
+    const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestGet_innerbehaviour_getPathError_isUsed:\n");
+    const lib = require('./index');
+    t.assertTrue(false, "Not implemented")
+
+}
+
+/*
+exports.testGetPathError_valid_shouldReturnUndefined = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_valid_shouldReturnUndefined:\n");
+    const lib = require('./index');
+
+    t.assertEquals(undefined, lib.__getPathError__('hey'));
+    t.assertEquals(undefined, lib.__getPathError__('æøå'));
+    t.assertEquals(undefined, lib.__getPathError__('foo/bar'));
+    t.assertEquals(undefined, lib.__getPathError__('/slash/start'));
+    t.assertEquals(undefined, lib.__getPathError__('slash/end/'));
 }
 
 exports.testGetPathError_empty_shouldReturnNonEmptyErrorMessage = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_empty_shouldReturnNonEmptyErrorMessage:\n");
     const lib = require('./index');
 
-    const errorMessage = lib.getPathError('');
+    const errorMessage = lib.__getPathError__('');
     t.assertEquals('string', typeof errorMessage);
     t.assertNotEquals('', errorMessage.trim());
-
-    log.info("OK: " + errorMessage);
+                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
 }
+*/
 
+/* Probably no point in testing
 exports.testGetPathError_allSpaces_shouldPassSinceStringShouldBeTrimmedFirst = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_allSpaces_shouldPassSinceStringShouldBeTrimmedFirst:\n");
     const lib = require('./index');
 
-    const errorMessage = lib.getPathError('   ');
+    const errorMessage = lib.__getPathError__('   ');
     t.assertEquals(undefined, errorMessage);
+                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
 }
-
+*/
+/*
 exports.testGetPathError_doubleDot_shouldReturnNonEmptyErrorMessage = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_doubleDot_shouldReturnNonEmptyErrorMessage:\n");
     const lib = require('./index');
 
-    const errorMessage = lib.getPathError('foo/../bar');
+    const errorMessage = lib.__getPathError__('foo/../bar');
     t.assertEquals('string', typeof errorMessage);
     t.assertNotEquals('', errorMessage.trim());
 
-    t.assertNotEquals('', lib.getPathError('../foo/bar').trim());
-    t.assertNotEquals('', lib.getPathError('foo/bar/..').trim());
-
-    log.info("OK: " + errorMessage);
+    t.assertNotEquals('', lib.__getPathError__('../foo/bar').trim());
+    t.assertNotEquals('', lib.__getPathError__('foo/bar/..').trim());
+                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
 }
 
 exports.testGetPathError_asterisk_shouldReturnNonEmptyErrorMessage = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_asterisk_shouldReturnNonEmptyErrorMessage:\n");
     const lib = require('./index');
 
-    const errorMessage = lib.getPathError('foo/*bar');
+    const errorMessage = lib.__getPathError__('foo/*bar');
     t.assertEquals('string', typeof errorMessage);
     t.assertNotEquals('', errorMessage.trim());
 
-    //t.assertNotEquals('', lib.getPathError('f*oo/bar').trim());
-    //t.assertNotEquals('', lib.getPathError('foo/*.bar').trim());
-
-    log.info("OK: " + errorMessage);
+    t.assertNotEquals('', lib.__getPathError__('f*oo/bar').trim());
+    t.assertNotEquals('', lib.__getPathError__('foo/*.bar').trim());
+                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
 }
 
 exports.testGetPathError_questionmark_shouldReturnNonEmptyErrorMessage = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_questionmark_shouldReturnNonEmptyErrorMessage:\n");
     const lib = require('./index');
 
-    const errorMessage = lib.getPathError('foo/?bar');
+    const errorMessage = lib.__getPathError__('foo/?bar');
     t.assertEquals('string', typeof errorMessage);
     t.assertNotEquals('', errorMessage.trim());
 
-    t.assertNotEquals('', lib.getPathError('?/foo/bar').trim());
-    t.assertNotEquals('', lib.getPathError('foo/?.bar').trim());
-
-    log.info("OK: " + errorMessage);
+    t.assertNotEquals('', lib.__getPathError__('?/foo/bar').trim());
+    t.assertNotEquals('', lib.__getPathError__('foo/?.bar').trim());
+                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
 }
 
 exports.testGetPathError_backslash_shouldReturnNonEmptyErrorMessage = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_backslash_shouldReturnNonEmptyErrorMessage:\n");
     const lib = require('./index');
 
-    const errorMessage = lib.getPathError('foo/\\bar');
+    const errorMessage = lib.__getPathError__('foo/\\bar');
     t.assertEquals('string', typeof errorMessage);
     t.assertNotEquals('', errorMessage.trim());
 
-    t.assertNotEquals('', lib.getPathError('\\/foo/bar').trim());
-    t.assertNotEquals('', lib.getPathError('foo\\bar').trim());
-
-    log.info("OK: " + errorMessage);
+    t.assertNotEquals('', lib.__getPathError__('\\/foo/bar').trim());
+    t.assertNotEquals('', lib.__getPathError__('foo\\bar').trim());
+                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
 }
 
 exports.testGetPathError_quote_shouldReturnNonEmptyErrorMessage = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_quote_shouldReturnNonEmptyErrorMessage:\n");
     const lib = require('./index');
 
-    const errorMessage = lib.getPathError("foo/'bar");
+    const errorMessage = lib.__getPathError__("foo/'bar");
     t.assertEquals('string', typeof errorMessage);
     t.assertNotEquals('', errorMessage.trim());
 
-    t.assertNotEquals('', lib.getPathError("'foobar").trim());
-    t.assertNotEquals('', lib.getPathError("foobar'").trim());
-    t.assertNotEquals('', lib.getPathError("'foobar'").trim());
-
-    log.info("OK: " + errorMessage);
+    t.assertNotEquals('', lib.__getPathError__("'foobar").trim());
+    t.assertNotEquals('', lib.__getPathError__("foobar'").trim());
+    t.assertNotEquals('', lib.__getPathError__("'foobar'").trim());
+                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
 }
 
 exports.testGetPathError_doublequote_shouldReturnNonEmptyErrorMessage = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_doublequote_shouldReturnNonEmptyErrorMessage:\n");
     const lib = require('./index');
 
-    const errorMessage = lib.getPathError('foo/"bar');
+    const errorMessage = lib.__getPathError__('foo/"bar');
     t.assertEquals('string', typeof errorMessage);
     t.assertNotEquals('', errorMessage.trim());
 
-    t.assertNotEquals('', lib.getPathError('"foobar').trim());
-    t.assertNotEquals('', lib.getPathError('foobar"').trim());
-    t.assertNotEquals('', lib.getPathError('"foobar"').trim());
-
-    log.info("OK: " + errorMessage);
+    t.assertNotEquals('', lib.__getPathError__('"foobar').trim());
+    t.assertNotEquals('', lib.__getPathError__('foobar"').trim());
+    t.assertNotEquals('', lib.__getPathError__('"foobar"').trim());
+                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
 }
 
 exports.testGetPathError_tick_shouldReturnNonEmptyErrorMessage = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_tick_shouldReturnNonEmptyErrorMessage:\n");
     const lib = require('./index');
 
-    const errorMessage = lib.getPathError('foo´bar');
+    const errorMessage = lib.__getPathError__('foo´bar');
     t.assertEquals('string', typeof errorMessage);
     t.assertNotEquals('', errorMessage.trim());
 
-    t.assertNotEquals('', lib.getPathError('´foobar').trim());
-    t.assertNotEquals('', lib.getPathError('foobar´').trim());
-    t.assertNotEquals('', lib.getPathError('´foobar´').trim());
-
-    log.info("OK: " + errorMessage);
+    t.assertNotEquals('', lib.__getPathError__('´foobar').trim());
+    t.assertNotEquals('', lib.__getPathError__('foobar´').trim());
+    t.assertNotEquals('', lib.__getPathError__('´foobar´').trim());
+                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
 }
 
 exports.testGetPathError_backtick_shouldReturnNonEmptyErrorMessage = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_backtick_shouldReturnNonEmptyErrorMessage:\n");
     const lib = require('./index');
 
-    const errorMessage = lib.getPathError('foo`bar');
+    const errorMessage = lib.__getPathError__('foo`bar');
     t.assertEquals('string', typeof errorMessage);
     t.assertNotEquals('', errorMessage.trim());
 
-    t.assertNotEquals('', lib.getPathError('`foobar').trim());
-    t.assertNotEquals('', lib.getPathError('foobar`').trim());
-    t.assertNotEquals('', lib.getPathError('`foobar`').trim());
-
-    log.info("OK: " + errorMessage);
+    t.assertNotEquals('', lib.__getPathError__('`foobar').trim());
+    t.assertNotEquals('', lib.__getPathError__('foobar`').trim());
+    t.assertNotEquals('', lib.__getPathError__('`foobar`').trim());
+                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
 }
 
 exports.testGetPathError_lesserthan_shouldReturnNonEmptyErrorMessage = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_lesserthan_shouldReturnNonEmptyErrorMessage:\n");
     const lib = require('./index');
 
-    const errorMessage = lib.getPathError('foo<bar');
+    const errorMessage = lib.__getPathError__('foo<bar');
     t.assertEquals('string', typeof errorMessage);
     t.assertNotEquals('', errorMessage.trim());
 
-    t.assertNotEquals('', lib.getPathError('<foobar').trim());
-    t.assertNotEquals('', lib.getPathError('foobar<').trim());
-
-    log.info("OK: " + errorMessage);
+    t.assertNotEquals('', lib.__getPathError__('<foobar').trim());
+    t.assertNotEquals('', lib.__getPathError__('foobar<').trim());
+                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
 }
 
 exports.testGetPathError_greaterthan_shouldReturnNonEmptyErrorMessage = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_greaterthan_shouldReturnNonEmptyErrorMessage:\n");
     const lib = require('./index');
 
-    const errorMessage = lib.getPathError('foo>bar');
+    const errorMessage = lib.__getPathError__('foo>bar');
     t.assertEquals('string', typeof errorMessage);
     t.assertNotEquals('', errorMessage.trim());
 
-    t.assertNotEquals('', lib.getPathError('>foobar').trim());
-    t.assertNotEquals('', lib.getPathError('foobar>').trim());
-
-    log.info("OK: " + errorMessage);
+    t.assertNotEquals('', lib.__getPathError__('>foobar').trim());
+    t.assertNotEquals('', lib.__getPathError__('foobar>').trim());
+                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
 }
 
 exports.testGetPathError_colon_shouldReturnNonEmptyErrorMessage = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_colon_shouldReturnNonEmptyErrorMessage:\n");
     const lib = require('./index');
 
-    const errorMessage = lib.getPathError('foo:bar');
+    const errorMessage = lib.__getPathError__('foo:bar');
     t.assertEquals('string', typeof errorMessage);
     t.assertNotEquals('', errorMessage.trim());
 
-    t.assertNotEquals('', lib.getPathError(':foobar').trim());
-    t.assertNotEquals('', lib.getPathError('foobar:').trim());
-
-    log.info("OK: " + errorMessage);
+    t.assertNotEquals('', lib.__getPathError__(':foobar').trim());
+    t.assertNotEquals('', lib.__getPathError__('foobar:').trim());
+                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
 }
+
+*/
+
+
+
+
+
 
 
 //////////////////////////////////////////////////////////////////////  TEST .static
 
-
+/*
 exports.testStatic_fail_missingRoot_shouldThrowError = () => {
     const lib = require('./index');
 

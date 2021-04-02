@@ -133,7 +133,7 @@ exports.get = (pathOrOptions, options) => {
         }
 
         path = path.replace(/^\/+/, '');
-        const pathError = getPathError(path);
+        const pathError = exports.__getPathError__(path);
 
         path = `/${path}`;
 
@@ -191,26 +191,26 @@ const getRelativeResourcePath = (request) => {
 // For now, easier/cheaper to just prevent them. Revisit this later if necessary.
 const doubleDotRx = /\.\./;
 const illegalCharsRx = /[<>:"'`´\\|?*]/;
-const getPathError = (trimmedPathString) => {
+// Exported for testing only
+exports.__getPathError__ = (trimmedPathString) => {
     if (trimmedPathString.match(doubleDotRx) || trimmedPathString.match(illegalCharsRx)) {
         return "can't contain '..' or any of these characters: \\ | ? * < > ' \" ` ´";
     }
     if (!trimmedPathString) {
-        return "is empty or all-spaces";
+        return "is empty, all-spaces or directly at root ('/')";
     }
 };
-exports.getPathError = getPathError;
 
 
 const resolveRoot = (root) => {
     let resolvedRoot = resolvePath(root.replace(/^\/+/, '').replace(/\/+$/, ''));
-    let errorMessage = getPathError(resolvedRoot);
+    let errorMessage = exports.__getPathError__(resolvedRoot);
     resolvedRoot = "/" + resolvedRoot;
 
     if (!errorMessage) {
         // TODO: verify that root exists and is a directory?
         if (!resolvedRoot) {
-            errorMessage = "is empty or all-spaces";
+            errorMessage = "is empty, all-spaces or directly at root ('/')";
         }
     }
 
@@ -245,9 +245,9 @@ exports.static = (rootOrOptions, options) => {
     return function getStatic(request) {
         try {
             const relativePath = getRelativePathFunc(request)
-                .replace(/^\/+/, '');;
+                .replace(/^\/+/, '');
 
-            const error = getPathError(relativePath);
+            const error = exports.__getPathError__(relativePath);
             const pathError = (error)
                 ? `Illegal relative resource path '${relativePath}': ${error}`      // 400-type error
                 : error;
