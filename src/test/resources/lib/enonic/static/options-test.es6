@@ -253,6 +253,19 @@ exports.testParsePathAndOptions_path_optionsArg_spacesString_onlyTrim = () => {
     t.assertEquals('', path);
 }
 
+exports.testParsePathAndOptions_path_pathArg_pathWithSpaces_trim = () => {
+    const { path, errorMessage } = lib.parsePathAndOptions(" my/path  ");
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals('my/path', path);
+}
+exports.testParsePathAndOptions_path_optionsArg_pathWithSpaces_trim = () => {
+    const { path, errorMessage } = lib.parsePathAndOptions({path: "  my/path "});
+
+    t.assertEquals(undefined, errorMessage);
+    t.assertEquals('my/path', path);
+}
+
 // Provoke errors: first argument
 
 exports.testParsePathAndOptions_fail_shouldYieldErrorMessage = () => {
