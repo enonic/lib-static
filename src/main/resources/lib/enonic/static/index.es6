@@ -113,6 +113,21 @@ const getResourceOr400 = (path, pathError) => {
 
 
 
+// Very conservative filename verification:
+// Actual filenames with these characters are rare and more likely to be attempted attacks.
+// For now, easier/cheaper to just prevent them. Revisit this later if necessary.
+const doubleDotRx = /\.\./;
+const illegalCharsRx = /[<>:"'`´\\|?*]/;
+// Exported for testing only
+exports.__getPathError__ = (trimmedPathString) => {
+    if (trimmedPathString.match(doubleDotRx) || trimmedPathString.match(illegalCharsRx)) {
+        return "can't contain '..' or any of these characters: \\ | ? * < > ' \" ` ´";
+    }
+    if (!trimmedPathString) {
+        return "is empty, all-spaces or directly at root ('/')";
+    }
+};
+
 /////////////////////////////////////////////////////////////////////////////  .get
 
 exports.get = (pathOrOptions, options) => {
@@ -186,20 +201,6 @@ const getRelativeResourcePath = (request) => {
 }
 
 
-// Very conservative filename verification:
-// Actual filenames with these characters are rare and more likely to be attempted attacks.
-// For now, easier/cheaper to just prevent them. Revisit this later if necessary.
-const doubleDotRx = /\.\./;
-const illegalCharsRx = /[<>:"'`´\\|?*]/;
-// Exported for testing only
-exports.__getPathError__ = (trimmedPathString) => {
-    if (trimmedPathString.match(doubleDotRx) || trimmedPathString.match(illegalCharsRx)) {
-        return "can't contain '..' or any of these characters: \\ | ? * < > ' \" ` ´";
-    }
-    if (!trimmedPathString) {
-        return "is empty, all-spaces or directly at root ('/')";
-    }
-};
 
 
 const resolveRoot = (root) => {
