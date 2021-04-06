@@ -750,6 +750,86 @@ exports.testGet_cacheControlFuncError_should500withErrorId = () => {
 // TODO: think of and test more possible parsePathAndOptions outputs, and consequent handling and behavior?
 
 
+// Optionparser always collects its own errors and returns an errormessage. Log, and output error ID in body
+exports.testGet_optionParsing_throwErrors_shouldThrowError = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGet_optionParsing_throwErrors_shouldThrowError:\n");
+    doMocks({
+            options: {
+                parsePathAndOptions: () => ({
+                    errorMessage: "This was thrown on purpose when parsing path and options.",
+                    throwErrors: true
+                })
+            }
+        },
+        verbose);
+
+    let failed = true, result = undefined;
+    try {
+        result = lib.get("my/path");
+        failed = false;
+    } catch (e) {
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.error(e);
+    }
+
+    t.assertTrue(failed, "failed");
+    t.assertEquals(undefined, result, "result");
+                                                                                                                        if (verbose) log.info("OK.");
+}
+
+// contentTypeFunc is run outside pathAndOptions parser, but errors here should still be caught
+exports.testGet_contentTypeFunc_throwErrors_shouldThrowError = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGet_contentTypeFunc_throwErrors_shouldThrowError:\n");
+    doMocks({
+            options: {
+                contentTypeFunc: () => {
+                    throw Error("This was thrown on purpose when running contentTypeFunc.");
+                },
+                throwErrors: true
+            }
+        },
+        verbose);
+
+    let failed = true, result = undefined;
+    try {
+        result = lib.get("my/path");
+        failed = false;
+    } catch (e) {
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.error(e);
+    }
+
+    t.assertTrue(failed, "failed");
+    t.assertEquals(undefined, result, "result");
+                                                                                                                        if (verbose) log.info("OK.");
+}
+
+// cacheControlFunc is run outside pathAndOptions parser, but errors here should still be caught
+exports.testGet_cacheControlFunc_throwErrors_shouldThrowError = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGet_cacheControlFunc_throwErrors_shouldThrowError:\n");
+    doMocks({
+            options: {
+                cacheControlFunc: () => {
+                    throw Error("This was thrown on purpose when running cacheControlFunc.");
+                },
+                throwErrors: true
+            }
+        },
+        verbose);
+
+    let failed = true, result = undefined;
+    try {
+        result = lib.get("my/path");
+        failed = false;
+    } catch (e) {
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.error(e);
+    }
+
+    t.assertTrue(failed, "failed");
+    t.assertEquals(undefined, result, "result");
+                                                                                                                        if (verbose) log.info("OK.");
+}
 /*
 
 exports.testGet_fail_optionParsingError_throwErrors = () => {
