@@ -109,28 +109,32 @@ const lib = require('./index');
   Optional params: {
     isDev: boolean,
     io: {
-        getResource: function [(path) => resource], or instead, the following 3 can be used as args to mockIo.getResource:
+        getResource: function [(path) => resource]
+            ...or instead, the following 3 can be used as args to mockIo.getResource:
         path: string,
         exists: boolean,
         content: string,
 
-        readText: function [(stream) => string], or instead, the following 1 can be used as arg to mockIo.readText:
+        readText: function [(stream) => string]
+            ...or instead, the following 1 can be used as arg to mockIo.readText:
         text: string
 
-        getMimeType: function[(name) => string], or instead, the following 1 can be used as arg to mockIo.getMimeType:
+        getMimeType: function[(name) => string]
+            ...or instead, the following 1 can be used as arg to mockIo.getMimeType:
         mimeType: string
     },
     etagReader: {
-        read: function[(path, etagOverride) => string], or instead, the following 1:
+        read: function[(path, etagOverride) => string]
+            ...or instead, the following 1:
         etag: string
     },
     options: {
         parsePathAndOptions: function[(pathOrOptions, options) => {path,cacheControlFunc,contentTypeFunc,etagOverride,throwErrors,errorMessage}],
         parseRootAndOptions: function[(rootOrOptions, options) => {root,cacheControlFunc,contentTypeFunc,etagOverride,getCleanPath,throwErrors,errorMessage}]
-            Instead of those two, the following can be used override OUTPUT from mocked passthrough versions of those two:
+            ...Instead of those two, the following can be used override OUTPUT from mocked passthrough versions of those two:
         root: string
-        contentTypeFunc: function [(filePathAndName, resource, mimeType) => string]
-        cacheControlFunc: function [(filePathAndName, resource) => string]
+        contentTypeFunc: function [(filePathAndName, resource) => string]
+        cacheControlFunc: function [(filePathAndName, resource, mimeType) => string]
         cacheControl: string or boolean
         contentType: string or boolean
         etag: string
@@ -451,7 +455,7 @@ exports.testStatic_innerbehavior_parseRootAndOptions_outputs_areUsed = () => {
     t.assertTrue(getCleanPathWasCalled, "getCleanPathWasCalled");
     t.assertTrue(cacheControlFuncWasCalled, "cacheControlFuncWasCalled");
     t.assertTrue(contentTypeFuncWasCalled, "contentTypeFuncWasCalled");
-    
+
     t.assertEquals('options/cacheControl/out', result.headers['Cache-Control'], 'cacheControl');
     t.assertEquals('reader/etag/out', result.headers.ETag, 'cacheControl');
     t.assertEquals('options/contentType/out', result.contentType, 'contentType');
@@ -460,335 +464,25 @@ exports.testStatic_innerbehavior_parseRootAndOptions_outputs_areUsed = () => {
 
 
 
-/*
-//////////////////////////////////////////////////////////////////  TEST .static
 
-exports.testStatic_fail_missingRoot_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static();
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-
-exports.testStatic_fail_missingRoot_shouldThrowErrorEvenOnFalseThrowerrorsOption = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static({throwErrors: false});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-
-exports.testStatic_fail_emptyRoot_argRoot_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static('');
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-
-exports.testStatic_fail_emptyRoot_argOption_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static({root: ''});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-
-exports.testStatic_fail_emptyRoot_argOption_shouldThrowErrorEvenOnFalseThrowerrorsOption = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static({root: '', throwErrors: false});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-
-exports.testStatic_fail_spacesRoot_argRoot_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static('  ');
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-exports.testStatic_fail_spacesRoot_argOption_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static({root: '  '});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-
-exports.testStatic_fail_illegalCharRoot_argRoot_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static('illegal:path');
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-exports.testStatic_fail_illegalCharRoot_argOption_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static({root: 'illegal:path'});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-
-exports.testStatic_fail_illegalDoubleDotRoot_argRoot_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static('illegal/../path');
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-exports.testStatic_fail_illegalDoubleDotRoot_argOption_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static({root: 'illegal/../path'});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-
-exports.testStatic_fail_illegalSlashRoot_argRoot_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static('/');
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-exports.testStatic_fail_illegalSlashRoot_argOption_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static({root: '/'});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-
-exports.testStatic_fail_illegalTypeRoot_argRoot_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static(42);
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-exports.testStatic_fail_illegalTypeRoot_argOption_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static({root: 42});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-
-exports.testStatic_fail_illegalArrayRoot_argRoot_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static(["this", "is", "no", "good"]);
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-exports.testStatic_fail_illegalZeroRoot_argOption_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static({root: 0});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
+//////////////////////////////////////////////////////////////////  TEST getStatic
 
 
-exports.testStatic_fail_optionParsingError_arg2_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static('assets', {etag: ["not", "valid"]});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-exports.testStatic_fail_optionParsingError_arg2_shouldThrowErrorEvenWithThrowErrorsFalse = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static('assets', {etag: ["not", "valid"], throwErrors: false});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-exports.testStatic_fail_optionParsingError_arg1_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static({root: 'assets', etag: ["not", "valid"]});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-exports.testStatic_fail_optionParsingError_arg1_shouldThrowErrorEvenWithThrowErrorsFalse = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static({root: 'assets', etag: ["not", "valid"], throwErrors: false});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-
-
-
-/*
-exports.testGet_innerbehavior_removesLeadingPathSlashesFromPathBeforeGetPathError = () => {
-    const verbose = true;
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_innerbehavior_removesLeadingPathSlashesFromPathBeforeGetPathError:\n");
-
-    doMocks({
-            options: {
-                path: '/my/path',    // With leading slash
-            },
-
-        },
-        verbose);
-    const lib = require('./index');
-
-    let getPathErrorWasCalled = false;
-    lib.__getPathError__ = (path) => {
-        t.assertEquals('my/path', path);  // getPathError should always be called without leading slash in path
-        getPathErrorWasCalled = true;
-    }
-
-    lib.get('mocking/replaces/this');
-
-    t.assertTrue(getPathErrorWasCalled, "getPathErrorWasCalled");
-}
-*/
-
-/*
 // Path string argument
 
-exports.testGet_path_string_FullDefaultResponse = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_path_string_FullDefaultResponse:\n");
+exports.testGetStatic_root_string_FullDefaultResponse = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_root_string_FullDefaultResponse:\n");
     doMocks({}, verbose);
 
-    const result = lib.get('/assets/asset-test-target.txt');
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+    const getStatic = lib.static('/i/am/root');
 
+    const result = getStatic({
+        rawPath: '/assets/asset-test-target.txt',
+        contextPath: '/assets'
+    });
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
     t.assertEquals(200, result.status, "result.status");
-    t.assertEquals("Mocked content of '/assets/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
+    t.assertEquals("Mocked content of '/i/am/root/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
 
     t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/plain'");
     t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain'");
@@ -799,15 +493,20 @@ exports.testGet_path_string_FullDefaultResponse = () => {
     t.assertTrue(result.headers.ETag.length > 0, "result.headers should be an object with ETag and Cache-Control");
     t.assertEquals(DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
 };
-exports.testGet_path_option_FullDefaultResponse = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_path_option_FullDefaultResponse:\n");
+
+exports.testGetStatic_root_option_FullDefaultResponse = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_root_option_FullDefaultResponse:\n");
     doMocks({}, verbose);
 
-    const result = lib.get({path: '/assets/asset-test-target.txt'});
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+    const getStatic = lib.static({root: '/i/am/root'});
+
+    const result = getStatic({
+        rawPath: '/assets/asset-test-target.txt',
+        contextPath: '/assets'
+    });                                                                                                                 if (verbose) log.info(prettify(result, "result"));
 
     t.assertEquals(200, result.status, "result.status");
-    t.assertEquals("Mocked content of '/assets/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
+    t.assertEquals("Mocked content of '/i/am/root/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
 
     t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/plain'");
     t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain'");
@@ -817,17 +516,23 @@ exports.testGet_path_option_FullDefaultResponse = () => {
     t.assertEquals( "MockedETagPlaceholder", result.headers.ETag, "result.headers should be an object with ETag and Cache-Control");
     t.assertTrue(result.headers.ETag.length > 0, "result.headers should be an object with ETag and Cache-Control");
     t.assertEquals(DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
+
 };
 
-exports.testGet_DEV_path_string_FullDefaultResponse_DEV = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_DEV_path_string_FullDefaultResponse_DEV:\n");
+exports.testGetStatic_DEV_root_string_FullDefaultResponse = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_DEV_root_string_FullDefaultResponse:\n");
     doMocks({isDev: true}, verbose);
 
-    const result = lib.get('/assets/asset-test-target.txt');
+    const getStatic = lib.static('/i/am/root');
+
+    const result = getStatic({
+        rawPath: '/assets/asset-test-target.txt',
+        contextPath: '/assets'
+    });
                                                                                                                         if (verbose) log.info(prettify(result, "result"));
 
     t.assertEquals(200, result.status, "result.status");
-    t.assertEquals("Mocked content of '/assets/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
+    t.assertEquals("Mocked content of '/i/am/root/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
 
     t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/plain'");
     t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain'");
@@ -838,15 +543,21 @@ exports.testGet_DEV_path_string_FullDefaultResponse_DEV = () => {
     t.assertTrue(result.headers.ETag.length > 0, "result.headers should be an object with ETag and Cache-Control");
     t.assertEquals(DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
 };
-exports.testGet_DEV_path_option_FullDefaultResponse = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_DEV_path_option_FullDefaultResponse:\n");
+
+exports.testGetStatic_DEV_root_option_FullDefaultResponse = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_DEV_root_option_FullDefaultResponse:\n");
     doMocks({isDev: true}, verbose);
 
-    const result = lib.get({path: '/assets/asset-test-target.txt'});
+    const getStatic = lib.static({root: '/i/am/root'});
+
+    const result = getStatic({
+        rawPath: '/assets/asset-test-target.txt',
+        contextPath: '/assets'
+    });
                                                                                                                         if (verbose) log.info(prettify(result, "result"));
 
     t.assertEquals(200, result.status, "result.status");
-    t.assertEquals("Mocked content of '/assets/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
+    t.assertEquals("Mocked content of '/i/am/root/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
 
     t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/plain'");
     t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain'");
@@ -856,31 +567,183 @@ exports.testGet_DEV_path_option_FullDefaultResponse = () => {
     t.assertEquals( "MockedETagPlaceholder", result.headers.ETag, "result.headers should be an object with ETag and Cache-Control");
     t.assertTrue(result.headers.ETag.length > 0, "result.headers should be an object with ETag and Cache-Control");
     t.assertEquals(DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
+
 };
 
-exports.testGet_contentType_HTML = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_path_HTML_FullDefaultResponse:\n");
+// Tests that the contentTypeFunc returned from parseRootAndOptions is used as expected, and on repeated getStatic calls.
+// Fallback to built-in type detection when the function returns null is not tested here, but as part of parseRootAndOptions.
+exports.testGetStatic_contentType = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ttestGetStatic_contentType:\n");
     doMocks({
-            io: {
-                mimeType: "text/html"
+            options: {
+                contentTypeFunc: (filePathAndName, resource) => {
+                                                                                                                        if (verbose) log.info(prettify(filePathAndName, "contentTypeFunc.filePathAndName"));
+                                                                                                                        if (verbose) log.info(prettify(resource, "contentTypeFunc.resource"));
+                    if (filePathAndName.endsWith(".html")) {
+                        return "teKSt/html";
+                    }
+                    if (filePathAndName.endsWith(".txt")) {
+                        return "teczt/playn";
+                    }
+                    if (!!resource) {
+                        return "has/resource";
+                    }
+                }
             }
         },
         verbose);
 
-    const result = lib.get('/assets/asset-test-target.html');
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+    const getStatic = lib.static({root: '/i/am/root'});
 
-    t.assertEquals(200, result.status, "result.status");
+    // .txt
 
-    t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/html'");
-    t.assertTrue(result.contentType.indexOf("text/html") !== -1, "Expected string contentType containing 'text/html'");
+    const result1 = getStatic({
+        rawPath: '/assets/asset-test-target.txt',
+        contextPath: '/assets'
+    });
+                                                                                                                        if (verbose) log.info(prettify(result1, "result1"));
+
+    t.assertEquals(200, result1.status, "result1.status");
+
+    t.assertEquals('string', typeof result1.contentType, "Expected result1 string contentType containing 'teKSt/html'");
+    t.assertTrue(result1.contentType.indexOf("teczt/playn") !== -1, "Expected result1 string contentType containing 'teczt/playn'");
+
+    // .html
+
+    const result2 = getStatic({
+        rawPath: '/assets/asset-test-target.html',
+        contextPath: '/assets'
+    });
+                                                                                                                        if (verbose) log.info(prettify(result2, "result2"));
+
+    t.assertEquals(200, result2.status, "result2.status");
+
+    t.assertEquals('string', typeof result2.contentType, "Expected result2 string contentType containing 'teKSt/html'");
+    t.assertTrue(result2.contentType.indexOf("teKSt/html") !== -1, "Expected result2 string contentType containing 'teKSt/html'");
+
+    // .json: verifies that the resource object is available in the contentTypeFunc function
+
+    const result3 = getStatic({
+        rawPath: '/assets/asset-test-target.json',
+        contextPath: '/assets'
+    });
+                                                                                                                        if (verbose) log.info(prettify(result3, "result3"));
+
+    t.assertEquals(200, result3.status, "result3.status");
+
+    t.assertEquals('string', typeof result3.contentType, "Expected result3 string contentType containing 'has/resource'");
+    t.assertTrue(result3.contentType.indexOf("has/resource") !== -1, "Expected result3 string contentType containing 'has/resource'");
 }
 
 
-// .get problem/error handling:
+// Tests that the cacheControlFunc returned from parseRootAndOptions is used as expected, and on repeated getStatic calls.
+// Fallback when the function returns null is not tested here, but as part of parseRootAndOptions.
+exports.testGetStatic_cacheControl = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ttestGetStatic_cacheControl:\n");
+    doMocks({
+            options: {
+                cacheControlFunc: (filePathAndName, resource, mimeType) => {
+                                                                                                                        if (verbose) log.info(prettify(filePathAndName, "cacheControlFunc.filePathAndName"));
+                                                                                                                        if (verbose) log.info(prettify(resource, "cacheControlFunc.resource"));
+                                                                                                                        if (verbose) log.info(prettify(mimeType, "cacheControlFunc.mimeType"));
+                    if (filePathAndName.endsWith(".html")) {
+                        return "htmlthmlhtml";
+                    }
+                    if (filePathAndName.endsWith(".txt")) {
+                        return "txttxttxt";
+                    }
+                    return (!!resource ? "has-resource" : "no-resource") + "-" + mimeType;
+                }
+            }
+        },
+        verbose);
 
-exports.testGet_path_noExist_shouldOnly404 = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_path_noExist_shouldOnly404:\n");
+    const getStatic = lib.static({root: '/i/am/root'});
+
+    // .txt
+
+    const result1 = getStatic({
+        rawPath: '/assets/asset-test-target.txt',
+        contextPath: '/assets'
+    });
+                                                                                                                        if (verbose) log.info(prettify(result1, "result1"));
+
+    t.assertEquals(200, result1.status, "result1.status");
+
+    t.assertEquals('string', typeof result1.headers['Cache-Control'], "Expected result1 string cacheControl containing 'txttxttxt'");
+    t.assertTrue(result1.headers['Cache-Control'].indexOf("txttxttxt") !== -1, "Expected result1 string cacheControl containing 'txttxttxt'");
+
+    // .html
+
+    const result2 = getStatic({
+        rawPath: '/assets/asset-test-target.html',
+        contextPath: '/assets'
+    });
+    if (verbose) log.info(prettify(result2, "result2"));
+
+    t.assertEquals(200, result2.status, "result2.status");
+
+    t.assertEquals('string', typeof result2.headers['Cache-Control'], "Expected result2 string cacheControl containing 'htmlthmlhtml'");
+    t.assertTrue(result2.headers['Cache-Control'].indexOf("htmlthmlhtml") !== -1, "Expected result2 string cacheControl containing 'htmlthmlhtml'");
+
+
+    // .json: verifies that both the resource object and the detected mime type is available in the cacheControlFunc function
+
+    const result3 = getStatic({
+        rawPath: '/assets/asset-test-target.json',
+        contextPath: '/assets'
+    });
+                                                                                                                        if (verbose) log.info(prettify(result3, "result3"));
+
+    t.assertEquals(200, result3.status, "result3.status");
+
+    t.assertEquals('string', typeof result3.headers['Cache-Control'], "Expected result3 string cacheControl containing 'has-resource-application/json'");
+    t.assertTrue(result3.headers['Cache-Control'].indexOf("has-resource-application/json") !== -1, "Expected result3 string cacheControl containing 'has-resource-application/json'");
+}
+
+
+// Getcleanpath function can extract clean path from request in a custom manner, and be used repeatedly with getStatic:
+exports.testGetStatic_getCleanPath = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ttestGetStatic_getCleanPath:\n");
+    doMocks({
+            options: {
+                getCleanPath: (request) => request.targetPath.substring("/myprefix/".length)
+            }
+        },
+        verbose);
+
+    const getStatic = lib.static({root: '/i/am/root'});
+
+    // target1
+
+    const result1 = getStatic({
+        targetPath: '/myprefix/subfolder/asset-target1.txt',
+    });
+                                                                                                                        if (verbose) log.info(prettify(result1, "result1"));
+                                                                                                                        if (verbose) log.info(prettify(ioMock.readText(result1.body), "result1.body content"));
+
+    t.assertEquals(200, result1.status, "result1.status");
+    t.assertTrue(ioMock.readText(result1.body).indexOf("/i/am/root/subfolder/asset-target1.txt") !== -1, "Expected result1 body containing content of '/i/am/root/subfolder/asset-target1.txt'");
+
+    // target2
+
+    const result2 = getStatic({
+        targetPath: '/myprefix/asset-target2.txt',
+    });
+                                                                                                                        if (verbose) log.info(prettify(result2, "result2"));
+                                                                                                                        if (verbose) log.info(prettify(ioMock.readText(result2.body), "result2.body content"));
+
+    t.assertEquals(200, result2.status, "result2.status");
+    t.assertTrue(ioMock.readText(result2.body).indexOf("/i/am/root/asset-target2.txt") !== -1, "Expected result2 body containing content of '/i/am/root/asset-target2.txt'");
+};
+
+
+
+
+// .static problem/error handling:
+
+exports.testGetStatic_root_noExist_shouldOnly404 = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_root_noExist_shouldOnly404:\n");
     doMocks({
             io: {
                 exists: false
@@ -888,7 +751,12 @@ exports.testGet_path_noExist_shouldOnly404 = () => {
         },
         verbose);
 
-    const result = lib.get('/assets/asset-test-target.txt');
+    const getStatic = lib.static({root: '/i/am/root'});
+
+    const result = getStatic({
+        rawPath: '/assets/asset-test-target.txt',
+        contextPath: '/assets'
+    });
 
                                                                                                                         if (verbose) log.info(prettify(result, "result"));
 
@@ -899,8 +767,8 @@ exports.testGet_path_noExist_shouldOnly404 = () => {
     t.assertEquals(undefined, result.headers, "result.headers");
 };
 
-exports.testGet_DEV_path_noExist_should404withInfo = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_DEV_path_noExist_should404withInfo:\n");
+exports.testGetStatic_DEV_root_noExist_should404withInfo = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_DEV_root_noExist_should404withInfo:\n");
     doMocks({
             isDev: true,
             io: {
@@ -909,12 +777,17 @@ exports.testGet_DEV_path_noExist_should404withInfo = () => {
         },
         verbose);
 
-    const result = lib.get('/assets/asset-test-target.txt');
+    const getStatic = lib.static({root: '/i/am/root'});
+
+    const result = getStatic({
+        rawPath: '/assets/asset-test-target.txt',
+        contextPath: '/assets'
+    });
                                                                                                                         if (verbose) log.info(prettify(result, "result"));
 
     t.assertEquals(404, result.status, "result.status");
     t.assertEquals('string', typeof result.body, "Expected string body containing path in dev");
-    t.assertTrue(result.body.indexOf('/assets/asset-test-target.txt') !== -1, "Expected string body containing path in dev");
+    t.assertTrue(result.body.indexOf('/i/am/root/asset-test-target.txt') !== -1, "Expected string body containing path in dev");
 
     t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/plain' in dev");
     t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain' in dev");
@@ -922,16 +795,17 @@ exports.testGet_DEV_path_noExist_should404withInfo = () => {
     t.assertEquals(undefined, result.headers, "result.headers");
 };
 
-exports.testGet_path_empty_shouldOnly400 = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_path_empty_shouldOnly400:\n");
-    doMocks({
-            options: {
-                path: ''
-            }
-        },
-        verbose);
 
-    const result = lib.get();
+exports.testGetStatic_relativePath_empty_shouldOnly400 = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_relativePath_empty_shouldOnly400:\n");
+    doMocks({}, verbose);
+
+    const getStatic = lib.static({root: '/i/am/root'});
+
+    const result = getStatic({
+        rawPath: '/assets/',
+        contextPath: '/assets'
+    });
                                                                                                                         if (verbose) log.info(prettify(result, "result"));
 
     t.assertEquals(400, result.status, "result.status");
@@ -942,616 +816,352 @@ exports.testGet_path_empty_shouldOnly400 = () => {
 }
 
 
-exports.testGet_DEV_path_empty_should400WithInfo = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_DEV_path_empty_should400WithInfo:\n");
-    doMocks({
+exports.testGetStatic_DEV_relativePath_empty_should400WithInfo = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_DEV_relativePath_empty_should400WithInfo:\n");
+    doMocks({ isDev: true }, verbose);
+
+    const getStatic = lib.static({root: '/i/am/root'});
+
+    const result = getStatic({
+        rawPath: '/assets/',
+        contextPath: '/assets'
+    });
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+
+    t.assertEquals(400, result.status, "result.status");
+
+    t.assertEquals('string', typeof result.body, "Expected string body with error message in dev");
+
+    t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/plain' in dev");
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain' in dev");
+
+    t.assertEquals(undefined, result.headers, "result.headers");
+}
+
+
+
+exports.testGetStatic_noRawPath_should500 = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_noRawPath_should500:\n");
+    doMocks({ isDev: true }, verbose);
+
+    const getStatic = lib.static({root: '/i/am/root'});
+
+    const result = getStatic({
+        contextPath: '/assets'
+    });
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+
+    t.assertEquals(500, result.status, "result.status");
+
+    t.assertEquals('string', typeof result.body, "Expected string body with error message in dev");
+
+    t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/plain' in dev");
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain' in dev");
+
+    t.assertEquals(undefined, result.headers, "result.headers");
+    log.info("OK.");
+}
+
+exports.testGetStatic_noContextPath_should500 = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_noContextPath_should500:\n");
+    doMocks({ isDev: true }, verbose);
+
+    const getStatic = lib.static({root: '/i/am/root'});
+
+    const result = getStatic({
+        rawPath: '/assets/asset-test-target.txt',
+    });
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+
+    t.assertEquals(500, result.status, "result.status");
+
+    t.assertEquals('string', typeof result.body, "Expected string body with error message in dev");
+
+    t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/plain' in dev");
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain' in dev");
+
+    t.assertEquals(undefined, result.headers, "result.headers");
+}
+
+
+exports.testGetStatic_throwErrors_shouldThrowErrorInsteadOf500 = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_throwErrors_shouldThrowErrorInsteadOf500:\n");
+    doMocks(
+        {
             isDev: true,
             options: {
-                path: ''
+                throwErrors: true
             }
         },
-        verbose);
+        verbose
+    );
 
-    const result = lib.get();
+    const getStatic = lib.static({root: '/i/am/root'});
+
+    let failed = true;
+    try {
+        const result = getStatic({
+            rawPath: '/assets/asset-test-target.txt',
+        });
+        failed = false;
                                                                                                                         if (verbose) log.info(prettify(result, "result"));
+    } catch (e) {
+                                                                                                                        if (verbose) log.error(e);
+    }
 
-    t.assertEquals(400, result.status, "result.status");
+    t.assertTrue(failed, "Should have thrown error instead of yielding a 500-type response");
 
-    t.assertEquals('string', typeof result.body, "Expected string body with error message in dev");
-
-    t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/plain' in dev");
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain' in dev");
-
-    t.assertEquals(undefined, result.headers, "result.headers");
+    log.info("OK.");
 }
-// No need to test for path:spaces too - pathAndOptionsParser is trusted to trim the path.
 
-
-exports.testGet_path_slash_shouldOnly400 = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_path_slash_shouldOnly400:\n");
-    doMocks({
+exports.testGetStatic_failingContentTypeFunc_should500 = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_failingContentTypeFunc_should500:\n");
+    doMocks(
+        {
+            options: {
+                contentTypeFunc: () => { throw Error("Thrown on purpose"); }
+            }
         },
-        verbose);
+        verbose
+    );
 
-    const result = lib.get('/');
+    const getStatic = lib.static({root: '/i/am/root'});
+
+    const result = getStatic({
+        rawPath: '/assets/asset-test-target.txt',
+        contextPath: '/assets'
+    });
                                                                                                                         if (verbose) log.info(prettify(result, "result"));
 
-    t.assertEquals(400, result.status, "result.status");
+    t.assertEquals(500, result.status, "result.status");
+}
+
+
+exports.testGetStatic_failingContentTypeFunc_throwErrors_shouldThrowErrorInsteadOf500 = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_failingContentTypeFunc_throwErrors_shouldThrowErrorInsteadOf500:\n");
+    doMocks(
+        {
+            options: {
+                contentTypeFunc: () => { throw Error("Thrown on purpose"); },
+                throwErrors: true
+            }
+        },
+        verbose
+    );
+
+    const getStatic = lib.static({root: '/i/am/root'});
+
+    let failed = true;
+    try {
+        const result = getStatic({
+            rawPath: '/assets/asset-test-target.txt',
+            contextPath: '/assets'
+        });
+        failed = false;
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+    } catch (e) {
+                                                                                                                        if (verbose) log.error(e);
+        t.assertTrue(e.message.indexOf("on purpose") > -1, "Thrown error should have been on purpose");
+    }
+
+    t.assertTrue(failed, "Should have thrown error instead of yielding a 500-type response");
+    log.info("OK.");
+}
+
+
+
+
+exports.testGetStatic_failingCacheControlFunc_should500 = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_failingCacheControlFunc_should500:\n");
+    doMocks(
+        {
+            options: {
+                cacheControlFunc: () => { throw Error("Thrown on purpose"); }
+            }
+        },
+        verbose
+    );
+
+    const getStatic = lib.static({root: '/i/am/root'});
+
+    const result = getStatic({
+        rawPath: '/assets/asset-test-target.txt',
+        contextPath: '/assets'
+    });
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+
+    t.assertEquals(500, result.status, "result.status");
+}
+
+
+exports.testGetStatic_failingCacheControlFunc_throwErrors_shouldThrowErrorInsteadOf500 = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_failingCacheControlFunc_throwErrors_shouldThrowErrorInsteadOf500:\n");
+    doMocks(
+        {
+            options: {
+                cacheControlFunc: () => { throw Error("Thrown on purpose"); },
+                throwErrors: true
+            }
+        },
+        verbose
+    );
+
+    const getStatic = lib.static({root: '/i/am/root'});
+
+    let failed = true;
+    try {
+        const result = getStatic({
+            rawPath: '/assets/asset-test-target.txt',
+            contextPath: '/assets'
+        });
+        failed = false;
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+    } catch (e) {
+                                                                                                                        if (verbose) log.error(e);
+        t.assertTrue(e.message.indexOf("on purpose") > -1, "Thrown error should have been on purpose");
+    }
+
+    t.assertTrue(failed, "Should have thrown error instead of yielding a 500-type response");
+    log.info("OK.");
+}
+
+
+
+
+exports.testGetStatic_failingGetCleanPath_should500 = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_failingGetCleanPath_should500:\n");
+    doMocks(
+        {
+            options: {
+                getCleanPath: () => { throw Error("Thrown on purpose"); }
+            }
+        },
+        verbose
+    );
+
+    const getStatic = lib.static({root: '/i/am/root'});
+
+    const result = getStatic({
+        rawPath: '/assets/asset-test-target.txt',
+        contextPath: '/assets'
+    });
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+
+    t.assertEquals(500, result.status, "result.status");
+}
+
+
+exports.testGetStatic_failingGetCleanPath_throwErrors_shouldThrowErrorInsteadOf500 = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_failingGetCleanPath_throwErrors_shouldThrowErrorInsteadOf500:\n");
+    doMocks(
+        {
+            options: {
+                getCleanPath: () => { throw Error("Thrown on purpose"); },
+                throwErrors: true
+            }
+        },
+        verbose
+    );
+
+    const getStatic = lib.static({root: '/i/am/root'});
+
+    let failed = true;
+    try {
+        const result = getStatic({
+            rawPath: '/assets/asset-test-target.txt',
+            contextPath: '/assets'
+        });
+        failed = false;
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+    } catch (e) {
+                                                                                                                        if (verbose) log.error(e);
+        t.assertTrue(e.message.indexOf("on purpose") > -1, "Thrown error should have been on purpose");
+    }
+
+    t.assertTrue(failed, "Should have thrown error instead of yielding a 500-type response");
+    log.info("OK.");
+}
+
+
+exports.testGetStaticStatic_ifMatchingEtag_should304 = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStaticStatic_ifMatchingEtag_should304:\n");
+
+    doMocks(
+        {
+            etagReader: {
+                read: () => "test-etag-value"
+            },
+            options: {
+                contentTypeFunc: () => { throw Error("Since ETag matches the 'If-None-Match' header, only a status 304 should be returned - expected no contentType func call since there should be no asset readout."); },
+                cacheControlFunc: () => { throw Error("Since ETag matches the 'If-None-Match' header, only a status 304 should be returned - expected no cacheControl func call since there should be no asset readout."); }
+            }
+        },
+        verbose
+    );
+
+    const getStatic = lib.static('/i/am/root/');
+
+    const result = getStatic({
+        rawPath: 'my/endpoint/asset-test-target.txt',
+        contextPath: 'my/endpoint',
+        headers: {
+            'If-None-Match': 'test-etag-value'
+        }
+    });
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+
+    t.assertEquals(304, result.status, "result.status");
 
     t.assertEquals(undefined, result.body, "result.body");
     t.assertEquals(undefined, result.contentType, "result.contentType");
     t.assertEquals(undefined, result.headers, "result.headers");
-}
-
-exports.testGet_path_slashes_shouldOnly400 = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_path_slashes_shouldOnly400:\n");
-    doMocks({
-        },
-        verbose);
-
-    const result = lib.get('///');
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
-
-    t.assertEquals(400, result.status, "result.status");
-
-    t.assertEquals(undefined, result.body, "result.body");
-    t.assertEquals(undefined, result.contentType, "result.contentType");
-    t.assertEquals(undefined, result.headers, "result.headers");
-}
+};
 
 
-exports.testGet_DEV_path_slash_should400WithInfo = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_DEV_path_slash_should400WithInfo:\n");
-    doMocks({
-            isDev: true
-        },
-        verbose);
+exports.testGetStaticStatic_ifNotMatchingEtag_shouldProceedWithAssetRead = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStaticStatic_ifNotMatchingEtag_shouldProceedWithAssetRead:\n");
 
-    const result = lib.get('/');
-    if (verbose) log.info(prettify(result, "result"));
-
-    t.assertEquals(400, result.status, "result.status");
-
-    t.assertEquals('string', typeof result.body, "Expected string body with error message in dev");
-
-    t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/plain' in dev");
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain' in dev");
-
-    t.assertEquals(undefined, result.headers, "result.headers");
-}
-
-exports.testGet_DEV_path_slashes_should400WithInfo = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_DEV_path_slashes_should400WithInfo:\n");
-    doMocks({
-            isDev: true
-        },
-        verbose);
-
-    const result = lib.get('///');
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
-
-    t.assertEquals(400, result.status, "result.status");
-
-    t.assertEquals('string', typeof result.body, "Expected string body with error message in dev");
-
-    t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/plain' in dev");
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain' in dev");
-
-    t.assertEquals(undefined, result.headers, "result.headers");
-}
-
-
-// Optionparser always collects its own errors and returns an errormessage. Log, and output error ID in body
-exports.testGet_optionParsingError_should500withErrorId = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_optionParsingError_should500withErrorId:\n");
-    doMocks({
-            options: {
-                parsePathAndOptions: () => ({
-                    errorMessage: "This was thrown on purpose when parsing path and options."
-                })
+    doMocks(
+        {
+            etagReader: {
+                read: () => "CURRENT-etag-value"
             }
         },
-        verbose);
+        verbose
+    );
 
-    const result = lib.get("my/path");
+    const getStatic = lib.static('/i/am/root/');
+
+    const result = getStatic({
+        rawPath: 'my/endpoint/asset-test-target.txt',
+        contextPath: 'my/endpoint',
+        headers: {
+            'If-None-Match': 'OLD-etag-value'
+        }
+    });
                                                                                                                         if (verbose) log.info(prettify(result, "result"));
 
-    t.assertEquals(500, result.status, "result.status");
+    t.assertEquals(200, result.status, "result.status");
 
-    t.assertEquals("string", typeof result.body, "result.body error message");
-    t.assertTrue(result.body.indexOf !== "Server error", "result.body error message");
-    t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/plain' in dev");
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain' in dev");
-    t.assertEquals(undefined, result.headers, "result.headers");
-    log.info("OK.");
-}
-
-// contentTypeFunc is run outside pathAndOptions parser, but errors here should still be caught
-exports.testGet_contentTypeFuncError_should500withErrorId = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_contentTypeFuncError_should500withErrorId:\n");
-    doMocks({
-            options: {
-                contentTypeFunc: () => {
-                    throw Error("This was thrown on purpose when running contentTypeFunc.");
-                }
-            }
-        },
-        verbose);
-
-    const result = lib.get("my/path");
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
-
-    t.assertEquals(500, result.status, "result.status");
-
-    t.assertEquals("string", typeof result.body, "result.body error message");
-    t.assertTrue(result.body.indexOf !== "Server error", "result.body error message");
-    t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/plain' in dev");
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain' in dev");
-    t.assertEquals(undefined, result.headers, "result.headers");
-    log.info("OK.");
-}
-
-// cacheControlFunc is run outside pathAndOptions parser, but errors here should still be caught
-exports.testGet_cacheControlFuncError_should500withErrorId = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_cacheControlFuncError_should500withErrorId:\n");
-    doMocks({
-            options: {
-                cacheControlFunc: () => {
-                    throw Error("This was thrown on purpose when running cacheControlFunc.");
-                }
-            }
-        },
-        verbose);
-
-    const result = lib.get("my/path");
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
-
-    t.assertEquals(500, result.status, "result.status");
-
-    t.assertEquals("string", typeof result.body, "result.body error message");
-    t.assertTrue(result.body.indexOf !== "Server error", "result.body error message");
-    t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/plain' in dev");
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain' in dev");
-    t.assertEquals(undefined, result.headers, "result.headers");
-    log.info("OK.");
-}
-
-// TODO: think of and test more possible parsePathAndOptions outputs, and consequent handling and behavior?
-
-
-// Optionparser always collects its own errors and returns an errormessage. Log, and output error ID in body
-exports.testGet_optionParsing_throwErrors_shouldThrowError = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_optionParsing_throwErrors_shouldThrowError:\n");
-    doMocks({
-            options: {
-                parsePathAndOptions: () => ({
-                    errorMessage: "This was thrown on purpose when parsing path and options.",
-                    throwErrors: true
-                })
-            }
-        },
-        verbose);
-
-    let failed = true, result = undefined;
-    try {
-        result = lib.get("my/path");
-        failed = false;
-    } catch (e) {
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
-                                                                                                                        if (verbose) log.error(e);
-    }
-
-    t.assertTrue(failed, "failed");
-    t.assertEquals(undefined, result, "result");
-                                                                                                                        if (verbose) log.info("OK.");
-}
-
-// contentTypeFunc is run outside pathAndOptions parser, but errors here should still be caught
-exports.testGet_contentTypeFunc_throwErrors_shouldThrowError = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_contentTypeFunc_throwErrors_shouldThrowError:\n");
-    doMocks({
-            options: {
-                contentTypeFunc: () => {
-                    throw Error("This was thrown on purpose when running contentTypeFunc.");
-                },
-                throwErrors: true
-            }
-        },
-        verbose);
-
-    let failed = true, result = undefined;
-    try {
-        result = lib.get("my/path");
-        failed = false;
-    } catch (e) {
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
-                                                                                                                        if (verbose) log.error(e);
-    }
-
-    t.assertTrue(failed, "failed");
-    t.assertEquals(undefined, result, "result");
-                                                                                                                        if (verbose) log.info("OK.");
-}
-
-// cacheControlFunc is run outside pathAndOptions parser, but errors here should still be caught
-exports.testGet_cacheControlFunc_throwErrors_shouldThrowError = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_cacheControlFunc_throwErrors_shouldThrowError:\n");
-    doMocks({
-            options: {
-                cacheControlFunc: () => {
-                    throw Error("This was thrown on purpose when running cacheControlFunc.");
-                },
-                throwErrors: true
-            }
-        },
-        verbose);
-
-    let failed = true, result = undefined;
-    try {
-        result = lib.get("my/path");
-        failed = false;
-    } catch (e) {
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
-                                                                                                                        if (verbose) log.error(e);
-    }
-
-    t.assertTrue(failed, "failed");
-    t.assertEquals(undefined, result, "result");
-    log.info("OK.");
-}
+    t.assertTrue(ioMock.readText(result.body).indexOf("/i/am/root/asset-test-target.txt") !== -1, "result.body");
+    t.assertEquals("text/plain", result.contentType, "result.contentType");
+    t.assertEquals("CURRENT-etag-value", result.headers.ETag, "result.headers.ETag");
+};
 
 
 
 
 
-
-
-//////////////////////////////////////////////////////////////////////  TEST .static
 
 /*
 
 
-//////////////////////////////////////////////////////////////////////////////////  Test the returned getStatic func
-
-exports.testGetStatic_root_Asset_FullDefaultResponse = () => {
-    const lib = require('./index');
-
-    const getStatic = lib.static('assets');            // Root folder: '/assets/'
-
-    // Simulate an XP GET request from frontend
-    const request = {
-        rawPath: 'my/endpoint/asset-test-target.txt',              // This path, in context of contextPath, yields the relative path 'asset-test-target.txt',
-        contextPath: 'my/endpoint'                              // which together with the root folder 'assets' becomes the full asset path: 'assets/asset-test-target.txt'
-    };
-
-    const result = getStatic(request);
-
-    t.assertEquals("I am a test asset\n", ioLib.readText(result.body));
-    t.assertEquals(200, result.status);
-    t.assertTrue(typeof result.contentType === 'string');
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
-
-    t.assertTrue(!!result.headers);
-    t.assertEquals('object', typeof result.headers);
-    t.assertEquals('string', typeof result.headers.ETag);
-    t.assertTrue(result.headers.ETag.length > 0);
-    t.assertEquals(optionsParser.DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"]);
-
-    log.info(".static example: full get response readout, body is a resource object (" +
-        (typeof result + (result && typeof result === 'object' ? (" with keys: " + JSON.stringify(Object.keys(result))) : "")
-        ) + "): " + JSON.stringify(result, null, 2)
-    );
-};
-
-
-exports.testGetStatic_optionsRoot = () => {
-    const lib = require('./index');
-
-    const getStatic = lib.static({root: 'assets'});            // Root folder: '/assets/'
-
-    // Simulate an XP GET request from frontend
-    const request = {
-        rawPath: 'my/endpoint/asset-test-target.txt',              // This path, in context of contextPath, yields the relative path 'asset-test-target.txt',
-        contextPath: 'my/endpoint'                              // which together with the root folder 'assets' becomes the full asset path: 'assets/asset-test-target.txt'
-    };
-
-    const result = getStatic(request);
-
-    t.assertEquals("I am a test asset\n", ioLib.readText(result.body));
-    t.assertEquals(200, result.status);
-    t.assertTrue(typeof result.contentType === 'string');
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
-
-    t.assertTrue(!!result.headers);
-    t.assertEquals('object', typeof result.headers);
-    t.assertEquals('string', typeof result.headers.ETag);
-    t.assertTrue(result.headers.ETag.length > 0);
-    t.assertEquals(optionsParser.DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"]);
-};
-
-exports.testGetStatic_ifNoneMatch_matchingEtagValues_should304 = () => {
-    const lib = require('./index');
-
-    const getStatic = lib.static('assets');
-
-    const request = {
-        rawPath: 'my/endpoint/asset-test-target.txt',
-        contextPath: 'my/endpoint',
-        headers: {
-            'If-None-Match': 'djsptplmcdcidp39wx6ydiwn3'        // <-- TODO: Copied from output. Should mock instead.
-        }
-    };
-
-    const result = getStatic(request);
-
-    t.assertEquals(304, result.status);
-};
-
-exports.testGetStatic_ifNoneMatch_nonMatchingEtagValues_should200WithUpdatedContentAndEtag = () => {
-    const lib = require('./index');
-
-    const getStatic = lib.static('assets');
-
-    const request = {
-        rawPath: 'my/endpoint/asset-test-target.txt',
-        contextPath: 'my/endpoint',
-        headers: {
-            'If-None-Match': 'oldEtagValue87654321'
-        }
-    };
-
-    const result = getStatic(request);
-
-    t.assertEquals("I am a test asset\n", ioLib.readText(result.body));
-    t.assertEquals(200, result.status);
-    t.assertTrue(typeof result.contentType === 'string');
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
-
-    t.assertTrue(!!result.headers);
-    t.assertEquals('object', typeof result.headers);
-    t.assertEquals(optionsParser.DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"]);
-    t.assertTrue(!!(result.headers || {}).ETag); // An ETag header should be generated
-    t.assertNotEquals("oldEtagValue87654321", (result.headers || {}).ETag); // a NEW ETag header should be generated
-};
-
-exports.testGetStatic_option_arg2_getCleanPath = () => {
-    const lib = require('./index');
-
-    const getStatic = lib.static('assets', {
-        getCleanPath: request =>  request.rawPath.substring('my/endpoint'.length)
-    });
-
-    // Simulate an XP GET request from a frontend that's NOT a prefix that leaves a relative asset path:
-    const request = {
-        rawPath: 'my/endpoint/asset-test-target.txt',               // Uses the getCleanPath option instead of the contextPath, to return the relative path 'asset-test-target.txt',
-        contextPath: 'this/is/ignored'                              // which together with the root folder 'assets' becomes the full asset rawPath: 'assets/asset-test-target.txt'
-    };
-
-    const result = getStatic(request);
-
-    t.assertEquals("I am a test asset\n", ioLib.readText(result.body));
-    t.assertEquals(200, result.status);
-    t.assertTrue(typeof result.contentType === 'string');
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
-};
-
-exports.testGetStatic_option_arg1_getCleanPath = () => {
-    const lib = require('./index');
-
-    const getStatic = lib.static({
-        root: 'assets',
-        getCleanPath: request =>  request.rawPath.substring('my/endpoint'.length)
-    });
-
-    // Simulate an XP GET request from a frontend that's NOT a prefix that leaves a relative asset path:
-    const request = {
-        rawPath: 'my/endpoint/asset-test-target.txt',               // Uses the getCleanPath option instead of the contextPath, to return the relative path 'asset-test-target.txt',
-        contextPath: 'this/is/ignored'                              // which together with the root folder 'assets' becomes the full asset rawPath: 'assets/asset-test-target.txt'
-    };
-
-    const result = getStatic(request);
-
-    t.assertEquals("I am a test asset\n", ioLib.readText(result.body));
-    t.assertEquals(200, result.status);
-    t.assertTrue(typeof result.contentType === 'string');
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
-};
-
-
-exports.testGetStatic_HTML_FullDefaultResponse = () => {
-    const lib = require('./index');
-
-
-    const getStatic = lib.static('static');
-    const request = {
-        rawPath: 'my/endpoint/static-test-html.html',
-        contextPath: 'my/endpoint'
-    };                                                  // --> /static/static-test-html.html
-
-    const result = getStatic(request);
-
-    t.assertEquals("<html><body><p>I am a test HTML</p></body></html>\n", ioLib.readText(result.body));
-    t.assertEquals(200, result.status);
-    t.assertTrue(!!result.contentType);
-    t.assertTrue(result.contentType.indexOf("text/html") !== -1);
-
-    t.assertTrue(!!result.headers);
-    t.assertEquals('object', typeof result.headers);
-    t.assertEquals('string', typeof result.headers.ETag);
-    t.assertTrue(result.headers.ETag.length > 0);
-    t.assertEquals(optionsParser.DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"]);
-};
-
-exports.testGetStatic_Css = () => {
-    const lib = require('./index');
-
-    const getStatic = lib.static('static');
-    const request = {
-        rawPath: 'my/endpoint/static-test-css.css',
-        contextPath: 'my/endpoint'
-    };                                                  // --> /static/static-test-css.css
-
-    const result = getStatic(request);
-
-    t.assertTrue(!!result.contentType);
-    t.assertTrue(result.contentType.indexOf("text/css") !== -1);
-    t.assertEquals(".i.am.a.test.css {\n\n}\n", ioLib.readText(result.body));
-
-    t.assertTrue(!!result.headers);
-    t.assertEquals('object', typeof result.headers);
-    t.assertEquals('string', typeof result.headers.ETag);
-    t.assertTrue(result.headers.ETag.length > 0);
-    t.assertEquals(optionsParser.DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"]);
-};
-
-exports.testGetStatic_JS = () => {
-    const lib = require('./index');
-
-    const getStatic = lib.static('static');
-    const request = {
-        rawPath: 'my/endpoint/static-test-js.js',
-        contextPath: 'my/endpoint'
-    };                                                  // --> /static/static-test-js.js
-
-    const result = getStatic(request);
-
-
-    t.assertTrue(!!result.contentType);
-    t.assertTrue(result.contentType.indexOf("application/javascript") !== -1);
-    t.assertEquals("console.log(\"I am a test js\");\n", ioLib.readText(result.body));
-
-    t.assertTrue(!!result.headers);
-    t.assertEquals('object', typeof result.headers);
-    t.assertEquals('string', typeof result.headers.ETag);
-    t.assertTrue(result.headers.ETag.length > 0);
-    t.assertEquals(optionsParser.DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"]);
-};
-
-exports.testGetStatic_JSON = () => {
-    const lib = require('./index');
-
-    const getStatic = lib.static('static');
-    const request = {
-        rawPath: 'my/endpoint/static-test-json.json',
-        contextPath: 'my/endpoint'
-    };                                                  // --> /static/static-test-json.json
-
-    const result = getStatic(request);
-
-    t.assertTrue(!!result.contentType);
-    t.assertTrue(result.contentType.indexOf("application/json") !== -1);
-    t.assertEquals(`{
-  "I": {
-    "am": "a",
-    "test": "json"
-  }
-}
-`, ioLib.readText(result.body));
-
-    t.assertTrue(!!result.headers);
-    t.assertEquals('object', typeof result.headers);
-    t.assertEquals('string', typeof result.headers.ETag);
-    t.assertTrue(result.headers.ETag.length > 0);
-    t.assertEquals(optionsParser.DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"]);
-};
-
-exports.testGetStatic_XML = () => {
-    const lib = require('./index');
-
-    const getStatic = lib.static('static');
-    const request = {
-        rawPath: 'my/endpoint/static-test-xml.xml',
-        contextPath: 'my/endpoint'
-    };                                                  // --> /static/static-test-xml.xml
-
-    const result = getStatic(request);
-
-    t.assertTrue(!!result.contentType);
-    t.assertTrue(result.contentType.indexOf("text/xml") !== -1);
-    t.assertEquals(`<I>
-    <am>a</am>
-    <test>xml</test>
-</I>
-`, ioLib.readText(result.body));
-
-    t.assertTrue(!!result.headers);
-    t.assertEquals('object', typeof result.headers);
-    t.assertEquals('string', typeof result.headers.ETag);
-    t.assertTrue(result.headers.ETag.length > 0);
-    t.assertEquals(optionsParser.DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"]);
-}
-
-exports.testGetStatic_Text = () => {
-    const lib = require('./index');
-
-    const getStatic = lib.static('static');
-    const request = {
-        rawPath: 'my/endpoint/static-test-text.txt',
-        contextPath: 'my/endpoint'
-    };                                                  // --> /static/static-test-text.txt
-
-    const result = getStatic(request);
-
-    t.assertTrue(typeof result.contentType === 'string');
-    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "result.contentType should contain 'text/plain'");
-    t.assertEquals("I am a test text\n", ioLib.readText(result.body));
-
-    t.assertTrue(!!result.headers);
-    t.assertEquals('object', typeof result.headers);
-    t.assertEquals('string', typeof result.headers.ETag);
-    t.assertTrue(result.headers.ETag.length > 0);
-    t.assertEquals(optionsParser.DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"]);
-}
-
-exports.testGetStatic_JPG = () => {
-    const lib = require('./index');
-
-    const getStatic = lib.static('static');
-    const request = {
-        rawPath: 'my/endpoint/w3c_home.jpg',
-        contextPath: 'my/endpoint'
-    };                                                  // --> /static/w3c_home.jpg
-
-    const result = getStatic(request);
-
-    t.assertEquals(200, result.status);
-    t.assertTrue(!!result.contentType);
-    t.assertTrue(result.contentType.indexOf("image/jpeg") !== -1);
-
-    t.assertTrue(!!result.headers);
-    t.assertEquals('object', typeof result.headers);
-    t.assertEquals('string', typeof result.headers.ETag);
-    t.assertTrue(result.headers.ETag.length > 0);
-    t.assertEquals(optionsParser.DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"]);
-};
-
-exports.testGetStatic_GIF = () => {
-    const lib = require('./index');
-
-    const getStatic = lib.static('static');
-    const request = {
-        rawPath: 'my/endpoint/w3c_home.gif',
-        contextPath: 'my/endpoint'
-    };                                                  // --> /static/w3c_home.gif
-
-    const result = getStatic(request);
-
-    t.assertEquals(200, result.status);
-    t.assertTrue(!!result.contentType);
-    t.assertTrue(result.contentType.indexOf("image/gif") !== -1);
-
-    t.assertTrue(!!result.headers);
-    t.assertEquals('object', typeof result.headers);
-    t.assertEquals('string', typeof result.headers.ETag);
-    t.assertTrue(result.headers.ETag.length > 0);
-    t.assertEquals(optionsParser.DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"]);
-};
 
 
 /////////////  Test getStatic errorHandling
 
 
-exports.testGetStatic_fail_rootArg_NotFoundFile_should404 = () => {
+exports.testGetStaticStatic_fail_rootArg_NotFoundFile_should404 = () => {
     const lib = require('./index');
 
     const getStatic = lib.static('static');
@@ -1571,7 +1181,7 @@ exports.testGetStatic_fail_rootArg_NotFoundFile_should404 = () => {
 
     log.info(`OK: ${result.status} - ${result.body}`);
 }
-exports.testGetStatic_fail_optionsArg_NotFoundFile_should404 = () => {
+exports.testGetStaticStatic_fail_optionsArg_NotFoundFile_should404 = () => {
     const lib = require('./index');
 
     const getStatic = lib.static({root: 'static'});              // Same as above, just root as named parameter
@@ -1591,7 +1201,7 @@ exports.testGetStatic_fail_optionsArg_NotFoundFile_should404 = () => {
 
     log.info(`OK: ${result.status} - ${result.body}`);
 }
-exports.testGetStatic_fail_NotFoundInRoot_should404 = () => {
+exports.testGetStaticStatic_fail_NotFoundInRoot_should404 = () => {
     const lib = require('./index');
 
     const getStatic = lib.static('assets');
@@ -1612,7 +1222,7 @@ exports.testGetStatic_fail_NotFoundInRoot_should404 = () => {
     log.info(`OK: ${result.status} - ${result.body}`);
 }
 
-exports.testGetStatic_fail_empty_should400 = () => {
+exports.testGetStaticStatic_fail_empty_should400 = () => {
     const lib = require('./index');
 
     const getStatic = lib.static('assets');
@@ -1633,7 +1243,7 @@ exports.testGetStatic_fail_empty_should400 = () => {
     log.info(`OK: ${result.status} - ${result.body}`)
 }
 
-exports.testGetStatic_fail_slash_should400 = () => {
+exports.testGetStaticStatic_fail_slash_should400 = () => {
     const lib = require('./index');
 
     const getStatic = lib.static('assets');
@@ -1653,7 +1263,7 @@ exports.testGetStatic_fail_slash_should400 = () => {
 
     log.info(`OK: ${result.status} - ${result.body}`)
 }
-exports.testGetStatic_fail_slashes_should400 = () => {
+exports.testGetStaticStatic_fail_slashes_should400 = () => {
     const lib = require('./index');
 
     const getStatic = lib.static('assets');
@@ -1673,7 +1283,7 @@ exports.testGetStatic_fail_slashes_should400 = () => {
 
     log.info(`OK: ${result.status} - ${result.body}`)
 }
-exports.testGetStatic_fail_illegalChars_should400 = () => {
+exports.testGetStaticStatic_fail_illegalChars_should400 = () => {
     const lib = require('./index');
 
     const getStatic = lib.static('assets');
@@ -1693,7 +1303,7 @@ exports.testGetStatic_fail_illegalChars_should400 = () => {
 
     log.info(`OK: ${result.status} - ${result.body}`)
 }
-exports.testGetStatic_fail_illegalDoubledots_should400 = () => {
+exports.testGetStaticStatic_fail_illegalDoubledots_should400 = () => {
     const lib = require('./index');
 
     const getStatic = lib.static('assets');
@@ -1713,7 +1323,7 @@ exports.testGetStatic_fail_illegalDoubledots_should400 = () => {
 
     log.info(`OK: ${result.status} - ${result.body}`)
 }
-exports.testGetStatic_fail_illegalWildcards_should400 = () => {
+exports.testGetStaticStatic_fail_illegalWildcards_should400 = () => {
     const lib = require('./index');
 
     const getStatic = lib.static('assets');
@@ -1733,7 +1343,7 @@ exports.testGetStatic_fail_illegalWildcards_should400 = () => {
 
     log.info(`OK: ${result.status} - ${result.body}`)
 }
-exports.testGetStatic_fail_pathNotUnderContextPath_should500 = () => {
+exports.testGetStaticStatic_fail_pathNotUnderContextPath_should500 = () => {
     const lib = require('./index');
 
     const getStatic = lib.static('assets');
@@ -1755,7 +1365,7 @@ exports.testGetStatic_fail_pathNotUnderContextPath_should500 = () => {
 }
 
 
-exports.testGetStatic_fail_contentTypeFunc_runtimeError_should500withMessage = () => {
+exports.testGetStaticStatic_fail_contentTypeFunc_runtimeError_should500withMessage = () => {
     const lib = require('./index');
 
     const getStatic = lib.static('assets', {
@@ -1780,7 +1390,7 @@ exports.testGetStatic_fail_contentTypeFunc_runtimeError_should500withMessage = (
 
     log.info(`OK: ${result.status} - ${result.body}`)
 }
-exports.testGetStatic_fail_contentTypeFunc_runtimeError_throwErrors = () => {
+exports.testGetStaticStatic_fail_contentTypeFunc_runtimeError_throwErrors = () => {
     const lib = require('./index');
 
     const getStatic = lib.static('assets', {
@@ -1809,7 +1419,7 @@ exports.testGetStatic_fail_contentTypeFunc_runtimeError_throwErrors = () => {
 }
 
 
-exports.testGetStatic_fail_cacheControlFunc_runtimeError_should500withMessage = () => {
+exports.testGetStaticStatic_fail_cacheControlFunc_runtimeError_should500withMessage = () => {
     const lib = require('./index');
 
     const getStatic = lib.static('assets', {
@@ -1834,7 +1444,7 @@ exports.testGetStatic_fail_cacheControlFunc_runtimeError_should500withMessage = 
 
     log.info(`OK: ${result.status} - ${result.body}`)
 }
-exports.testGetStatic_fail_cacheControlFunc_runtimeError_throwErrors = () => {
+exports.testGetStaticStatic_fail_cacheControlFunc_runtimeError_throwErrors = () => {
     const lib = require('./index');
 
     const getStatic = lib.static('assets', {
@@ -1864,7 +1474,7 @@ exports.testGetStatic_fail_cacheControlFunc_runtimeError_throwErrors = () => {
 
 
 // Verify that a even if the getStatic function fails once, it will keep working for new requests later
-exports.testGetStatic_fail_failuresShouldNotDestroyGetstaticFunction = () => {
+exports.testGetStaticStatic_fail_failuresShouldNotDestroyGetstaticFunction = () => {
     const lib = require('./index');
 
     const getStatic = lib.static({

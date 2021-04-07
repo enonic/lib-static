@@ -185,14 +185,14 @@ const resolvePath = (path) => {
 *  Overridable with the getCleanPath option param. */
 const getRelativeResourcePath = (request) => {
     if (!(request || {}).rawPath) {
-        throw Error(`Can't resolve relative asset path - request doesn't have a .rawPath attribute: ` + JSON.stringify(request));
+        throw Error(`Default functionality can't resolve relative asset path: the request doesn't have a .rawPath attribute. You may need to supply a getCleanPath(request) function parameter to extract a relative asset path from the request. Request: ${JSON.stringify(request)}`);
     }
 
-    const removePrefix = request.contextPath.trim() || '** missing or falsy **';
+    const removePrefix = (request.contextPath || '').trim() || '** missing or falsy **';
 
     if (!request.rawPath.startsWith(removePrefix)) {
         // Gives 500-type error
-        throw Error(`Can't resolve relative asset path: request.contextPath (${JSON.stringify(request.contextPath)}) was expected to be a non-empty prefix of request.rawPath (${JSON.stringify(request.rawPath)}). You may need to supply a getCleanPath(request) function parameter to extract a relative asset path from the request.`);
+        throw Error(`Default functionality can't resolve relative asset path: the request was expected to contain a .contextPath string attribute that is a prefix in a .rawPath string attribute. You may need to supply a getCleanPath(request) function parameter to extract a relative asset path from the request. Request: ${JSON.stringify(request)}`);
     }
 
     return request.rawPath
