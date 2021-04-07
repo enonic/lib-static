@@ -128,13 +128,13 @@ const lib = require('./index');
         parsePathAndOptions: function[(pathOrOptions, options) => {path,cacheControlFunc,contentTypeFunc,etagOverride,throwErrors,errorMessage}],
         parseRootAndOptions: function[(rootOrOptions, options) => {root,cacheControlFunc,contentTypeFunc,etagOverride,getCleanPath,throwErrors,errorMessage}]
             Instead of those two, the following can be used override OUTPUT from mocked passthrough versions of those two:
+        path: string
         contentTypeFunc: function [(filePathAndName, resource, mimeType) => string]
         cacheControlFunc: function [(filePathAndName, resource) => string]
         cacheControl: string or boolean
         contentType: string or boolean
         etag: string
         throwErrors: boolean
-        getCleanPath
     }
  */
 const doMocks = (params={}, verbose= false) => {
@@ -249,7 +249,6 @@ exports.testGet_innerbehavior_1arg_parsePathAndOptions_isCalled = () => {
                     t.assertEquals('cacheControl/string/or/function/but/ok', pathOrOptions.cacheControl , "parsePathAndOptions: pathOrOptions.cacheControl");
                     t.assertEquals('contentType/string/object/or/function/but/ok', pathOrOptions.contentType , "parsePathAndOptions: pathOrOptions.contentType");
                     t.assertEquals('etag/should/be/boolean/but/ok', pathOrOptions.etag , "parsePathAndOptions: pathOrOptions.etag");
-                    t.assertEquals('getCleanPath/should/be/function/but/ok', pathOrOptions.getCleanPath , "parsePathAndOptions: pathOrOptions.getCleanPath");
                                                                                                                         if (verbose) log.info("Correct call.");
                     // Verify to the caller that this mock function was actually called and the above was verified:
                     parsePathAndOptionsWasCalled = true;
@@ -270,8 +269,7 @@ exports.testGet_innerbehavior_1arg_parsePathAndOptions_isCalled = () => {
         throwErrors: 'throwErrors/should/be/boolean/but/ok',
         cacheControl: 'cacheControl/string/or/function/but/ok',
         contentType: 'contentType/string/object/or/function/but/ok',
-        etag: 'etag/should/be/boolean/but/ok',
-        getCleanPath: 'getCleanPath/should/be/function/but/ok'
+        etag: 'etag/should/be/boolean/but/ok'
     });
                                                                                                                         if (verbose) log.info(prettify(result, "result"));
     t.assertTrue(parsePathAndOptionsWasCalled, "parsePathAndOptionsWasCalled");
@@ -294,7 +292,6 @@ exports.testGet_innerbehavior_2arg_parsePathAndOptions_isCalled = () => {
                     t.assertEquals('cacheControl/string/or/function/but/ok', options.cacheControl , "parsePathAndOptions: options.cacheControl");
                     t.assertEquals('contentType/string/object/or/function/but/ok', options.contentType , "parsePathAndOptions: options.contentType");
                     t.assertEquals('etag/should/be/boolean/but/ok', options.etag , "parsePathAndOptions: options.etag");
-                    // t.assertEquals('getCleanPath/should/be/function/but/ok', options.getCleanPath , "parsePathAndOptions: options.getCleanPath");
                                                                                                                         if (verbose) log.info("Correct call.");
                     // Verify to the caller that this mock function was actually called and the above was verified:
                     parsePathAndOptionsWasCalled = true;
@@ -316,9 +313,7 @@ exports.testGet_innerbehavior_2arg_parsePathAndOptions_isCalled = () => {
             throwErrors: 'throwErrors/should/be/boolean/but/ok',
             cacheControl: 'cacheControl/string/or/function/but/ok',
             contentType: 'contentType/string/object/or/function/but/ok',
-            etag: 'etag/should/be/boolean/but/ok',
-            // Not used in .get:
-            // getCleanPath: 'getCleanPath/should/be/function/but/ok'
+            etag: 'etag/should/be/boolean/but/ok'
         }
     );
                                                                                                                         if (verbose) log.info(prettify(result, "result"));
@@ -365,7 +360,6 @@ exports.testGet_innerbehavior_parsePathAndOptions_outputs_areUsed = () => {
                                                                                                                         if (verbose) log.info("\n\n\ntestGet_innerbehavior_parsePathAndOptions_outputs_areUsed:\n");
     let getResourceWasCalled = false;
     let etagReadWasCalled = false;
-    // let getCleanPathWasCalled = false;
     let cacheControlFuncWasCalled = false;
     let contentTypeFuncWasCalled = false;
     doMocks({
@@ -384,13 +378,7 @@ exports.testGet_innerbehavior_parsePathAndOptions_outputs_areUsed = () => {
                     t.assertEquals('options/contentType/out', contentType);
                     cacheControlFuncWasCalled = true;
                     return 'options/cacheControl/out';
-                },
-                // .get uses the path input, no getCleanPath step:
-                // getCleanPath: (path) => {
-                //    t.assertEquals('options/path/out', path);
-                //    getCleanPathWasCalled = true;
-                //    return path + "/clean"
-                // },
+                }
             },
             io: {
                 getResource: (path) => {
@@ -419,7 +407,6 @@ exports.testGet_innerbehavior_parsePathAndOptions_outputs_areUsed = () => {
                                                                                                                         if (verbose) log.info(prettify(result, "result"));
     t.assertTrue(getResourceWasCalled, "getResourceWasCalled");
     t.assertTrue(etagReadWasCalled, "etagReadWasCalled");
-    // t.assertTrue(getCleanPathWasCalled, "getCleanPathWasCalled");
     t.assertTrue(cacheControlFuncWasCalled, "cacheControlFuncWasCalled");
     t.assertTrue(contentTypeFuncWasCalled, "contentTypeFuncWasCalled");
 

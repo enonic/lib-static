@@ -124,7 +124,7 @@ exports.__getPathError__ = (trimmedPathString) => {
         return "can't contain '..' or any of these characters: \\ | ? * < > ' \" ` ´";
     }
     if (!trimmedPathString) {
-        return "is empty, all-spaces or directly at root ('/')";
+        return "resolves to the JAR root / empty or all-spaces";
     }
 };
 
@@ -202,8 +202,8 @@ const getRelativeResourcePath = (request) => {
 
 
 
-
-const resolveRoot = (root) => {
+// Exported for testing only
+exports.__resolveRoot__ = (root) => {
     let resolvedRoot = resolvePath(root.replace(/^\/+/, '').replace(/\/+$/, ''));
     let errorMessage = exports.__getPathError__(resolvedRoot);
     resolvedRoot = "/" + resolvedRoot;
@@ -211,7 +211,7 @@ const resolveRoot = (root) => {
     if (!errorMessage) {
         // TODO: verify that root exists and is a directory?
         if (!resolvedRoot) {
-            errorMessage = "is empty, all-spaces or directly at root ('/')";
+            errorMessage = "resolves to the JAR root / empty or all-spaces";
         }
     }
 
@@ -238,7 +238,7 @@ exports.static = (rootOrOptions, options) => {
         throw Error(errorMessage);
     }
 
-    root = resolveRoot(root, errorMessage);
+    root = exports.__resolveRoot__(root, errorMessage);
 
     // Allow option override of the function that gets the relative resource path from the request
     const getRelativePathFunc = getCleanPath || getRelativeResourcePath;

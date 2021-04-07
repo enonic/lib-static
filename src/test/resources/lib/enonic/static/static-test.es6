@@ -128,13 +128,14 @@ const lib = require('./index');
         parsePathAndOptions: function[(pathOrOptions, options) => {path,cacheControlFunc,contentTypeFunc,etagOverride,throwErrors,errorMessage}],
         parseRootAndOptions: function[(rootOrOptions, options) => {root,cacheControlFunc,contentTypeFunc,etagOverride,getCleanPath,throwErrors,errorMessage}]
             Instead of those two, the following can be used override OUTPUT from mocked passthrough versions of those two:
+        root: string
         contentTypeFunc: function [(filePathAndName, resource, mimeType) => string]
         cacheControlFunc: function [(filePathAndName, resource) => string]
         cacheControl: string or boolean
         contentType: string or boolean
         etag: string
         throwErrors: boolean
-        getCleanPath
+        getCleanPath: function
     }
  */
 const doMocks = (params={}, verbose= false) => {
@@ -230,78 +231,94 @@ const doMocks = (params={}, verbose= false) => {
 
 const verbose = false;
 
-//////////////////////////////////////////////////////////////////  TEST .get
 
-exports.testGet_innerbehavior_1arg_parsePathAndOptions_isCalled = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_innerbehavior_1arg_parsePathAndOptions_isCalled:\n");
-    let parsePathAndOptionsWasCalled = false;
+
+
+
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////  TEST .static innerbehaviour
+
+exports.testStatic_innerbehavior_1arg_parseRootAndOptions_isCalled = () => {
+    // const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestStatic_innerbehavior_1arg_parseRootAndOptions_isCalled:\n");
+    let parseRootAndOptionsWasCalled = false;
     doMocks({
             options: {
-                parsePathAndOptions: (pathOrOptions, options) => {
-                                                                                                                        if (verbose) log.info(prettify(pathOrOptions, "parsePathAndOptions call - pathOrOptions"));
-                                                                                                                        if (verbose) log.info(prettify(options, "parsePathAndOptions call - options"));
-                    // Verify that the arguments of .get are passed into parsePathAndOptions the expected way:
-                    t.assertEquals(undefined, options, "parsePathAndOptions: options");
-                    t.assertEquals('object', typeof pathOrOptions , "parsePathAndOptions: pathOrOptions");
-                    t.assertEquals(undefined, pathOrOptions.root , "parsePathAndOptions: pathOrOptions.root");
-                    t.assertEquals('my/path', pathOrOptions.path , "parsePathAndOptions: pathOrOptions.path");
-                    t.assertEquals('throwErrors/should/be/boolean/but/ok', pathOrOptions.throwErrors , "parsePathAndOptions: pathOrOptions.throwErrors");
-                    t.assertEquals('cacheControl/string/or/function/but/ok', pathOrOptions.cacheControl , "parsePathAndOptions: pathOrOptions.cacheControl");
-                    t.assertEquals('contentType/string/object/or/function/but/ok', pathOrOptions.contentType , "parsePathAndOptions: pathOrOptions.contentType");
-                    t.assertEquals('etag/should/be/boolean/but/ok', pathOrOptions.etag , "parsePathAndOptions: pathOrOptions.etag");
-                    t.assertEquals('getCleanPath/should/be/function/but/ok', pathOrOptions.getCleanPath , "parsePathAndOptions: pathOrOptions.getCleanPath");
+                parseRootAndOptions: (rootOrOptions, options) => {
+                                                                                                                        if (verbose) log.info(prettify(rootOrOptions, "parseRootAndOptions call - rootOrOptions"));
+                                                                                                                        if (verbose) log.info(prettify(options, "parseRootAndOptions call - options"));
+
+                    // Verify that the arguments of .static are passed into parseRootAndOptions the expected way:
+                    t.assertEquals(undefined, options, "parseRootAndOptions: options");
+                    t.assertEquals('object', typeof rootOrOptions , "parseRootAndOptions: rootOrOptions");
+                    t.assertEquals('my/root', rootOrOptions.root , "parseRootAndOptions: rootOrOptions.root");
+                    t.assertEquals(undefined, rootOrOptions.path , "parseRootAndOptions: rootOrOptions.path");
+                    t.assertEquals('throwErrors/should/be/boolean/but/ok', rootOrOptions.throwErrors , "parseRootAndOptions: rootOrOptions.throwErrors");
+                    t.assertEquals('cacheControl/string/or/function/but/ok', rootOrOptions.cacheControl , "parseRootAndOptions: rootOrOptions.cacheControl");
+                    t.assertEquals('contentType/string/object/or/function/but/ok', rootOrOptions.contentType , "parseRootAndOptions: rootOrOptions.contentType");
+                    t.assertEquals('etag/should/be/boolean/but/ok', rootOrOptions.etag , "parseRootAndOptions: rootOrOptions.etag");
+                    t.assertEquals('getCleanPath/should/be/function/but/ok', rootOrOptions.getCleanPath , "parseRootAndOptions: rootOrOptions.getCleanPath");
                                                                                                                         if (verbose) log.info("Correct call.");
                     // Verify to the caller that this mock function was actually called and the above was verified:
-                    parsePathAndOptionsWasCalled = true;
+                    parseRootAndOptionsWasCalled = true;
 
                     // Not testing returns, just returning something to prevent false-negative-looking error log.
                     return {
-                        path: pathOrOptions.path,
-                        contentTypeFunc: () => pathOrOptions.contentType,
-                        cacheControlFunc: () => pathOrOptions.cacheControl
+                        root: rootOrOptions.root,
+                        contentTypeFunc: () => rootOrOptions.contentType,
+                        cacheControlFunc: () => rootOrOptions.cacheControl
                     };
                 },
             }
         },
         verbose);
 
-    const result = lib.get({
-        path: 'my/path',
+    const getStatic = lib.static({
+        root: 'my/root',
         throwErrors: 'throwErrors/should/be/boolean/but/ok',
         cacheControl: 'cacheControl/string/or/function/but/ok',
         contentType: 'contentType/string/object/or/function/but/ok',
         etag: 'etag/should/be/boolean/but/ok',
         getCleanPath: 'getCleanPath/should/be/function/but/ok'
     });
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
-    t.assertTrue(parsePathAndOptionsWasCalled, "parsePathAndOptionsWasCalled");
+                                                                                                                        if (verbose) log.info(prettify(getStatic, "getStatic"));
+    t.assertTrue(parseRootAndOptionsWasCalled, "parseRootAndOptionsWasCalled");
 };
 
-exports.testGet_innerbehavior_2arg_parsePathAndOptions_isCalled = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_innerbehavior_2arg_parsePathAndOptions_isCalled:\n");
-    let parsePathAndOptionsWasCalled = false;
+exports.testStatic_innerbehavior_2arg_parseRootAndOptions_isCalled = () => {
+    // const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestStatic_innerbehavior_2arg_parseRootAndOptions_isCalled:\n");
+    let parseRootAndOptionsWasCalled = false;
     doMocks({
             options: {
-                parsePathAndOptions: (pathOrOptions, options) => {
-                                                                                                                        if (verbose) log.info(prettify(pathOrOptions, "parsePathAndOptions call - pathOrOptions"));
-                                                                                                                        if (verbose) log.info(prettify(options, "parsePathAndOptions call - options"));
-                    // Verify that the arguments of .get are passed into parsePathAndOptions the expected way:
-                    t.assertEquals('object', typeof options, "parsePathAndOptions: options");
-                    t.assertEquals('string', typeof pathOrOptions , "parsePathAndOptions: pathOrOptions");
-                    t.assertEquals(undefined, pathOrOptions.root , "parsePathAndOptions: pathOrOptions.root");
-                    t.assertEquals('my/path', pathOrOptions , "parsePathAndOptions: pathOrOptions");
-                    t.assertEquals('throwErrors/should/be/boolean/but/ok', options.throwErrors , "parsePathAndOptions: options.throwErrors");
-                    t.assertEquals('cacheControl/string/or/function/but/ok', options.cacheControl , "parsePathAndOptions: options.cacheControl");
-                    t.assertEquals('contentType/string/object/or/function/but/ok', options.contentType , "parsePathAndOptions: options.contentType");
-                    t.assertEquals('etag/should/be/boolean/but/ok', options.etag , "parsePathAndOptions: options.etag");
-                    t.assertEquals('getCleanPath/should/be/function/but/ok', options.getCleanPath , "parsePathAndOptions: options.getCleanPath");
+                parseRootAndOptions: (rootOrOptions, options) => {
+                                                                                                                        if (verbose) log.info(prettify(rootOrOptions, "parseRootAndOptions call - rootOrOptions"));
+                                                                                                                        if (verbose) log.info(prettify(options, "parseRootAndOptions call - options"));
+
+                    // Verify that the arguments of .static are passed into parseRootAndOptions the expected way:
+                    t.assertEquals('my/root', rootOrOptions , "parseRootAndOptions: rootOrOptions");
+                    t.assertEquals('object', typeof options, "parseRootAndOptions: options");
+                    t.assertEquals(undefined, options.root , "parseRootAndOptions: options.root");
+                    t.assertEquals(undefined, options.path , "parseRootAndOptions: options.path");
+                    t.assertEquals('throwErrors/should/be/boolean/but/ok', options.throwErrors , "parseRootAndOptions: options.throwErrors");
+                    t.assertEquals('cacheControl/string/or/function/but/ok', options.cacheControl , "parseRootAndOptions: options.cacheControl");
+                    t.assertEquals('contentType/string/object/or/function/but/ok', options.contentType , "parseRootAndOptions: options.contentType");
+                    t.assertEquals('etag/should/be/boolean/but/ok', options.etag , "parseRootAndOptions: options.etag");
+                    t.assertEquals('getCleanPath/should/be/function/but/ok', options.getCleanPath , "parseRootAndOptions: options.getCleanPath");
                                                                                                                         if (verbose) log.info("Correct call.");
                     // Verify to the caller that this mock function was actually called and the above was verified:
-                    parsePathAndOptionsWasCalled = true;
+                    parseRootAndOptionsWasCalled = true;
 
                     // Not testing returns, just returning something to prevent false-negative-looking error log.
                     return {
-                        path: pathOrOptions,
+                        root: rootOrOptions,
                         contentTypeFunc: () => options.contentType,
                         cacheControlFunc: () => options.cacheControl
                     };
@@ -310,8 +327,8 @@ exports.testGet_innerbehavior_2arg_parsePathAndOptions_isCalled = () => {
         },
         verbose);
 
-    const result = lib.get(
-        'my/path',
+    const getStatic = lib.static(
+        'my/root',
         {
             throwErrors: 'throwErrors/should/be/boolean/but/ok',
             cacheControl: 'cacheControl/string/or/function/but/ok',
@@ -320,68 +337,88 @@ exports.testGet_innerbehavior_2arg_parsePathAndOptions_isCalled = () => {
             getCleanPath: 'getCleanPath/should/be/function/but/ok'
         }
     );
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
-    t.assertTrue(parsePathAndOptionsWasCalled, "parsePathAndOptionsWasCalled");
+                                                                                                                        if (verbose) log.info(prettify(getStatic, "getStatic"));
+    t.assertTrue(parseRootAndOptionsWasCalled, "parseRootAndOptionsWasCalled");
 };
 
+exports.testStatic_innerbehavior_parseRootAndOptions_errorMessage_shouldThrowError = () => {
+    // const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestStatic_innerbehavior_parseRootAndOptions_errorMessage_shouldThrowError:\n");
 
-exports.testGet_innerbehavior_parsePathAndOptions_error_shouldLogAndAbort = () => {
-    //const verbose = true;
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_innerbehavior_parsePathAndOptions_error_shouldLogAndAbort:\n");
-    let getResourceWasCalled = false;
-    let etagReadWasCalled = false;
     doMocks({
             options: {
                 errorMessage: "Throw this error on purpose, should be logged but not output"
             },
-            io: {
-                getResource: () => {
-                    getResourceWasCalled = true;
-                }
-            },
-            etag: {
-                read: () => {
-                    etagReadWasCalled = true;
-                }
-            }
         },
         verbose);
 
-    const result = lib.get("my/path");
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
-    t.assertFalse(getResourceWasCalled, "getResourceWasCalled");
-    t.assertFalse(etagReadWasCalled, "etagReadWasCalled");
-    t.assertEquals(500, result.status , "result.status");
-    t.assertTrue('string', typeof result.body, "result.body");
-    t.assertEquals(-1, result.body.indexOf("on purpose"), "result.body");
+    let failed = true;
+    try {
+        const getStatic = lib.static("my/root");
+        failed = false;
+                                                                                                                        if (verbose) log.info(prettify(getStatic, "getStatic"));
+    } catch (e) {
+                                                                                                                        if (verbose) log.error(e);
+        t.assertTrue(e.message.indexOf("on purpose") > -1, "Expected purposefully thrown error");
+    }
+
+    t.assertTrue(failed, "Should have failed on error message from parseRootAndOptions");
+
     log.info("OK.");
 };
 
 
 
-exports.testGet_innerbehavior_parsePathAndOptions_outputs_areUsed = () => {
-    //const verbose = true;
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_innerbehavior_parsePathAndOptions_outputs_areUsed:\n");
+exports.testStatic_innerbehavior_parseRootAndOptions_outputs_areUsed = () => {
+    // const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestStatic_innerbehavior_parseRootAndOptions_outputs_areUsed:\n");
     let getResourceWasCalled = false;
+    let parseRootAndOptionsWasCalled = false;
     let etagReadWasCalled = false;
+    let getCleanPathWasCalled = false;
+    let cacheControlFuncWasCalled = false;
+    let contentTypeFuncWasCalled = false;
+
     doMocks({
             options: {
-                path: 'options/path/out',
-                etagOverride: 'options/etagOverride/out',
-                cacheControlFunc: () => 'options/cacheControl/out',
-                contentTypeFunc: () => 'options/contentType/out'
+                parseRootAndOptions: (rootOrOptions, options) => {
+                    parseRootAndOptionsWasCalled = true;
+                    return {
+                        root: 'options/root/out',
+                        etagOverride: 'options/etagOverride/out',
+                        getCleanPath: (request) => {
+                            t.assertEquals("i/am/a/rawPath", request.rawPath, "options.getCleanPath.request.rawPath");
+                            getCleanPathWasCalled = true;
+
+                            // This is the cleaned path extracted from the request. The root will be prefixed to it for a final absolute resource path - the cleanPath: --> /options/root/out/cleaned/rawPath
+                            return "/cleaned/rawPath";
+                        },
+                        contentTypeFunc: (cleanPath, resource) => {
+                            t.assertEquals('/options/root/out/cleaned/rawPath', cleanPath, "options.contentType.cleanPath");
+                            t.assertTrue(resource.exists(), "options.contentType.resource.exists");
+                            contentTypeFuncWasCalled = true;
+                            return 'options/contentType/out';
+                        },
+                        cacheControlFunc: (cleanPath, resource, contentType) => {
+                            t.assertEquals('/options/root/out/cleaned/rawPath', cleanPath, "options.cacheControlFunc.cleanPath");
+                            t.assertTrue(resource.exists(), "options.cacheControlFunc.resource.exists");
+                            t.assertEquals('options/contentType/out', contentType, "options.cacheControlFunc.contentType");
+                            cacheControlFuncWasCalled = true;
+                            return 'options/cacheControl/out';
+                        },
+                    }
+                }
             },
             io: {
-                getResource: (path) => {
-                    // A slash is added to path in the index.js before getResource, since the pathAndOptionsParser trims and removes it - therefore '/options...'
-                    t.assertEquals('/options/path/out', path, "io.getResource.path");
+                getResource: (cleanPath) => {
+                    t.assertEquals('/options/root/out/cleaned/rawPath', cleanPath, "io.getResource.cleanPath");
                     getResourceWasCalled = true;
-                    return ioMock.getResource(path, true, `Content for ${path}`);
+                    return ioMock.getResource(cleanPath, true, `Content for ${cleanPath}`);
                 }
             },
             etagReader: {
-                read: (path, etagOverride) => {
-                    t.assertEquals('/options/path/out', path, "etagReader.read.path");
+                read: (cleanPath, etagOverride) => {
+                    t.assertEquals('/options/root/out/cleaned/rawPath', cleanPath, "etagReader.read.cleanPath");
                     t.assertEquals('options/etagOverride/out', etagOverride, "etagReader.read.etagOverride");
                     etagReadWasCalled = true;
                     return "reader/etag/out";
@@ -390,15 +427,31 @@ exports.testGet_innerbehavior_parsePathAndOptions_outputs_areUsed = () => {
         },
         verbose);
 
-    const result = lib.get('arg/path/in', {
+    const getStatic = lib.static('arg/root/in', {
         etag: 'arg/etag/in',
         cacheControl: 'arg/cacheControl/in',
         contentType: 'arg/contentType/in'
     });
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info(prettify(getStatic, "getStatic"));
+    t.assertTrue(parseRootAndOptionsWasCalled, "parseRootAndOptionsWasCalled");
+
+    t.assertFalse(getResourceWasCalled, "getResourceWasCalled");
+    t.assertFalse(etagReadWasCalled, "etagReadWasCalled");
+    t.assertFalse(getCleanPathWasCalled, "getCleanPathWasCalled");
+    t.assertFalse(cacheControlFuncWasCalled, "cacheControlFuncWasCalled");
+    t.assertFalse(contentTypeFuncWasCalled, "contentTypeFuncWasCalled");
+
+    const request = {
+        rawPath: "i/am/a/rawPath"
+    };
+    const result = getStatic(request);
+
     t.assertTrue(getResourceWasCalled, "getResourceWasCalled");
     t.assertTrue(etagReadWasCalled, "etagReadWasCalled");
-
+    t.assertTrue(getCleanPathWasCalled, "getCleanPathWasCalled");
+    t.assertTrue(cacheControlFuncWasCalled, "cacheControlFuncWasCalled");
+    t.assertTrue(contentTypeFuncWasCalled, "contentTypeFuncWasCalled");
+    
     t.assertEquals('options/cacheControl/out', result.headers['Cache-Control'], 'cacheControl');
     t.assertEquals('reader/etag/out', result.headers.ETag, 'cacheControl');
     t.assertEquals('options/contentType/out', result.contentType, 'contentType');
@@ -407,8 +460,324 @@ exports.testGet_innerbehavior_parsePathAndOptions_outputs_areUsed = () => {
 
 
 
+/*
+//////////////////////////////////////////////////////////////////  TEST .static
+
+exports.testStatic_fail_missingRoot_shouldThrowError = () => {
+    const lib = require('./index');
+
+    let getStatic, failed = true;
+    try {
+        getStatic = lib.static();
+        failed = false;
+    } catch (e) {
+        log.info("Ok - errorMessage as expected: " + e.message);
+    }
+    t.assertTrue(failed, "Should have failed");
+    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
+}
+
+exports.testStatic_fail_missingRoot_shouldThrowErrorEvenOnFalseThrowerrorsOption = () => {
+    const lib = require('./index');
+
+    let getStatic, failed = true;
+    try {
+        getStatic = lib.static({throwErrors: false});
+        failed = false;
+    } catch (e) {
+        log.info("Ok - errorMessage as expected: " + e.message);
+    }
+    t.assertTrue(failed, "Should have failed");
+    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
+}
+
+exports.testStatic_fail_emptyRoot_argRoot_shouldThrowError = () => {
+    const lib = require('./index');
+
+    let getStatic, failed = true;
+    try {
+        getStatic = lib.static('');
+        failed = false;
+    } catch (e) {
+        log.info("Ok - errorMessage as expected: " + e.message);
+    }
+    t.assertTrue(failed, "Should have failed");
+    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
+}
+
+exports.testStatic_fail_emptyRoot_argOption_shouldThrowError = () => {
+    const lib = require('./index');
+
+    let getStatic, failed = true;
+    try {
+        getStatic = lib.static({root: ''});
+        failed = false;
+    } catch (e) {
+        log.info("Ok - errorMessage as expected: " + e.message);
+    }
+    t.assertTrue(failed, "Should have failed");
+    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
+}
+
+exports.testStatic_fail_emptyRoot_argOption_shouldThrowErrorEvenOnFalseThrowerrorsOption = () => {
+    const lib = require('./index');
+
+    let getStatic, failed = true;
+    try {
+        getStatic = lib.static({root: '', throwErrors: false});
+        failed = false;
+    } catch (e) {
+        log.info("Ok - errorMessage as expected: " + e.message);
+    }
+    t.assertTrue(failed, "Should have failed");
+    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
+}
+
+exports.testStatic_fail_spacesRoot_argRoot_shouldThrowError = () => {
+    const lib = require('./index');
+
+    let getStatic, failed = true;
+    try {
+        getStatic = lib.static('  ');
+        failed = false;
+    } catch (e) {
+        log.info("Ok - errorMessage as expected: " + e.message);
+    }
+    t.assertTrue(failed, "Should have failed");
+    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
+}
+exports.testStatic_fail_spacesRoot_argOption_shouldThrowError = () => {
+    const lib = require('./index');
+
+    let getStatic, failed = true;
+    try {
+        getStatic = lib.static({root: '  '});
+        failed = false;
+    } catch (e) {
+        log.info("Ok - errorMessage as expected: " + e.message);
+    }
+    t.assertTrue(failed, "Should have failed");
+    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
+}
+
+exports.testStatic_fail_illegalCharRoot_argRoot_shouldThrowError = () => {
+    const lib = require('./index');
+
+    let getStatic, failed = true;
+    try {
+        getStatic = lib.static('illegal:path');
+        failed = false;
+    } catch (e) {
+        log.info("Ok - errorMessage as expected: " + e.message);
+    }
+    t.assertTrue(failed, "Should have failed");
+    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
+}
+exports.testStatic_fail_illegalCharRoot_argOption_shouldThrowError = () => {
+    const lib = require('./index');
+
+    let getStatic, failed = true;
+    try {
+        getStatic = lib.static({root: 'illegal:path'});
+        failed = false;
+    } catch (e) {
+        log.info("Ok - errorMessage as expected: " + e.message);
+    }
+    t.assertTrue(failed, "Should have failed");
+    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
+}
+
+exports.testStatic_fail_illegalDoubleDotRoot_argRoot_shouldThrowError = () => {
+    const lib = require('./index');
+
+    let getStatic, failed = true;
+    try {
+        getStatic = lib.static('illegal/../path');
+        failed = false;
+    } catch (e) {
+        log.info("Ok - errorMessage as expected: " + e.message);
+    }
+    t.assertTrue(failed, "Should have failed");
+    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
+}
+exports.testStatic_fail_illegalDoubleDotRoot_argOption_shouldThrowError = () => {
+    const lib = require('./index');
+
+    let getStatic, failed = true;
+    try {
+        getStatic = lib.static({root: 'illegal/../path'});
+        failed = false;
+    } catch (e) {
+        log.info("Ok - errorMessage as expected: " + e.message);
+    }
+    t.assertTrue(failed, "Should have failed");
+    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
+}
+
+exports.testStatic_fail_illegalSlashRoot_argRoot_shouldThrowError = () => {
+    const lib = require('./index');
+
+    let getStatic, failed = true;
+    try {
+        getStatic = lib.static('/');
+        failed = false;
+    } catch (e) {
+        log.info("Ok - errorMessage as expected: " + e.message);
+    }
+    t.assertTrue(failed, "Should have failed");
+    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
+}
+exports.testStatic_fail_illegalSlashRoot_argOption_shouldThrowError = () => {
+    const lib = require('./index');
+
+    let getStatic, failed = true;
+    try {
+        getStatic = lib.static({root: '/'});
+        failed = false;
+    } catch (e) {
+        log.info("Ok - errorMessage as expected: " + e.message);
+    }
+    t.assertTrue(failed, "Should have failed");
+    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
+}
+
+exports.testStatic_fail_illegalTypeRoot_argRoot_shouldThrowError = () => {
+    const lib = require('./index');
+
+    let getStatic, failed = true;
+    try {
+        getStatic = lib.static(42);
+        failed = false;
+    } catch (e) {
+        log.info("Ok - errorMessage as expected: " + e.message);
+    }
+    t.assertTrue(failed, "Should have failed");
+    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
+}
+exports.testStatic_fail_illegalTypeRoot_argOption_shouldThrowError = () => {
+    const lib = require('./index');
+
+    let getStatic, failed = true;
+    try {
+        getStatic = lib.static({root: 42});
+        failed = false;
+    } catch (e) {
+        log.info("Ok - errorMessage as expected: " + e.message);
+    }
+    t.assertTrue(failed, "Should have failed");
+    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
+}
+
+exports.testStatic_fail_illegalArrayRoot_argRoot_shouldThrowError = () => {
+    const lib = require('./index');
+
+    let getStatic, failed = true;
+    try {
+        getStatic = lib.static(["this", "is", "no", "good"]);
+        failed = false;
+    } catch (e) {
+        log.info("Ok - errorMessage as expected: " + e.message);
+    }
+    t.assertTrue(failed, "Should have failed");
+    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
+}
+exports.testStatic_fail_illegalZeroRoot_argOption_shouldThrowError = () => {
+    const lib = require('./index');
+
+    let getStatic, failed = true;
+    try {
+        getStatic = lib.static({root: 0});
+        failed = false;
+    } catch (e) {
+        log.info("Ok - errorMessage as expected: " + e.message);
+    }
+    t.assertTrue(failed, "Should have failed");
+    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
+}
 
 
+exports.testStatic_fail_optionParsingError_arg2_shouldThrowError = () => {
+    const lib = require('./index');
+
+    let getStatic, failed = true;
+    try {
+        getStatic = lib.static('assets', {etag: ["not", "valid"]});
+        failed = false;
+    } catch (e) {
+        log.info("Ok - errorMessage as expected: " + e.message);
+    }
+    t.assertTrue(failed, "Should have failed");
+    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
+}
+exports.testStatic_fail_optionParsingError_arg2_shouldThrowErrorEvenWithThrowErrorsFalse = () => {
+    const lib = require('./index');
+
+    let getStatic, failed = true;
+    try {
+        getStatic = lib.static('assets', {etag: ["not", "valid"], throwErrors: false});
+        failed = false;
+    } catch (e) {
+        log.info("Ok - errorMessage as expected: " + e.message);
+    }
+    t.assertTrue(failed, "Should have failed");
+    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
+}
+exports.testStatic_fail_optionParsingError_arg1_shouldThrowError = () => {
+    const lib = require('./index');
+
+    let getStatic, failed = true;
+    try {
+        getStatic = lib.static({root: 'assets', etag: ["not", "valid"]});
+        failed = false;
+    } catch (e) {
+        log.info("Ok - errorMessage as expected: " + e.message);
+    }
+    t.assertTrue(failed, "Should have failed");
+    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
+}
+exports.testStatic_fail_optionParsingError_arg1_shouldThrowErrorEvenWithThrowErrorsFalse = () => {
+    const lib = require('./index');
+
+    let getStatic, failed = true;
+    try {
+        getStatic = lib.static({root: 'assets', etag: ["not", "valid"], throwErrors: false});
+        failed = false;
+    } catch (e) {
+        log.info("Ok - errorMessage as expected: " + e.message);
+    }
+    t.assertTrue(failed, "Should have failed");
+    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
+}
+
+
+
+/*
+exports.testGet_innerbehavior_removesLeadingPathSlashesFromPathBeforeGetPathError = () => {
+    const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestGet_innerbehavior_removesLeadingPathSlashesFromPathBeforeGetPathError:\n");
+
+    doMocks({
+            options: {
+                path: '/my/path',    // With leading slash
+            },
+
+        },
+        verbose);
+    const lib = require('./index');
+
+    let getPathErrorWasCalled = false;
+    lib.__getPathError__ = (path) => {
+        t.assertEquals('my/path', path);  // getPathError should always be called without leading slash in path
+        getPathErrorWasCalled = true;
+    }
+
+    lib.get('mocking/replaces/this');
+
+    t.assertTrue(getPathErrorWasCalled, "getPathErrorWasCalled");
+}
+*/
+
+/*
 // Path string argument
 
 exports.testGet_path_string_FullDefaultResponse = () => {
@@ -828,331 +1197,8 @@ exports.testGet_cacheControlFunc_throwErrors_shouldThrowError = () => {
 
     t.assertTrue(failed, "failed");
     t.assertEquals(undefined, result, "result");
-                                                                                                                        if (verbose) log.info("OK.");
+    log.info("OK.");
 }
-/*
-
-exports.testGet_fail_optionParsingError_throwErrors = () => {
-    const lib = require('./index');
-
-    let result = null,
-        failed = true;
-    try {
-        result = lib.get('/assets/asset-test-target.txt', {
-            etag: 0,
-            throwErrors: true
-        });
-        failed = false;
-    } catch (e) {
-        log.info("OK: " + e.message);
-    }
-
-    t.assertTrue(failed, "Should have failed. Instead, got a result: " + JSON.stringify(result));
-}
-
-exports.testGet_fail_contentTypeFunc_runtimeError_throwErrors = () => {
-    const lib = require('./index');
-
-    let result = null,
-        failed = true;
-    try {
-        result = lib.get('/assets/asset-test-target.txt', {
-            contentType: () => {
-                throw Error("This will be thrown outside of parsePathAndFunctions. Should still be handled.");
-            },
-            throwErrors: true
-        });
-
-        failed = false;
-
-    } catch (e) {
-        log.info("OK: " + e.message);
-    }
-
-    t.assertTrue(failed, "Should have failed. Instead, got a result: " + JSON.stringify(result));
-}
-
-exports.testGet_fail_cacheControlFunc_runtimeError_throwErrors = () => {
-    const lib = require('./index');
-
-    let result = null,
-        failed = true;
-    try {
-        result = lib.get('/assets/asset-test-target.txt', {
-            cacheControl: () => {
-                throw Error("This will be thrown outside of parsePathAndFunctions. Should still be handled.");
-            },
-            throwErrors: true
-        });
-
-        failed = false;
-
-    } catch (e) {
-        log.info("OK: " + e.message);
-    }
-
-    t.assertTrue(failed, "Should have failed. Instead, got a result: " + JSON.stringify(result));
-}
-
-/* export index.es6.resolvePath to test:
-exports.testResolvePath = () => {
-    t.assertEquals("", lib.resolvePath("/"));
-    t.assertEquals("..", lib.resolvePath("/.."));
-    t.assertEquals("..", lib.resolvePath("../"));
-    t.assertEquals("", lib.resolvePath("////////"));
-    t.assertEquals("", lib.resolvePath("begone/.."));
-    t.assertEquals("will/be/lost/in/time", lib.resolvePath("all/../those/../moments/../will/be/lost/in/time"));
-    t.assertEquals("will/be/lost/in/time", lib.resolvePath("will/be/lost/in/time/like/../tears/../in/../rain/.."));
-    t.assertEquals("will/be/lost/in/time", lib.resolvePath("all/those/moments/../../../will/be/lost/in/time"));
-    t.assertEquals("will/be/lost/in/time", lib.resolvePath("will/be/lost/in/time/like/../tears/in/rain/../../.."));
-    t.assertEquals("will/be/lost/in/time", lib.resolvePath("will/be/lost/in/time/like/../tears/in/rain/../../../"));
-    t.assertEquals("../will/be/lost/in/time", lib.resolvePath("../all/../those/../moments/../will/be/lost/in/time"));
-    t.assertEquals("../will/be/lost/in/time", lib.resolvePath("../will/be/lost/in/time/like/../tears/../in/../rain/.."));
-    t.assertEquals("will/be/lost/in/time", lib.resolvePath("will/be/lost/../in/time/"))
-}
- */
-
-
-
-
-
-
-exports.testGet_innerbehaviour_getPathError_stringArg_isCalled = () => {
-    const verbose = true;
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_innerbehaviour_getPathError_stringArg_isCalled:\n");
-    doMocks({
-        },
-        verbose);
-    const lib = require('./index');
-
-    let target = undefined;
-
-    // Mock an inner function to verify it's called with the path param
-    lib.__getPathError__ = (path) => {
-        target = path;
-    }
-
-    const result = lib.get("my/unique/testing/path");
-
-    t.assertEquals(target, "my/unique/testing/path");
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
-
-}
-
-
-exports.testGet_innerbehaviour_getPathError_optionArg_isCalled = () => {
-    const verbose = true;
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_innerbehaviour_getPathError_optionArg_isCalled:\n");
-    doMocks({
-        },
-        verbose);
-    const lib = require('./index');
-
-    let target = undefined;
-
-    // Mock an inner function to verify it's called with the path param
-    lib.__getPathError__ = (path) => {
-        target = path;
-    }
-
-    const result = lib.get({path: "another/unique/testing/path"});
-
-    t.assertEquals(target, "another/unique/testing/path");
-    if (verbose) log.info(prettify(result, "result"));
-
-}
-
-
-exports.testGet_innerbehaviour_getPathError_isUsed = () => {
-    const verbose = true;
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_innerbehaviour_getPathError_isUsed:\n");
-    const lib = require('./index');
-    t.assertTrue(false, "Not implemented")
-
-}
-
-/*
-exports.testGetPathError_valid_shouldReturnUndefined = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_valid_shouldReturnUndefined:\n");
-    const lib = require('./index');
-
-    t.assertEquals(undefined, lib.__getPathError__('hey'));
-    t.assertEquals(undefined, lib.__getPathError__('æøå'));
-    t.assertEquals(undefined, lib.__getPathError__('foo/bar'));
-    t.assertEquals(undefined, lib.__getPathError__('/slash/start'));
-    t.assertEquals(undefined, lib.__getPathError__('slash/end/'));
-}
-
-exports.testGetPathError_empty_shouldReturnNonEmptyErrorMessage = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_empty_shouldReturnNonEmptyErrorMessage:\n");
-    const lib = require('./index');
-
-    const errorMessage = lib.__getPathError__('');
-    t.assertEquals('string', typeof errorMessage);
-    t.assertNotEquals('', errorMessage.trim());
-                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
-}
-*/
-
-/* Probably no point in testing
-exports.testGetPathError_allSpaces_shouldPassSinceStringShouldBeTrimmedFirst = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_allSpaces_shouldPassSinceStringShouldBeTrimmedFirst:\n");
-    const lib = require('./index');
-
-    const errorMessage = lib.__getPathError__('   ');
-    t.assertEquals(undefined, errorMessage);
-                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
-}
-*/
-/*
-exports.testGetPathError_doubleDot_shouldReturnNonEmptyErrorMessage = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_doubleDot_shouldReturnNonEmptyErrorMessage:\n");
-    const lib = require('./index');
-
-    const errorMessage = lib.__getPathError__('foo/../bar');
-    t.assertEquals('string', typeof errorMessage);
-    t.assertNotEquals('', errorMessage.trim());
-
-    t.assertNotEquals('', lib.__getPathError__('../foo/bar').trim());
-    t.assertNotEquals('', lib.__getPathError__('foo/bar/..').trim());
-                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
-}
-
-exports.testGetPathError_asterisk_shouldReturnNonEmptyErrorMessage = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_asterisk_shouldReturnNonEmptyErrorMessage:\n");
-    const lib = require('./index');
-
-    const errorMessage = lib.__getPathError__('foo/*bar');
-    t.assertEquals('string', typeof errorMessage);
-    t.assertNotEquals('', errorMessage.trim());
-
-    t.assertNotEquals('', lib.__getPathError__('f*oo/bar').trim());
-    t.assertNotEquals('', lib.__getPathError__('foo/*.bar').trim());
-                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
-}
-
-exports.testGetPathError_questionmark_shouldReturnNonEmptyErrorMessage = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_questionmark_shouldReturnNonEmptyErrorMessage:\n");
-    const lib = require('./index');
-
-    const errorMessage = lib.__getPathError__('foo/?bar');
-    t.assertEquals('string', typeof errorMessage);
-    t.assertNotEquals('', errorMessage.trim());
-
-    t.assertNotEquals('', lib.__getPathError__('?/foo/bar').trim());
-    t.assertNotEquals('', lib.__getPathError__('foo/?.bar').trim());
-                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
-}
-
-exports.testGetPathError_backslash_shouldReturnNonEmptyErrorMessage = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_backslash_shouldReturnNonEmptyErrorMessage:\n");
-    const lib = require('./index');
-
-    const errorMessage = lib.__getPathError__('foo/\\bar');
-    t.assertEquals('string', typeof errorMessage);
-    t.assertNotEquals('', errorMessage.trim());
-
-    t.assertNotEquals('', lib.__getPathError__('\\/foo/bar').trim());
-    t.assertNotEquals('', lib.__getPathError__('foo\\bar').trim());
-                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
-}
-
-exports.testGetPathError_quote_shouldReturnNonEmptyErrorMessage = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_quote_shouldReturnNonEmptyErrorMessage:\n");
-    const lib = require('./index');
-
-    const errorMessage = lib.__getPathError__("foo/'bar");
-    t.assertEquals('string', typeof errorMessage);
-    t.assertNotEquals('', errorMessage.trim());
-
-    t.assertNotEquals('', lib.__getPathError__("'foobar").trim());
-    t.assertNotEquals('', lib.__getPathError__("foobar'").trim());
-    t.assertNotEquals('', lib.__getPathError__("'foobar'").trim());
-                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
-}
-
-exports.testGetPathError_doublequote_shouldReturnNonEmptyErrorMessage = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_doublequote_shouldReturnNonEmptyErrorMessage:\n");
-    const lib = require('./index');
-
-    const errorMessage = lib.__getPathError__('foo/"bar');
-    t.assertEquals('string', typeof errorMessage);
-    t.assertNotEquals('', errorMessage.trim());
-
-    t.assertNotEquals('', lib.__getPathError__('"foobar').trim());
-    t.assertNotEquals('', lib.__getPathError__('foobar"').trim());
-    t.assertNotEquals('', lib.__getPathError__('"foobar"').trim());
-                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
-}
-
-exports.testGetPathError_tick_shouldReturnNonEmptyErrorMessage = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_tick_shouldReturnNonEmptyErrorMessage:\n");
-    const lib = require('./index');
-
-    const errorMessage = lib.__getPathError__('foo´bar');
-    t.assertEquals('string', typeof errorMessage);
-    t.assertNotEquals('', errorMessage.trim());
-
-    t.assertNotEquals('', lib.__getPathError__('´foobar').trim());
-    t.assertNotEquals('', lib.__getPathError__('foobar´').trim());
-    t.assertNotEquals('', lib.__getPathError__('´foobar´').trim());
-                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
-}
-
-exports.testGetPathError_backtick_shouldReturnNonEmptyErrorMessage = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_backtick_shouldReturnNonEmptyErrorMessage:\n");
-    const lib = require('./index');
-
-    const errorMessage = lib.__getPathError__('foo`bar');
-    t.assertEquals('string', typeof errorMessage);
-    t.assertNotEquals('', errorMessage.trim());
-
-    t.assertNotEquals('', lib.__getPathError__('`foobar').trim());
-    t.assertNotEquals('', lib.__getPathError__('foobar`').trim());
-    t.assertNotEquals('', lib.__getPathError__('`foobar`').trim());
-                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
-}
-
-exports.testGetPathError_lesserthan_shouldReturnNonEmptyErrorMessage = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_lesserthan_shouldReturnNonEmptyErrorMessage:\n");
-    const lib = require('./index');
-
-    const errorMessage = lib.__getPathError__('foo<bar');
-    t.assertEquals('string', typeof errorMessage);
-    t.assertNotEquals('', errorMessage.trim());
-
-    t.assertNotEquals('', lib.__getPathError__('<foobar').trim());
-    t.assertNotEquals('', lib.__getPathError__('foobar<').trim());
-                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
-}
-
-exports.testGetPathError_greaterthan_shouldReturnNonEmptyErrorMessage = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_greaterthan_shouldReturnNonEmptyErrorMessage:\n");
-    const lib = require('./index');
-
-    const errorMessage = lib.__getPathError__('foo>bar');
-    t.assertEquals('string', typeof errorMessage);
-    t.assertNotEquals('', errorMessage.trim());
-
-    t.assertNotEquals('', lib.__getPathError__('>foobar').trim());
-    t.assertNotEquals('', lib.__getPathError__('foobar>').trim());
-                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
-}
-
-exports.testGetPathError_colon_shouldReturnNonEmptyErrorMessage = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGetPathError_colon_shouldReturnNonEmptyErrorMessage:\n");
-    const lib = require('./index');
-
-    const errorMessage = lib.__getPathError__('foo:bar');
-    t.assertEquals('string', typeof errorMessage);
-    t.assertNotEquals('', errorMessage.trim());
-
-    t.assertNotEquals('', lib.__getPathError__(':foobar').trim());
-    t.assertNotEquals('', lib.__getPathError__('foobar:').trim());
-                                                                                                                        if (verbose) log.info("OK: " + errorMessage);
-}
-
-*/
 
 
 
@@ -1163,291 +1209,6 @@ exports.testGetPathError_colon_shouldReturnNonEmptyErrorMessage = () => {
 //////////////////////////////////////////////////////////////////////  TEST .static
 
 /*
-exports.testStatic_fail_missingRoot_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static();
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-
-exports.testStatic_fail_missingRoot_shouldThrowErrorEvenOnFalseThrowerrorsOption = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static({throwErrors: false});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-
-exports.testStatic_fail_emptyRoot_argRoot_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static('');
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-
-exports.testStatic_fail_emptyRoot_argOption_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static({root: ''});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-
-exports.testStatic_fail_emptyRoot_argOption_shouldThrowErrorEvenOnFalseThrowerrorsOption = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static({root: '', throwErrors: false});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-
-exports.testStatic_fail_spacesRoot_argRoot_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static('  ');
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-exports.testStatic_fail_spacesRoot_argOption_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static({root: '  '});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-
-exports.testStatic_fail_illegalCharRoot_argRoot_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static('illegal:path');
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-exports.testStatic_fail_illegalCharRoot_argOption_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static({root: 'illegal:path'});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-
-exports.testStatic_fail_illegalDoubleDotRoot_argRoot_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static('illegal/../path');
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-exports.testStatic_fail_illegalDoubleDotRoot_argOption_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static({root: 'illegal/../path'});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-
-exports.testStatic_fail_illegalSlashRoot_argRoot_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static('/');
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-exports.testStatic_fail_illegalSlashRoot_argOption_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static({root: '/'});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-
-exports.testStatic_fail_illegalTypeRoot_argRoot_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static(42);
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-exports.testStatic_fail_illegalTypeRoot_argOption_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static({root: 42});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-
-exports.testStatic_fail_illegalArrayRoot_argRoot_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static(["this", "is", "no", "good"]);
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-exports.testStatic_fail_illegalZeroRoot_argOption_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static({root: 0});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-
-
-exports.testStatic_fail_optionParsingError_arg2_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static('assets', {etag: ["not", "valid"]});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-exports.testStatic_fail_optionParsingError_arg2_shouldThrowErrorEvenWithThrowErrorsFalse = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static('assets', {etag: ["not", "valid"], throwErrors: false});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-exports.testStatic_fail_optionParsingError_arg1_shouldThrowError = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static({root: 'assets', etag: ["not", "valid"]});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
-exports.testStatic_fail_optionParsingError_arg1_shouldThrowErrorEvenWithThrowErrorsFalse = () => {
-    const lib = require('./index');
-
-    let getStatic, failed = true;
-    try {
-        getStatic = lib.static({root: 'assets', etag: ["not", "valid"], throwErrors: false});
-        failed = false;
-    } catch (e) {
-        log.info("Ok - errorMessage as expected: " + e.message);
-    }
-    t.assertTrue(failed, "Should have failed");
-    t.assertTrue(!getStatic, "Should not have produced a getStatic function");
-}
 
 
 //////////////////////////////////////////////////////////////////////////////////  Test the returned getStatic func

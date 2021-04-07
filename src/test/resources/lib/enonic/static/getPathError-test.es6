@@ -245,7 +245,6 @@ const verbose = false;
 
 //////////////////////////////////////////////////////////////////  TEST .get
 
-
 exports.testGet_innerbehavior_removesLeadingPathSlashesFromPathBefore__GetPathError__ = () => {
                                                                                                                         if (verbose) log.info("\n\n\ntestGet_innerbehavior_removesLeadingPathSlashesFromPathBefore__GetPathError__:\n");
     doMocks({}, verbose);
@@ -327,6 +326,101 @@ exports.testGet_innerbehaviour_getPathError_isUsed = () => {
     t.assertEquals(400, result.status, "result.status");
     log.info("OK")
 }
+
+
+
+
+
+//////////////////////////////////////////////////////////////////  TEST .static
+
+exports.testStatic_innerbehavior_removesLeadingPathSlashesFromPathBefore__GetPathError__ = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestStatic_innerbehavior_removesLeadingPathSlashesFromPathBefore__GetPathError__:\n");
+    doMocks({}, verbose);
+    const lib = require('./index');
+
+    let getPathErrorWasCalled = false;
+    lib.__getPathError__ = (path) => {
+        t.assertEquals('my/path', path);  // getPathError should always be called without leading slash in path
+        getPathErrorWasCalled = true;
+    }
+
+    lib.static('/my/path');
+
+    t.assertTrue(getPathErrorWasCalled, "getPathErrorWasCalled");
+}
+
+
+
+exports.testStatic_innerbehaviour_getPathError_stringArg_isCalled = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestStatic_innerbehaviour_getPathError_stringArg_isCalled:\n");
+    doMocks({
+        },
+        verbose);
+    const lib = require('./index');
+
+    let target = undefined;
+
+    // Mock an inner function to verify it's called with the path param
+    lib.__getPathError__ = (path) => {
+        target = path;
+    }
+
+    lib.static("my/unique/testing/path");
+
+    t.assertEquals("my/unique/testing/path", target);
+}
+
+
+exports.testStatic_innerbehaviour_getPathError_optionArg_isCalled = () => {
+    const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestStatic_innerbehaviour_getPathError_optionArg_isCalled:\n");
+    doMocks({
+        },
+        verbose);
+    const lib = require('./index');
+
+    let target = undefined;
+
+    // Mock an inner function to verify it's called with the path param
+    lib.__getPathError__ = (path) => {
+        target = path;
+    }
+
+    lib.static({root: "another/unique/testing/path"});
+
+    t.assertEquals("another/unique/testing/path", target);
+
+}
+
+
+exports.testStatic_innerbehaviour_getPathError_isUsed = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestStatic_innerbehaviour_getPathError_isUsed:\n");
+
+    doMocks({
+        },
+        verbose);
+    const lib = require('./index');
+
+    // Mock an inner function to verify it's called with the path param
+    lib.__getPathError__ = () => {
+        return "This was a path error thrown on purpose";
+    }
+
+    let failed = true;
+    try {
+        lib.static({path: "yet/another/unique/testing/path"});
+        failed = false;
+    } catch (e) {
+                                                                                                                        if (verbose) log.error(e);
+    }
+
+    t.assertTrue(failed, "getPathError should have caused .static to fail");
+    log.info("OK");
+}
+
+
+
+/////////////////////////////////////////////////////////  TEST .getPathError
 
 
 /*
