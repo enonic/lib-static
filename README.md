@@ -131,7 +131,7 @@ exports.get = function(request) {
 }
 ```
 
-👉 [`.static` API reference](#api-static)
+👉 [.static API reference](#api-static)
 
 <a name="example-service-urls"></a>
 #### Resource path and URL
