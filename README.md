@@ -356,7 +356,7 @@ libRouter.get( `/`, function (request) {
 <a name="example-content"></a>
 ### Custom content type handling
 
-Lib-static detects [MIME-type](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types) automatically - unless you use the `contentType` [option](#example-options) to override it. Either way, the result is a string returned with the response object.
+By default, lib-static detects [MIME-type](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types) automatically. But you can use the `contentType` [option](#example-options) to override it. Either way, the result is a string returned with [the response object](#behavior).
 
 If set as the **boolean** `false`, the detection and handling is switched off and no `Content-Type` header is returned:
 ```javascript
