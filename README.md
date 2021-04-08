@@ -131,6 +131,8 @@ exports.get = function(request) {
 }
 ```
 
+👉 [`.static` API reference](#api-static)
+
 <a name="example-service-urls"></a>
 #### Resource path and URL
 If this was the entire content of _src/main/resources/services/servemyfolder/servemyfolder.js_ in an app with the app name/key `my.xp.app`, then XP would respond to GET requests at the URL `**/_/service/my.xp.app/servemyfolder` (where `**` is the domain or other prefix, depending on vhosts etc. Also, using `serviceUrl('servemyfolder')` from the [portal lib](https://developer.enonic.com/docs/xp/stable/api/lib-portal#serviceurl) is recommended).
@@ -229,7 +231,7 @@ libStatic.static('my/folder', {
 });
 ```
 
-👉 [Options API reference](#options).
+👉 [Options API reference](#options)
 
 <br />
 
@@ -286,6 +288,8 @@ exports.get = libStatic.static({
 ```
 
 ...etc.
+
+👉 [Options API reference](#options)
 
 <a name="example-webapp"></a>
 ### A webapp with lib-router
@@ -400,7 +404,7 @@ const getStatic = libStatic.static({
 });
 ```
 
-`contentType` details in the [API reference](#options).
+👉 [Options API reference](#options)
 
 <br/>
 
@@ -463,6 +467,7 @@ const getStatic = libStatic.static({
 });
 ```
 
+👉 [Options API reference](#options)
 
 <br/>
 
@@ -493,6 +498,7 @@ exports.get = function(req) {
 > 
 > This only applies to status-500-type runtime errors. Bad requests (status-400 etc) will return 400 and 404 responses as usual, even if `throwErrors: true` is set.
 
+👉 [Options API reference](#options)
 
 <br/>
 
@@ -509,9 +515,9 @@ Lib-static can be set up to respond with several instances in parallel, thereby 
 <a name="example-get"></a>
 ### Low-level: .get
 
-Lib-static exposes a second function [`.get`](#api-get), in addition to [`.static`](#api-static), for doing a direct resource fetch when the resource path is already known/resolved. The idea is to allow closer control with each call: implement your own logic and handling around it.
+Lib-static exposes a second function `.get` (in addition to `.static`) for doing a direct resource fetch when the resource path is already known/resolved. The idea is to allow closer control with each call: implement your own logic and handling around it.
 
-**For most scenarios though, you'll probably want to use `.static`.**
+> NOTE: For most scenarios though, you'll probably want to use [`.static`](#api-static).
 
 #### Similarities 
 - Just like the getter function returned by `.static`, `.get` also returns a [full response object](#behaviour) with status, body, content type and a generated ETag, and has error detection and corresponding responses (statuses 400, 404 and 500). 
@@ -575,6 +581,7 @@ It's also open to the same [options](#options) as `.static` - except for `getCle
     // ...
 ```
 
+👉 [.get API reference](#api-get)
 
 <br/>
 <br/>
@@ -615,7 +622,9 @@ The getter function (`getStatic`) takes the [XP request object](https://develope
 
 If `root` (either as a string argument or as an attribute in a `options` object) resolves to (or outside) the JAR root, contains `..` or any of the characters `: | < > ' " ´ * ?` or backslash or backtick, or is missing or empty, an error is thrown.
 
-Again, you need to call the returned getter function to actually get a response. See 👉 [Usage examples above](#example-service).
+Again, you need to call the returned getter function to actually get a response. 
+
+👉 [Usage examples](#example-service)
 
 <br/>
 
@@ -639,7 +648,7 @@ Three optional and equivalent syntaxes:
 
 If `path` (either as a string argument or as an attribute in a `options` object) resolves to (or outside) the JAR root, contains `..` or any of the characters `: | < > ' " ´ * ?` or backslash or backtick, or is missing or empty, an error is thrown.
 
-👉 [Usage examples above](#example-get).
+👉 [Usage examples](#example-get)
 
 
 <br/>
