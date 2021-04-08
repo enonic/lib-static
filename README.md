@@ -290,7 +290,7 @@ exports.get = libStatic.static({
 <a name="example-webapp"></a>
 ### A webapp with lib-router
 
-Combining this with [lib-router](https://developer.enonic.com/docs/router-library/master) can be an easy alternative to setting up separate services the way we did above. Just let the webapp itself use lib-router to detect sub-URI's and handle the resource serving too, all from the same controller: 
+Combining `.getCleanPath` with [lib-router](https://developer.enonic.com/docs/router-library/master) can be an easy alternative to setting up separate services the way we did above. Just let the webapp itself use lib-router to detect sub-URI's and handle the resource serving too, all from the same controller: 
 
 
 ```javascript
