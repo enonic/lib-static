@@ -13,9 +13,10 @@
   
 - [Usage examples](#examples)
     - [Simple service](#example-service)
-    - [Webapp and resource URLs](#example-urls)
+    - [Resource URLs](#example-urls)
     - [Options and syntax](#example-options)
     - [Path resolution on other endpoints](#example-path)
+    - [A webapp with lib-router](#example-webapp)
     - [Content-type handling](#example-content)
     - [Cache-Control headers](#example-cache)
     - [ETag switch](#example-etag)
@@ -172,11 +173,14 @@ exports.get = libStatic.static('my/folder');
 <br/>
 
 <a name="example-urls"></a>
-### Webapp and resource URLs
-Once a service (or a [different endpoint](#example-path)) has been set up like this, it can serve the resources as regular assets to the frontend. An [XP webapp](https://developer.enonic.com/docs/xp/stable/runtime/engines/webapp-engine) for example just needs to resolve the base URL. In the previous example we used a service, so we can just use `serviceUrl` here to call on the _servemyfolder_ service: 
+### Resource URLs
+Once a service (or a [different endpoint](#example-path)) has been set up like this, it can serve the resources as regular assets to the frontend. An [XP webapp](https://developer.enonic.com/docs/xp/stable/runtime/engines/webapp-engine) for example just needs to resolve the base URL. In the previous example we set up the the _servemyfolder_ service, so we can just use `serviceUrl` here to call on it from a webapp, for example: 
 
 ```javascript
-// src/main/resources/webapp/webapp.js
+// src/main/resources/webapp/webapp.js:
+
+const libPortal = require('/lib/xp/portal');
+
 exports.get = function(req) {
     const myFolderUrl = libPortal.serviceUrl({service: 'servemyfolder'});
     
@@ -283,12 +287,15 @@ exports.get = libStatic.static({
 
 ...etc.
 
-#### With lib-router in a webapp
+<a name="example-webapp"></a>
+### A webapp with lib-router
 
-Combining this with [lib-router](https://developer.enonic.com/docs/router-library/master) can be an easy alternative to setting up separate services - just let the webapp itself use lib-router to detect sub-URI's and handle the resource serving too, all from the same controller: 
+Combining this with [lib-router](https://developer.enonic.com/docs/router-library/master) can be an easy alternative to setting up separate services the way we did above. Just let the webapp itself use lib-router to detect sub-URI's and handle the resource serving too, all from the same controller: 
 
-_webapp.js:_
+
 ```javascript
+// src/main/resources/webapp/webapp.js:
+
 const libStatic = require('/lib/enonic/static');
 
 const libRouter = require('/lib/router')();
