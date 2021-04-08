@@ -596,7 +596,7 @@ Two controller functions are exposed.
 - The first, [static](#api-static), is a broad configure-once/catch-all approach that's based on the relative path in the request. This is the one you usually want.
 - The second, [get](#api-get), specifically gets an asset based on a path string and options for each particular call.
 
-👉 [Similarities and differences betwen `.static` and `.get`](#example-get)
+👉 [Similarities and differences](#example-get)
 
 
 <br />
