@@ -131,8 +131,6 @@ exports.get = function(request) {
 }
 ```
 
-👉 [.static API reference](#api-static)
-
 <a name="example-service-urls"></a>
 #### Resource path and URL
 If this was the entire content of _src/main/resources/services/servemyfolder/servemyfolder.js_ in an app with the app name/key `my.xp.app`, then XP would respond to GET requests at the URL `**/_/service/my.xp.app/servemyfolder` (where `**` is the domain or other prefix, depending on vhosts etc. Also, using `serviceUrl('servemyfolder')` from the [portal lib](https://developer.enonic.com/docs/xp/stable/api/lib-portal#serviceurl) is recommended).
@@ -171,6 +169,8 @@ Also, since `getStatic` is a function that takes a `request` argument, it's dire
 const libStatic = require('/lib/enonic/static');
 exports.get = libStatic.static('my/folder');
 ```
+
+👉 [.static API reference](#api-static)
 
 <br/>
 
