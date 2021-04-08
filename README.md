@@ -97,7 +97,7 @@ repositories {
 
 
 ### Import
-In any XP controller, import the library:
+In any [XP controller](https://developer.enonic.com/docs/xp/stable/framework/controllers), import the library:
 
 ```javascript
 const libStatic = require('/lib/enonic/static');
@@ -151,7 +151,7 @@ If _my/folder/some/subdir/some.file_ exists as a (readable) file, a full [XP res
 There will also be headers for Cache-Control, ETag and contentType. If the file doesn't exist (or other circumstances), other statuses are returned: `304`, `400`, `404` and `500`. And of course, `body` can be text or binary, depending on the file and type. See [Default behaviour](#behaviour) for details.
 
 #### Syntax variations
-Above, `'my/folder'` is provided to `libStatic.static` as a named `root` attribute in a parameters object. If you prefer a simpler syntax (and don't need additional [options](#options)), just use a string as a first-positional argument: 
+Above, `'my/folder'` is provided to `libStatic.static` as a named `root` attribute in a parameters object. If you prefer a simpler syntax (and don't need additional [options](#example-options)), just use a string as a first-positional argument: 
 
 ```javascript
 const getStatic = libStatic.static('my/folder');
