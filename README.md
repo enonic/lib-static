@@ -11,7 +11,7 @@
     - [Simple service](#example-service)
     - [Resource URLs](#example-urls)
     - [Options and syntax](#example-options)
-    - [Other endpoints and path resolution](#example-path)
+    - [Path resolution, other endpoints, getCleanPath](#example-path)
     - [Content-type handling](#example-content)
     - [Cache-Control headers](#example-cache)
     - [ETag switch](#example-etag)
@@ -99,11 +99,12 @@ const libStatic = require('/lib/enonic/static');
 
 One way to use lib-static is in an [XP service](https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service), and use it to fetch the resource and serve the entire response object to the front end.
 
-Say you have some resources under a folder _/my/folder_ in your app. Making a service serve these as resources to the frontend can be as simple as:
+Say you have some resources under a folder _/my/folder_ in your app. Making a service serve these as resources to the frontend can be as simple as importing lib-static, using `.static` to set up a getter function, and using the getter function when serving GET requests:
 
 ```javascript
 const libStatic = require('/lib/enonic/static');
 
+// .static sets up a new, reusable getter function: getStatic
 const getStatic = libStatic.static({
     root: 'my/folder',
 });
@@ -117,14 +118,12 @@ exports.get = function(request) {
 #### Resource path and URL
 If this was the entire content of _src/main/resources/services/servemyfolder/servemyfolder.js_ in an app with the app name/key `my.xp.app`, then XP would respond to GET requests at the URL `**/_/service/my.xp.app/servemyfolder` (where `**` is the domain or other prefix, depending on vhosts etc. Also, using `serviceUrl('servemyfolder')` from the [portal lib](https://developer.enonic.com/docs/xp/stable/api/lib-portal#serviceurl) is recommended).
 
-Calling `libStatic.static` returns a reusable function (`libStatic`) that takes `request` as argument. Lib-static [uses the request](#example-path) to resolve the resource path relative to the service's own URL. So when calling `**/_/service/my.xp.app/servemyfolder/some/subdir/some.file`, the resource path would be `some/subdir/some.file`. And since we initially used `root` to set up `getStatic` to look for resource files under the folder _my/folder_, it will look for _my/folder/some/subdir/some.file_. 
+Calling `libStatic.static` returns a reusable function (`libStatic`) that takes `request` as argument. Lib-static [uses the request](#example-path) to resolve the resource path relative to the service's own URL. So when calling `**/_/service/my.xp.app/servemyfolder/some/subdir/some.file`, the resource path would be `some/subdir/some.file`. And since we initially used `root` to set up `getStatic` to look for resource files under the folder _my/folder_, it will look for _my/folder/some/subdir/some.file_.
 
-> NOTE
-> 
-> That is, _/my/folder_ at the root of the built JAR for the app. In the XP project source code this would usually come from _/src/main/resources/my/folder_, but of course that can depend on varieties of the local build setup. 
+👉 See the [path resolution](#example-path) and [API reference](#api-static) below for more details.
 
 #### Output
-If _my/folder/some/subdir/some.file_ exists as a (readable) file, a full [XP response object](https://developer.enonic.com/docs/xp/stable/framework/http#http-response) is returned:
+If _my/folder/some/subdir/some.file_ exists as a (readable) file, a full [XP response object](https://developer.enonic.com/docs/xp/stable/framework/http#http-response) is returned. Most importantly:
 
 ```javascript
 { 
@@ -135,14 +134,14 @@ If _my/folder/some/subdir/some.file_ exists as a (readable) file, a full [XP res
 
 There will also be headers for Cache-Control, ETag and contentType. If the file doesn't exist (or other circumstances), other statuses are returned: `304`, `400`, `404` and `500`. And of course, `body` can be text or binary, depending on the file and type. See [Default behaviour](#behaviour) for details.
 
-#### Variations
+#### Syntax variations
 Above, `'my/folder'` is provided to `libStatic.static` as a named `root` attribute in a parameters object. If you prefer a simpler syntax (and don't need additional [options](#options)), just use a string as a first-positional argument: 
 
 ```javascript
 const getStatic = libStatic.static('my/folder');
 ```
 
-Also, since `getStatic` is a function that takes a `request` argument, it's directly interchangable with `exports.get`. So if you're into one-liners, **the entire service above could be**: 
+Also, since `getStatic` is a function that takes a `request` argument, it's directly interchangable with `exports.get`. So if you're really into one-liners, **the entire service above could be:** 
 
 ```javascript
 const libStatic = require('/lib/enonic/static');
@@ -180,13 +179,19 @@ exports.get = function(req) {
 
 <br/>
 
+> NOTE
+> 
+> It's recommended to use `.static` in an [XP service controller](https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service) like this. Here, routing is included and easy to handle: the endpoint's standard root path is already provided by XP in `request.contextPath`, and the asset path is automatically determined relative to that by simply subtracting `request.contextPath` from the beginning of `request.rawPath`. If you use `.static` in a context where the asset path (relative to `root`) can't be determined this way, you should add a [`getCleanPath` option parameter](#example-path).
+
+<br/>
+
 
 <a name="example-options"></a>
 ### Options and syntax
 
-In the following examples, note that the general behavior of the returned getter function from `libStatic.static` can be controlled with more [options](#options), in addition to the `root`.
+The behavior of the returned getter function from `.static` can be controlled with more [options](#options), in addition to the `root`.
 
-If you set `root` with a pure string as the first argument, add a second argument object for the options. If you use the named-parameter way to set `root`, the options must be in the same first-argument object - _never use two object parameters_. 
+If you set `root` with a pure string as the first argument, add a second argument object for the options. If you use the named-parameter way to set `root`, the options must be in the same first-argument object - in practice, just _never use two objects as parameters_. 
 
 These are valid and equivalent:
 ```javascript
@@ -204,12 +209,12 @@ libStatic.static('my/folder', {
 });
 ```
 
-Options [API reference](#options).
+👉 [Options API reference](#options).
 
 <br />
 
 <a name="example-path"></a>
-### Other endpoints and path resolution
+### Path resolution, other endpoints, getCleanPath
 
 Usually, the path to the resource file (relative to the root folder) is [determinied from the request](#example-service-urls). But this depends on several things: the request object must contain a `rawPath` and `contextPath` attribute to compare, and there must be some routing involved: the controller must be able to accept requests from sub-URIs. In [XP services](https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service) (and [XP webapps](https://developer.enonic.com/docs/xp/stable/runtime/engines/webapp-engine), but with caveats) this is supported out of the box, making it easiest to use a service to implement an endpoint.
 
@@ -222,10 +227,11 @@ Example from a request object:
 ```
 From this request, the relative resource path is resolved to _some/subdir/some.file_, expected to be found below the `root` folder set with `libStatic.static`.
 
+<a name="getCleanPath"></a>
 #### getCleanPath
 However, there can be cases where you need to customize the relative-asset-path resolution - for example, using an [XP controller mapping](https://developer.enonic.com/docs/xp/stable/cms/mappings) for setting up an endpoint that uses lib-static. 
 
-Send an [option](#example-options) function `getCleanPath` to `libStatic.static`. `getCleanPath` takes the `request` argument and returns a relative asset path. The rest is up to you:
+Send an [option](#example-options) function `getCleanPath` to `.static`. `getCleanPath` takes the `request` argument and returns a relative asset path. The rest is up to you:
 
 ```javascript
 exports.get = libStatic.static({
@@ -315,7 +321,7 @@ libRouter.get( `/`, function (request) {
 
 > NOTE
 > 
-> It seems tempting to let the links in the HTML (`${request.contextPath}/getResource/...`) just start with `getResource/`. That looks neater and simpler and could just let the browser append them as relative links, and resolve its requests to `<webappURL>/getResource/...`. 
+> It might seem tempting to just let the links in the HTML (`${request.contextPath}/getResource/...`) start with `getResource/`. That looks neater and simpler and could just let the browser append them as relative links, and resolve its requests to `<webappURL>/getResource/...` etc. 
 > 
 > However, in XP, the webapp will respond to both `<webappURL>` and `<webappURL>/` - note the trailing slash, which makes the relative link behave in two different ways, only one of which is right. And adding a `/` at the beginning, `/getResource/...`, is of course no solution either, just an absolute path from the domain root.
 > 
@@ -350,21 +356,22 @@ If set as an **object**, keys are file types (that is, the extensions of the req
 ```javascript
 const getStatic = libStatic.static({
     root: 'my/folder',
-    contentType: {json: "application/json", mp3: "audio/mpeg", TTF: "font/ttf"}
+    contentType: {
+        json: "application/json", 
+        mp3: "audio/mpeg", 
+        TTF: "font/ttf"
+    }
 });
 ```
-For any extension not found here, it will fall back to automatically detecting the type, so you can override only the ones you're interested in and leave the rest.
+For any extension not found in that object, it will fall back to automatically detecting the type, so you can override only the ones you're interested in and leave the rest.
 
 It can also be set as a **function**: `(path, resource) => mimeTypeString?` for fine-grained control: for each circumstance, return a specific mime-type string value, or `false` to leave the `contentType` out of the response, or `null` to fall back to lib-static's built-in detection:
 ```javascript
 const getStatic = libStatic.static({
-    root: 'my, folder',
+    root: 'my/folder',
     contentType: function(path, resource) {
-        if (path.endsWith('.untyped')) {
-            return false;
-        }
-        if (resource.getSize() > 10000000) {
-            return "media/myspoonistoobig";
+        if (path.endsWith('.myspoon') && resource.getSize() > 10000000) {
+            return "media/toobig";
         }
         return null;
     } 
@@ -400,7 +407,7 @@ It can also be set as a **function**: `(path, resource, mimeType) => cacheContro
 
 ```javascript
 const getStatic = libStatic.static({
-    root: 'my, folder',
+    root: 'my/folder',
     cacheControl: function(path, resource, mimeType) {
         if (path.startsWith('/uncached')) {
             return false;
@@ -416,22 +423,63 @@ const getStatic = libStatic.static({
 });
 ```
 
-`cacheControl` details in the [API reference](#options).
+👉 See the [options API reference](#options) below, and [handling mutable and immutable assets](#mutable-assets), for more details.
 
 <br/>
 
 <a name="example-etag"></a>
 ### ETag switch
 
+By [default](#behavior), an ETag is generated from the asset and sent along with the response as a header, in XP prod run mode. In XP dev mode, no ETag is generated. 
+
+This default behavior can be overridden with the `etag` option. If set to `true`, an ETag will always be generated, even in XP dev mode. If set to `false`, no ETag is generated, even in XP prod mode:
+
+```javascript
+const getStatic = libStatic.static({
+    root: 'my/folder',
+    etag: false
+});
+```
+
+
 <br/>
 
 <a name="example-errors"></a>
 ### Errors: throw instead of return
 
+By [default](#behavior), runtime errors during `.get` or during the returned getter function from `.static` will log the error message and return a 500-status response to the client.
+
+If you instead want to catch these errors and handle them yourself, set a `throwErrors: true` option:
+
+```javascript
+const getStatic = libStatic.static({
+    root: 'my/folder',
+    throwErrors: true
+});
+
+exports.get = function(req) {
+    try {
+        return getStatic(req);
+        
+    } catch (e) {
+        // handle the error...
+    }
+}
+```
+
+> NOTE
+> 
+> This only applies to status-500-type runtime errors. Bad requests (status-400 etc) will return 400 and 404 responses as usual, even if `throwErrors: true` is set.
+
+
 <br/>
 
 <a name="example-multi"></a>
 ### Multiple instances
+
+Lib-static can be set up to respond with several instances in parallel, thereby defining different rules for different files/folders/scenarios. 
+
+👉 [Usage example below](#separate-instances).
 
 <br/>
 
@@ -448,20 +496,90 @@ const getStatic = libStatic.static({
 <a name="example-get"></a>
 ### Low-level: .get
 
+Lib-static exposes a second function [`.get`](#api-get), in addition to [`.static`](#api-static), for doing a direct resource fetch when the resource path is already known/resolved. The idea is to allow closer control with each call: implement your own logic and handling around it.
+
+**For most scenarios though, you'll probably want to use `.static`.**
+
+#### Similarities 
+- Just like the getter function returned by `.static`, `.get` also returns a [full response object](#behaviour) with status, body, content type and a generated ETag, and has error detection and corresponding responses (statuses 400, 404 and 500). 
+- The [options](#options) are also mostly the same.
+
+#### Differences
+`.get` is different from `.static` in these ways: 
+- `.get` is intended for lower-level usage (wraps less functionality, but gives the opportunity for even more controlled usage). 
+- Only one call: whereas `.static` sets up a reusable getter function, `.get` _is_ the getter function.
+- No root folder is set up with `.get`. In every call, instead of the `request` argument, `.get` takes a full, absolute resource `path` (relative to JAR root) string. This allows _any valid path_ inside the JAR except the root `/` itself - including source code! **Be careful** how you resolve the `path` string in the controller to avoid security flaws, such as opening a service to reading _any file in the JAR_, etc.
+- Since `.get` doesn't resolve the resource path from the request, there's no `getCleanPath` override option here.
+- There is no check for matching ETag (`If-None-Match` header), and no functionality to return a body-less status 304. `.get` always tries to fetch the resource.
+
+
+#### Example
+
+An example service _getSingleStatic.es6_ that always returns a particular asset _/public/my-folder/another-asset.css_ from the JAR:
+
+.getSingleStatic.es6
+```javascript
+
+const libStatic = require('lib/enonic/static');    
+
+exports.get = (request) => { 
+    return libStatic.get('public/my-folder/another-asset.css');
+};
+```
+
+This is equivalent with using the `path` attribute:
+
+```javascript
+    // ... 
+
+    return libStatic.get({
+        path: 'public/my-folder/another-asset.css'
+    });
+
+    // ...
+```
+
+It's also open to the same [options](#options) as `.static` - except for `getCleanPath` which doesn't exist for `.get`:
+
+```javascript
+    // ...
+
+    return libStatic.get('public/my-folder/another-asset.css',
+        {
+            // ... options ...
+        }
+    );
+
+    // OR if you prefer:
+
+    return libStatic.get(
+        {
+            path: 'public/my-folder/another-asset.css',
+            // ... more options ...
+        }
+    );
+    
+    // ...
+```
 
 
 <br/>
 <br/>
 
 <a name="api"></a>
-## API
+## API reference
 
-The API consists of two controller functions. The first, [static](#api-static) is a broad configure-once/catch-all approach that's based on the relative path in the request. The second, [get](#api-get) specifically gets an asset based on a path string and options for each particular call.
+Two controller functions are exposed. 
+- The first, [static](#api-static), is a broad configure-once/catch-all approach that's based on the relative path in the request. This is the one you usually want.
+- The second, [get](#api-get), specifically gets an asset based on a path string and options for each particular call.
 
-<a name="api-static"></a>
+👉 [Similarities and differences betwen `.static` and `.get`](#example-get)
+
+
+<br /><a name="api-static"></a>
 ### .static
 
-Sets up and returns a resource-getter function.
+Sets up and returns a reusable resource-getter function.
 
 Can be used in three ways:
 
@@ -471,62 +589,28 @@ Can be used in three ways:
 
 `const getStatic = libStatic.static(optionsWithRoot);`
 
-The getter function `getStatic` takes the [XP request object](https://developer.enonic.com/docs/xp/stable/framework/http#http-request) as argument, determines the asset path from that, and returns a [response object](#behaviour) for the asset. In practice: any path after the controller's own access path is postfixed after the `root` - see below. If the asset path contains `..` in such a way that it points outside of `root`, an error will occur.
+The getter function (`getStatic`) takes the [XP request object](https://developer.enonic.com/docs/xp/stable/framework/http#http-request) as argument, determines the asset path from that, and returns a [response object](#behaviour) for the asset:
+
+`const response = getStatic(reques);`
 
 <a name="static-params"></a>
 #### Params:
 - `root` (string): path to a root folder where resources are found. This string points to a root folder in the built JAR.
-    - Note: _"a root folder in the built JAR"_ is accurate, but if you think JAR's can be a bit obscure here's an easier mental model: `root` points to a folder below and relative to the _build/resources/main_. This is where all assets are collected when building the JAR. And when running XP in [dev mode](https://developer.enonic.com/docs/enonic-cli/master/dev#start), it actually IS where assets are served from. Depending on specific build setups, you can also think of `root` as being relative to _src/main/resources/_. Cannot contain `..` or any of the characters `: | < > ' " ´ * ?` or backslash or backtick.
+    > NOTE: The phrase _"a root folder in the built JAR"_ is accurate, but if you think JAR's can be a bit obscure here's an easier mental model: `root` points to a folder below and relative to the _build/resources/main_. This is where all assets are collected when building the JAR. And when running XP in [dev mode](https://developer.enonic.com/docs/enonic-cli/master/dev#start), it actually IS where assets are served from. Depending on specific build setups, you can also think of `root` as being relative to _src/main/resources/_.
 - `options` (object): add an [options object](#options) after `path` to control behaviour for all responses from the returned getter function.
 - `optionsWithRoot` (object): same as above: an [options object](#options). But when used as the first and only argument, this object _must_ also include a `{ root: ..., }` attribute too - a root string same as above. This is simply for convenience if you prefer named parameters instead of a positional `root` argument. If both are supplied, the positional `root` argument is used.
 
-If `root` (either as a string argument or as an attribute in a `options` object) contains `..`, or is missing (or just an empty string), an error is thrown.
+If `root` (either as a string argument or as an attribute in a `options` object) resolves to (or outside) the JAR root, contains `..` or any of the characters `: | < > ' " ´ * ?` or backslash or backtick, or is missing or empty, an error is thrown.
 
-#### Example:
-
-_getAnyStatic.es6_ returns any asset under _/my-resources_ in the application JAR (or _build/resources/main/my-resources_ in XP dev mode).
-
-```
-// getAnyStatic.es6:
-
-const libStatic = require('lib/enonic/static');
-
-const options = { ...some options, or not... }
-const getStatic = libStatic.static('my-resources', options);     // <-- equivalent with 'root' attribute: libStatic.static({root: 'my-resources', ... other options etc... });
-
-exports.get = (request) => {
-    const response = getStatic(request);
-    return response;
-};
-```
-
-The path to the actual asset is determined by the URL path (`request.path`). This relative to the access URL of the controller itself. 
-
-NOTE: It's recommended to use `.static` in an [XP service controller](https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service). Here, routing is included and easy to handle: the endpoint's standard root path is already in `request.contextPath`, and the asset path is automatically determined relative to that. If you use `.static` in a context where the asset path (relative to `root`) can't be determined by simply subtracting `request.contextPath` from the beginning of `request.rawPath`, you should add a `getCleanPath` [option parameter](#options).
-
-Same example as above, but simplified and without options:
-```
-const libStatic = require('lib/enonic/static');
-exports.get = libStatic.static('my-resources');
-```
-
-Also worth knowing: the `body` in the returned response is the content, not as a string but a resource stream from [ioLib](https://developer.enonic.com/docs/xp/stable/api/lib-io) (see resource.getStream()). This works for both binary and non-binary files when used by browsers, but might be less straightforward when writing tests.
-
-
-
+Again, you need to call the returned getter function to actually get a response. See 👉 [Usage examples above](#example-service).
 
 <br/>
 
 <a name="api-get"></a>
 ### .get
-A specific-recource getter method, returns a [response object](#behaviour) for the asset that's named in the argument string. This is similar to the getter function made by [static](#api-static) above, but with two key differences:
+A specific-recource getter method, returns a [response object](#behaviour) for the particular asset that's named in the argument string. 
 
-- There's no general behaviour setup for all calls to it. There's no root folder setup, and `path` and `options` arguments apply only to each particular call.
-- the `path` argument is an asset-path string instead of a request object. 
-  
-Of course, you probably wouldn't normally hardcode a controller to return a particular asset like in the example below. The purpose here is closer control with each call: implement your own logic and send a resulting string to the argument.
-
-Like [static](#api-static), it be used in three ways:
+Three optional and equivalent syntaxes:
 
 `const response = libStatic.get(path);`
 
@@ -534,27 +618,15 @@ Like [static](#api-static), it be used in three ways:
 
 `const response = libStatic.get(optionsWithPath);`
 
-Worth knowing: the `body` in the returned response is the content, not as a string but a resource stream from [ioLib](https://developer.enonic.com/docs/xp/stable/api/lib-io) (see resource.getStream()). This works for both binary and non-binary files when used by browsers, but might be less straightforward when writing tests. 
 
 #### Params:
 - `path` (string): path and full file name to an asset file, relative to the JAR root (or relative to _build/resources/main_ in XP dev mode, see [the 'root' param explanation](#static-params) above. Cannot contain `..` or any of the characters `: | < > ' " ´ * ?` or backslash or backtick.
 - `options` (object, optional): add an [options object](#options) after `path` to control behaviour for this specific response.
 - `optionsWithPath` (object): same as above, an [options object](#options) but when used as the first and only argument, this object _must_ include a `{ path: ..., }` attribute too - a path string same as above. This is simply for convenience if you prefer named parameters instead of a positional `path` argument. If both are supplied, the positional `path` argument is used.
 
-#### Example:
+If `path` (either as a string argument or as an attribute in a `options` object) resolves to (or outside) the JAR root, contains `..` or any of the characters `: | < > ' " ´ * ?` or backslash or backtick, or is missing or empty, an error is thrown.
 
-Accessing _getSingleStatic.es6_ on some URL where it replies to a GET request, **specifically** returns _/public/my-folder/another-asset.css_ from the JAR (or _build/resources/main/public/my-folder/another-asset.css_ in dev mode):
-```
-// getSingleStatic.es6:
-
-const libStatic = require('lib/enonic/static');    
-
-exports.get = (request) => { 
-    return libStatic.get('public/my-folder/another-asset.css');  // <-- equivalent with 'path' attribute: libStatic.get({path: 'public/my-folder/another-asset.css', ... other options etc...});
-};
-```
-
-
+👉 [Usage examples above](#example-get).
 
 
 <br/>
@@ -562,17 +634,13 @@ exports.get = (request) => {
 
 <a name="behaviour"></a>
 ## Response: default behaviour
-Unless some of these aspects are overriden by an [options parameter](#options), the returned object from `.get` and `.static` is a standard [XP response object](https://developer.enonic.com/docs/xp/stable/framework/http#http-response) ready to be returned from an XP controller.
+Unless some of these aspects are overriden by an [options parameter](#options), the returned object (from both `.get` and the getter function created by `.static`) is a standard [XP response object](https://developer.enonic.com/docs/xp/stable/framework/http#http-response) ready to be returned from an XP controller.
 
-Response signature:
+**Response signature:**
 
 ```
 { status, body, contentType, headers }
 ```
-
-<a name="path"></a>
-### Path handling
-
 <a name="status"></a>
 ### status
 
@@ -581,7 +649,10 @@ Follows standard [HTTP error codes](https://en.wikipedia.org/wiki/List_of_HTTP_s
 <a name="body"></a>
 ### body
 
-Content of the requested asset, or an error message.
+Content of the requested asset, or an error message. 
+
+When returning a resource, this content is not a string but a **resource stream** from [ioLib](https://developer.enonic.com/docs/xp/stable/api/lib-io) (see resource.getStream). This works seamlessly for returning both binary and non-binary files in the response directly to browsers. But might be less straightforward when writing tests or otherwise intercepting the output.
+
 
 <a name="content-type"></a>
 ### contentType
@@ -600,7 +671,9 @@ Content of the requested asset, or an error message.
 }
 ```
 
-NOTE: mutable assets should not be served with this header! See [below](#mutable-headers).
+<br/>
+
+> NOTE: Mutable assets should not be served with this header! See [below](#mutable-headers).
 
 
 
@@ -672,7 +745,7 @@ In addition, you may supply a `path` or `root` param ([.get](#api-get) or [.stat
 
 <a name="mutable-headers"></a>
 ### Headers
-**Mutable assets should never be served wtih the default header** `'Cache-Control': 'public, max-age=31536000, immutable'`. That header basically aims to make a browser never contact the server again for that asset, until the URL changes (although caveats exist to this). If an asset is served with that immutable header and later changes content but keeps its name/path, everyone who's downloaded it before will have - and to a large extent _keep_ - an outdated version of the asset! 
+**Mutable assets should never be served wtih the default header** `'Cache-Control': 'public, max-age=31536000, immutable'`. That header basically aims to make a browser never contact the server again for that asset, until the URL changes (although caveats exist to this). If an asset is served with that `immutable` header and later changes content but keeps its name/path, everyone who's downloaded it before will have - and to a large extent _keep_ - an outdated version of the asset! 
 
 Mutable assets _can_ be handled by this library (since ETag support is in place by default), but they **should be given a different Cache-Control header**. This is up to you:
 
@@ -696,14 +769,19 @@ In this last case, if the content hasn't changed, a simple 304 status code is re
 
 <a name="mutable-implementation"></a>
 ### Implementation
-If you have mutable assets in your project, there are several ways you could implement the appropriate `Cache-Control` header with the lib-static library. For example:
+If you have mutable assets in your project, there are several ways you could implement the appropriate `Cache-Control` header with the lib-static library. Three approaches that can be combined or independent:
+
 1. **Fingerprint all your assets** so that that updated files get a new, uniquely _content-dependent filename_ - ensuring that are all actually immutable. 
-  - The most common way: set the build pipeline up so that the file name depends on the content. Webpack can fairly easily add a content hash to the file name, for example: _bundle.3a01c73e29.js_ etc. 
-  - Another (albeit less reliable) approach is to add version strings to file names, a timestamp etc. 
-2. Make your build separate between immutable (and fingerprinted) assets and mutable ones, in **two different directories**. Then you can set up asset serving separately. Immutable assets could use this library in the default ways. For the mutable assets...
-  - you can simply serve them from _/assets with [portal.assetUrl](https://developer.enonic.com/docs/xp/stable/api/lib-portal#asseturl),
-  - or you could serve mutable assets from any custom directory, with a _separate instance_ of lib-static:
-    ```
+    - The most common way: set the build pipeline up so that the file name depends on the content. Webpack can fairly easily add a content hash to the file name, for example: _staticAssets/bundle.3a01c73e29.js_ etc. This is a reliable form of fingerprinting, and with the added advantage that unchanged files will keep their path and name and hence keep the client-cache intact, even if the XP app is updated and versioned. The disadvantage: the file names are now dynamic (generated during the build) and harder to predict when writing calls from the code. Working around that is not the easiest, but one way is to export the resulting build stats from webpack and fetch file names at runtime, for example with [stats-webpack-plugin](https://www.npmjs.com/package/stats-webpack-plugin).
+    - Another approach is to add version strings to file names, a timestamp etc. 
+    - Or if you build assets to a subfolder named after the XP app's version, an XP controller can easily refer to them, e.g.: `"staticAssets/" + app.version + "/myFile.txt`. The disadvantage here: client-caching now depends on correct (and manual?) versioning. Every time the version is updated, all clients lose their cached assets, even unchanged ones. And worse, if a new version is deployed erroneously without changing the version string, assets may have changed without the path changing - leading to stale cache.   
+    
+<br /><a name="separate-instances"></a>
+    
+2. **Separate between mutable and immutable assets** in _two different directories_. Then you can set up asset serving separately. Immutable assets could use lib-static in the default ways. For the mutable assets...
+    - you can simply serve them from _/assets with [portal.assetUrl](https://developer.enonic.com/docs/xp/stable/api/lib-portal#asseturl),
+    - or you could serve mutable assets from any custom directory, with a _separate instance_ of lib-static. A combined example:
+    ```javascript
     const libStatic = require('lib/enonic/static');
     
     // Root: /immutable folder. Only immutable assets there, since they are served with immutable-optimized header by default!
@@ -720,7 +798,10 @@ If you have mutable assets in your project, there are several ways you could imp
         }
     );
     ```
-3. It's also possible to handle them differently from the same directory, if you know you can distinguish immutable files from mutable ones by some pattern, by using a **function** for the `cacheControl` option. For example, if only immutable files are fingerprinted by the pattern `someName.[base-16-hash].ext` and others are not:
+    
+<br />
+
+3. It's also possible to handle mutable vs immutable assets differently _from the same directory_, if you know you can distinguish immutable files from mutable ones by some pattern, by using a **function for the `cacheControl` option**. For example, if only immutable files are fingerprinted by the pattern `someName.[base-16-hash].ext` and others are not:
     ```
     const libStatic = require('lib/enonic/static');
   
