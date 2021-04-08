@@ -350,7 +350,6 @@ libRouter.get( `/`, function (request) {
 > 
 > Prefixing with `request.contextPath` solves it in this case. Your mileage may vary. 
 
-`getCleanPath` details in the [API reference](#options).
 
 <br/>
 
