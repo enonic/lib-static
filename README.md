@@ -4,9 +4,13 @@
 ## Contents
 - [Intro](#intro)
     - [Why use lib-static?](#why)
+    
+
 - [Getting started](#get-started)
     - [Install](#install)
     - [Import](#import)
+    
+  
 - [Usage examples](#examples)
     - [Simple service](#example-service)
     - [Resource URLs](#example-urls)
@@ -18,15 +22,30 @@
     - [Errors: throw instead of return](#example-errors)
     - [Multiple instances](#example-multi)
     - [Low-level: .get](#example-get)
+    
+
 - [API: functions](#api)
     - [static](#api-static)
     - [get](#api-get)
+    
+
 - [API: response and default behavior](#behaviour)
     - [status](#status)
     - [body](#body)
     - [contentType](#content-type)
     - [headers](#headers)
+        - [Cache-Control](#headers)
+        - [ETag](#headers)
+    
+
 - [API: options and overrides](#options)
+    - [cacheControl](#option-cachecontrol)
+    - [contentType](#option-contenttype)
+    - [etag](#option-etag)
+    - [getCleanPath](#option-getcleanpath)
+    - [throwErrors](#option-throwerrors)
+    
+
 - [Important: assets and mutability](#mutable-assets)
     - [Headers](#mutable-headers)
     - [Implementation tips](#mutable-implementation)
@@ -630,12 +649,12 @@ Unless some of these aspects are overriden by an [options parameter](#options), 
 { status, body, contentType, headers }
 ```
 <a name="status"></a>
-### status
+#### status
 
 Follows standard [HTTP error codes](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes), most often 200, 304 and 404. On errors (all codes above 400), see error message in `body`.
 
 <a name="body"></a>
-### body
+#### body
 
 Content of the requested asset, or an error message. 
 
@@ -643,12 +662,12 @@ When returning a resource, this content is not a string but a **resource stream*
 
 
 <a name="content-type"></a>
-### contentType
+#### contentType
 
 [MIME type](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types) string, after best-effort-automatically determining it from the requested asset. Will be `text/plain` on error messages.
 
 <a name="headers"></a>
-### headers
+#### headers
 
 **Default headers** optimized for immutable and [browser cached](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching#private_browser_caches) resources:
 
@@ -678,20 +697,33 @@ As described above, an options object can be added with optional attributes to *
 { cacheControl, contentType, etag, getCleanPath, throwErrors }
 ```
 
-### Params:
+<a name="option-cachecontrol"></a>
+#### cacheControl
 
 - `cacheControl` (boolean/string/function, optional): override the default header value (`'public, max-age=31536000, immutable'`) and return another `Cache-Control` header.
     - if set as a `false` boolean, no `Cache-Control` headers are sent. A `true` boolean is just ignored.
     - if set as a string, always use that value. An empty string will act as `false` and switch off cacheControl.
     - if set as a function: `(filePathAndName, resource, mimeType) => cacheControl`. For fine-grained control which can use resource path, resolved MIMEtype string, or file content if needed. _filePathAndName_ is the asset's file path and name (relative to the JAR root, or `build/resources/main/` in dev mode). File content is by resource object: _resource_ is the output from [ioLib getResource](https://developer.enonic.com/docs/xp/stable/api/lib-io#getresource), so your function should handle this if used. This function and the string it returns is meant to replace the default header handling, but here's a trick if needed: anytime the function returns `null`, lib-static's default Cache-Control header is used instead. The output _cacheControl_ string is used in response `headers: { 'Cache-Control': <cacheControl> }`
+
+<a name="option-contenttype"></a>
+#### contentType
+
 - `contentType` (string/boolean/object/function, optional): override the built-in MIME type handling.
     - if set as a boolean, switches MIME type handling on/off. `true` is basically ignored (keep using built-in type detection), `false` skips processing and removes the content-type header (same as an empty string)  
     - if set as a non-empty string, assets will not be processed to try and find the MIME content type. Instead this value will always be preselected and returned.
     - if set as an object, keys are file types (the extensions of the asset file names _after compilation_, case-insensitive and will ignore dots), and values are Content-Type strings - for example, `{"json": "application/json", ".mp3": "audio/mpeg", "TTF": "font/ttf"}`. For files with extensions that are not among the keys in the object, the handling will fall back to the built-in handling.
     - if set as a function: `(filePathAndName, resource) => contentType`. _filePathAndName_ is the asset file path and name (relative to the JAR root, or `build/resources/main/` in dev mode). File content is by resource object: _resource_ is the output from [ioLib getResource](https://developer.enonic.com/docs/xp/stable/api/lib-io#getresource), so your function should handle this if used. Same trick as for the _cacheControl_ function above: in cases where the function returns `null`, the processing falls back to the built-in contentType detection.
+
+<a name="option-etag"></a>
+#### etag
+
 - `etag` (boolean, optional): The default behavior of lib-static is to generate/handle ETag in prod, while skipping it entirely in dev mode.
     - Setting the etag parameter to `false` will turn **off** etag processing (runtime content processing, headers and handling) in **prod** too.
     - Setting it to `true` will turn it **on in dev mode** too.
+
+<a name="option-getcleanpath"></a>
+#### getCleanPath
+
 - `getCleanPath` (function, optional): Only used in [.static](#api-static). The default behavior of the returned `getStatic` function is to take a request object, and compare the beginning of the current requested path (`request.rawPath`) to the endpoint's own root path (`request.contextPath`) and get a relative asset path below `root` (so that later, prefixing the `root` value to that relative path will give the absolute full path to the resource in the JAR). In cases where this default behavior is not enough, you can override it by adding a `getCleanPath` param: `(request) => 'resource/path/below/root'`. Emphasis: the returned 'clean' path from this function should be _relative to the `root` folder_, not an absolute path in the JAR.
     - **For example:** if _getAnyStatic.es6_ is accessed with a [controller mapping](https://developer.enonic.com/docs/xp/stable/cms/mappings) at `https://someDomain.com/resources/public`, then that's an endpoint with the path `resources/public` - but that can't be determined from the request. So the automatic extraction of a relative path needs a `getCleanPath` override. Very simplified here:
     ```
@@ -706,21 +738,17 @@ As described above, an options object can be added with optional attributes to *
     );
     ```
     - Now, since `request.rawPath` doesn't include the protocol or domain, the URL `https://someDomain.com/resources/public/subfolder/target-resource.xml` will make `getCleanPath` return `/subfolder/target-resource.xml`, which together with `root` will look up the resource _/my-resources/subfolder/target-resource.xml_ in the JAR (a.k.a. _build/resources/main/my-resources/subfolder/target-resource.xml_ in dev mode).
+
+<a name="option-throwerrors"></a>
+#### throwErrors
+
 - `throwErrors` (boolean, default is `false`): by default, the `.get` method should not throw errors when used correctly. Instead, it internally server-logs (and hash-ID-tags) errors and automatically outputs a 500 error response. 
   - Setting `throwErrors` to `true` overrides this: the 500-response generation is skipped, and the error is re-thrown down to the calling context, to be handled there. 
   - This does not apply to 404-not-found type "errors", they will always generate a 404-response either way.
 
 
 
-
-
-
-
-In addition, you may supply a `path` or `root` param ([.get](#api-get) or [.static](#api-static), respectively). If a positional `path` or `root` argument is used and the options object is the second argument, then `path` or `root` parameters will be ignored in the options object.
-
-
-
-
+<br/>    
 <br/>
 <br/>
 
