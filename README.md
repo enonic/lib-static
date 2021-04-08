@@ -17,19 +17,16 @@
     - [ETag switch](#example-etag)
     - [Errors: throw instead of return](#example-errors)
     - [Multiple instances](#example-multi)
-    - [Versioned resources](#example-versioned)
-    - [Content-hashed resources](#example-hashed)
     - [Low-level: .get](#example-get)
-- [API](#api)
+- [API: functions](#api)
     - [static](#api-static)
     - [get](#api-get)
-- [Default behaviour and response](#behaviour)
-    - [path handling](#path)
+- [API: response and default behavior](#behaviour)
     - [status](#status)
     - [body](#body)
     - [contentType](#content-type)
     - [headers](#headers)
-- [Overrides: the options object](#options)
+- [API: options and overrides](#options)
 - [Important: assets and mutability](#mutable-assets)
     - [Headers](#mutable-headers)
     - [Implementation tips](#mutable-implementation)
@@ -52,7 +49,7 @@ Some relevant sources: [web.dev](https://web.dev/http-cache/), [facebook](https:
 ### Why use lib-static instead of portal.assetUrl?
 
 Enonic XP already comes with an [asset service](https://developer.enonic.com/docs/xp/stable/runtime/engines/asset-service), where you can just put resources in the _/assets_ root folder and use `portal.assetUrl(resourcePath)` to generate URLs from where to fetch them. Lib-static basically does the same thing, but allows you more control:
-- **Caching behaviour:** With `assetUrl`, you get a URL where the current installation/version of the app is baked in as a hash. It will change whenever the app is updated, forcing browsers to skip their locally cached resources and request new ones, even if the resource wasn't changed during the update. Using lib-static with [immutable assets](#mutable-assets) retains stable URLs and has sevral ways to adapt the header to direct browsers' caching behavior more effectively, even for mutable assets.
+- **Caching behaviour:** With `assetUrl`, you get a URL where the current installation/version of the app is baked in as a hash. It will change whenever the app is updated, forcing browsers to skip their locally cached resources and request new ones, even if the resource wasn't changed during the update. Using lib-static with [immutable assets](#mutable-assets) retains stable URLs and has several ways to adapt the header to direct browsers' caching behavior more effectively, even for mutable assets.
 - **Endpoint URLs:** make your resource endpoints anywhere, 
 - **Response headers**: override and control the MIME-type resolution, or the Cache-Control headers more specifically
 - **Control resource folders:** As long as the resources are built into the app JAR, resources can be served from anywhere - even with multiple lib-static instances at once: serve from multiple specific-purpose folders, or use multi-instances to specify multiple rules from the same folder. 
@@ -483,15 +480,6 @@ Lib-static can be set up to respond with several instances in parallel, thereby 
 
 <br/>
 
-<a name="example-versioned"></a>
-### Versioned resources
-
-<br/>
-
-<a name="example-hashed"></a>
-### Content-hashed resources
-
-<br/>
 
 <a name="example-get"></a>
 ### Low-level: .get
@@ -513,7 +501,7 @@ Lib-static exposes a second function [`.get`](#api-get), in addition to [`.stati
 - There is no check for matching ETag (`If-None-Match` header), and no functionality to return a body-less status 304. `.get` always tries to fetch the resource.
 
 
-#### Example
+#### Examples
 
 An example service _getSingleStatic.es6_ that always returns a particular asset _/public/my-folder/another-asset.css_ from the JAR:
 
@@ -567,7 +555,7 @@ It's also open to the same [options](#options) as `.static` - except for `getCle
 <br/>
 
 <a name="api"></a>
-## API reference
+## API: functions
 
 Two controller functions are exposed. 
 - The first, [static](#api-static), is a broad configure-once/catch-all approach that's based on the relative path in the request. This is the one you usually want.
@@ -633,7 +621,7 @@ If `path` (either as a string argument or as an attribute in a `options` object)
 <br/>
 
 <a name="behaviour"></a>
-## Response: default behaviour
+## API: response and default behaviour
 Unless some of these aspects are overriden by an [options parameter](#options), the returned object (from both `.get` and the getter function created by `.static`) is a standard [XP response object](https://developer.enonic.com/docs/xp/stable/framework/http#http-response) ready to be returned from an XP controller.
 
 **Response signature:**
@@ -682,9 +670,9 @@ When returning a resource, this content is not a string but a **resource stream*
 <br/>
 
 <a name="options"></a>
-## Overrides: the options object
+## API: options and overrides
 
-As described above, an object can be added with optional attributes to **override** the [default behaviour](#behaviour):
+As described above, an options object can be added with optional attributes to **override** the [default behaviour](#behaviour):
 
 ```
 { cacheControl, contentType, etag, getCleanPath, throwErrors }
