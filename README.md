@@ -13,9 +13,9 @@
   
 - [Usage examples](#examples)
     - [Simple service](#example-service)
-    - [Resource URLs](#example-urls)
+    - [Webapp and resource URLs](#example-urls)
     - [Options and syntax](#example-options)
-    - [Path resolution, other endpoints, getCleanPath](#example-path)
+    - [Path resolution on other endpoints](#example-path)
     - [Content-type handling](#example-content)
     - [Cache-Control headers](#example-cache)
     - [ETag switch](#example-etag)
@@ -136,7 +136,12 @@ If this was the entire content of _src/main/resources/services/servemyfolder/ser
 
 Calling `libStatic.static` returns a reusable function (`libStatic`) that takes `request` as argument. Lib-static [uses the request](#example-path) to resolve the resource path relative to the service's own URL. So when calling `**/_/service/my.xp.app/servemyfolder/some/subdir/some.file`, the resource path would be `some/subdir/some.file`. And since we initially used `root` to set up `getStatic` to look for resource files under the folder _my/folder_, it will look for _my/folder/some/subdir/some.file_.
 
-👉 See the [path resolution](#example-path) and [API reference](#api-static) below for more details.
+> NOTE
+>
+> It's recommended to use `.static` in an [XP service controller](https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service) like this. Here, routing is included and easy to handle: the endpoint's standard root path is already provided by XP in `request.contextPath`, and the asset path is automatically determined relative to that by simply subtracting `request.contextPath` from the beginning of `request.rawPath`. If you use `.static` in a context where the asset path (relative to `root`) can't be determined this way, you should add a [`getCleanPath` option parameter](#example-path).
+> 
+> 👉 See the [path resolution](#example-path) and [API reference](#api-static) below for more details.
+
 
 #### Output
 If _my/folder/some/subdir/some.file_ exists as a (readable) file, a full [XP response object](https://developer.enonic.com/docs/xp/stable/framework/http#http-response) is returned. Most importantly:
@@ -167,10 +172,11 @@ exports.get = libStatic.static('my/folder');
 <br/>
 
 <a name="example-urls"></a>
-### Resource URLs
-Once a service (or a [different endpoint](#example-path)) has been set up like this, it can serve the resources as regular assets to the frontend. An [XP webapp](https://developer.enonic.com/docs/xp/stable/runtime/engines/webapp-engine) for example just needs to resolve the base URL. In the previous example we used a service, so we can just use `serviceUrl` for that: 
+### Webapp and resource URLs
+Once a service (or a [different endpoint](#example-path)) has been set up like this, it can serve the resources as regular assets to the frontend. An [XP webapp](https://developer.enonic.com/docs/xp/stable/runtime/engines/webapp-engine) for example just needs to resolve the base URL. In the previous example we used a service, so we can just use `serviceUrl` here to call on the _servemyfolder_ service: 
 
 ```javascript
+// src/main/resources/webapp/webapp.js
 exports.get = function(req) {
     const myFolderUrl = libPortal.serviceUrl({service: 'servemyfolder'});
     
@@ -192,12 +198,6 @@ exports.get = function(req) {
     };
 };
 ```
-
-<br/>
-
-> NOTE
-> 
-> It's recommended to use `.static` in an [XP service controller](https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service) like this. Here, routing is included and easy to handle: the endpoint's standard root path is already provided by XP in `request.contextPath`, and the asset path is automatically determined relative to that by simply subtracting `request.contextPath` from the beginning of `request.rawPath`. If you use `.static` in a context where the asset path (relative to `root`) can't be determined this way, you should add a [`getCleanPath` option parameter](#example-path).
 
 <br/>
 
@@ -230,7 +230,7 @@ libStatic.static('my/folder', {
 <br />
 
 <a name="example-path"></a>
-### Path resolution, other endpoints, getCleanPath
+### Path resolution on other endpoints
 
 Usually, the path to the resource file (relative to the root folder) is [determinied from the request](#example-service-urls). But this depends on several things: the request object must contain a `rawPath` and `contextPath` attribute to compare, and there must be some routing involved: the controller must be able to accept requests from sub-URIs. In [XP services](https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service) (and [XP webapps](https://developer.enonic.com/docs/xp/stable/runtime/engines/webapp-engine), but with caveats) this is supported out of the box, making it easiest to use a service to implement an endpoint.
 
