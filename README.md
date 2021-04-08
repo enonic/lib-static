@@ -648,7 +648,7 @@ Three optional and equivalent syntaxes:
 
 #### Params:
 - `path` (string): path and full file name to an asset file, relative to the JAR root (or relative to _build/resources/main_ in XP dev mode, see [the 'root' param explanation](#static-params) above. Cannot contain `..` or any of the characters `: | < > ' " ´ * ?` or backslash or backtick.
-- `options` (object, optional): add an [options object](#options) after `path` to control behaviour for this specific response.
+- `options` (object): add an [options object](#options) after `path` to control behaviour for this specific response.
 - `optionsWithPath` (object): same as above, an [options object](#options) but when used as the first and only argument, this object _must_ include a `{ path: ..., }` attribute too - a path string same as above. This is simply for convenience if you prefer named parameters instead of a positional `path` argument. If both are supplied, the positional `path` argument is used.
 
 If `path` (either as a string argument or as an attribute in a `options` object) resolves to (or outside) the JAR root, contains `..` or any of the characters `: | < > ' " ´ * ?` or backslash or backtick, or is missing or empty, an error is thrown.
@@ -722,7 +722,7 @@ As described above, an options object can be added with optional attributes to *
 <a name="option-cachecontrol"></a>
 #### cacheControl
 
-- `cacheControl` (boolean/string/function, optional): override the default header value (`'public, max-age=31536000, immutable'`) and return another `Cache-Control` header.
+- `cacheControl` (boolean/string/function): override the default header value (`'public, max-age=31536000, immutable'`) and return another `Cache-Control` header.
     - if set as a `false` boolean, no `Cache-Control` headers are sent. A `true` boolean is just ignored.
     - if set as a string, always use that value. An empty string will act as `false` and switch off cacheControl.
     - if set as a function: `(filePathAndName, resource, mimeType) => cacheControl`. For fine-grained control which can use resource path, resolved MIMEtype string, or file content if needed. _filePathAndName_ is the asset's file path and name (relative to the JAR root, or `build/resources/main/` in dev mode). File content is by resource object: _resource_ is the output from [ioLib getResource](https://developer.enonic.com/docs/xp/stable/api/lib-io#getresource), so your function should handle this if used. This function and the string it returns is meant to replace the default header handling, but here's a trick if needed: anytime the function returns `null`, lib-static's default Cache-Control header is used instead. The output _cacheControl_ string is used in response `headers: { 'Cache-Control': <cacheControl> }`
@@ -730,7 +730,7 @@ As described above, an options object can be added with optional attributes to *
 <a name="option-contenttype"></a>
 #### contentType
 
-- `contentType` (string/boolean/object/function, optional): override the built-in MIME type handling.
+- `contentType` (string/boolean/object/function): override the built-in MIME type handling.
     - if set as a boolean, switches MIME type handling on/off. `true` is basically ignored (keep using built-in type detection), `false` skips processing and removes the content-type header (same as an empty string)  
     - if set as a non-empty string, assets will not be processed to try and find the MIME content type. Instead this value will always be preselected and returned.
     - if set as an object, keys are file types (the extensions of the asset file names _after compilation_, case-insensitive and will ignore dots), and values are Content-Type strings - for example, `{"json": "application/json", ".mp3": "audio/mpeg", "TTF": "font/ttf"}`. For files with extensions that are not among the keys in the object, the handling will fall back to the built-in handling.
@@ -739,14 +739,14 @@ As described above, an options object can be added with optional attributes to *
 <a name="option-etag"></a>
 #### etag
 
-- `etag` (boolean, optional): The default behavior of lib-static is to generate/handle ETag in prod, while skipping it entirely in dev mode.
+- `etag` (boolean): The default behavior of lib-static is to generate/handle ETag in prod, while skipping it entirely in dev mode.
     - Setting the etag parameter to `false` will turn **off** etag processing (runtime content processing, headers and handling) in **prod** too.
     - Setting it to `true` will turn it **on in dev mode** too.
 
 <a name="option-getcleanpath"></a>
 #### getCleanPath
 
-- `getCleanPath` (function, optional): Only used in [.static](#api-static). The default behavior of the returned `getStatic` function is to take a request object, and compare the beginning of the current requested path (`request.rawPath`) to the endpoint's own root path (`request.contextPath`) and get a relative asset path below `root` (so that later, prefixing the `root` value to that relative path will give the absolute full path to the resource in the JAR). In cases where this default behavior is not enough, you can override it by adding a `getCleanPath` param: `(request) => 'resource/path/below/root'`. Emphasis: the returned 'clean' path from this function should be _relative to the `root` folder_, not an absolute path in the JAR.
+- `getCleanPath` (function): Only used in [.static](#api-static). The default behavior of the returned `getStatic` function is to take a request object, and compare the beginning of the current requested path (`request.rawPath`) to the endpoint's own root path (`request.contextPath`) and get a relative asset path below `root` (so that later, prefixing the `root` value to that relative path will give the absolute full path to the resource in the JAR). In cases where this default behavior is not enough, you can override it by adding a `getCleanPath` param: `(request) => 'resource/path/below/root'`. Emphasis: the returned 'clean' path from this function should be _relative to the `root` folder_, not an absolute path in the JAR.
     - **For example:** if _getAnyStatic.es6_ is accessed with a [controller mapping](https://developer.enonic.com/docs/xp/stable/cms/mappings) at `https://someDomain.com/resources/public`, then that's an endpoint with the path `resources/public` - but that can't be determined from the request. So the automatic extraction of a relative path needs a `getCleanPath` override. Very simplified here:
     ```
     const getStatic = libStatic.static(
@@ -764,9 +764,9 @@ As described above, an options object can be added with optional attributes to *
 <a name="option-throwerrors"></a>
 #### throwErrors
 
-- `throwErrors` (boolean, default is `false`): by default, the `.get` method should not throw errors when used correctly. Instead, it internally server-logs (and hash-ID-tags) errors and automatically outputs a 500 error response. 
+- `throwErrors` (boolean): by default (`false`), the `.get` method should not throw errors when used correctly. Instead, it internally server-logs (and hash-ID-tags) errors and automatically outputs a 500 error response. 
   - Setting `throwErrors` to `true` overrides this: the 500-response generation is skipped, and the error is re-thrown down to the calling context, to be handled there. 
-  - This does not apply to 404-not-found type "errors", they will always generate a 404-response either way.
+  - This does not apply to 400-bad-request and 404-not-found type "errors", they will always generate a 404-response either way. 200 and 304 are also untouched, of course.
 
 
 
@@ -789,7 +789,7 @@ Mutable assets _can_ be handled by this library (since ETag support is in place 
 
 A balanced Cache-Control header, that still limits the number of requests to the server but also allows an asset to be stale for maximum an hour (3600 seconds) (remember that etag headers are still needed besides this):
 
-```
+```javascript
 {
     'Cache-Control': 'public, max-age=3600',
 }
@@ -797,7 +797,7 @@ A balanced Cache-Control header, that still limits the number of requests to the
 
 A more aggressive approach, that makes browsers check the asset's freshness with the server, could be: 
 
-```
+```javascript
 {
     'Cache-Control': 'must-revalidate',
 }
@@ -840,7 +840,7 @@ If you have mutable assets in your project, there are several ways you could imp
 <br />
 
 3. It's also possible to handle mutable vs immutable assets differently _from the same directory_, if you know you can distinguish immutable files from mutable ones by some pattern, by using a **function for the `cacheControl` option**. For example, if only immutable files are fingerprinted by the pattern `someName.[base-16-hash].ext` and others are not:
-    ```
+    ```javascript
     const libStatic = require('lib/enonic/static');
   
     // Reliable static-filename regex pattern in this case:
