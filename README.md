@@ -291,6 +291,8 @@ exports.get = libStatic.static({
 
 👉 [Options API reference](#options)
 
+<br/>
+
 <a name="example-webapp"></a>
 ### A webapp with lib-router
 
@@ -585,6 +587,7 @@ It's also open to the same [options](#options) as `.static` - except for `getCle
 
 <br/>
 <br/>
+<br/>
 
 <a name="api"></a>
 ## API: functions
@@ -596,7 +599,9 @@ Two controller functions are exposed.
 👉 [Similarities and differences betwen `.static` and `.get`](#example-get)
 
 
-<br /><a name="api-static"></a>
+<br />
+
+<a name="api-static"></a>
 ### .static
 
 Sets up and returns a reusable resource-getter function.
@@ -653,6 +658,7 @@ If `path` (either as a string argument or as an attribute in a `options` object)
 
 <br/>
 <br/>
+<br/>
 
 <a name="behaviour"></a>
 ## API: response and default behaviour
@@ -700,6 +706,7 @@ When returning a resource, this content is not a string but a **resource stream*
 
 
 
+<br/>
 <br/>
 <br/>
 
