@@ -116,9 +116,11 @@ const libStatic = require('/lib/enonic/static');
 
 One way to use lib-static is in an [XP service](https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service), and use it to fetch the resource and serve the entire response object to the front end.
 
-Say you have some resources under a folder _/my/folder_ in your app. Making a service serve these as resources to the frontend can be as simple as importing lib-static, using `.static` to set up a getter function, and using the getter function when serving GET requests:
+Say you have some resources under a folder _/my/folder_ in your app. Making a service serve these as resources to the frontend can be as simple as importing lib-static, using `.static` to set up a getter function, and using the getter function when serving GET requests. Let's call the service _servemyfolder_:
 
 ```javascript
+// src/main/resources/services/servemyfolder/servemyfolder.js
+
 const libStatic = require('/lib/enonic/static');
 
 // .static sets up a new, reusable getter function: getStatic
