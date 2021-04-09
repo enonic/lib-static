@@ -803,8 +803,8 @@ An output _contentType_ string is used directly in the response.
         'my-resources',
         {
             getCleanPath: (request) => {
-                if (!resource.rawPath.startsWith('resources/public') { throw Error('Ooops'); }
-                return resource.rawPath.substring('resources/public'.length);
+                if (!request.rawPath.startsWith('resources/public')) { throw Error('Ooops'); }
+                return request.rawPath.substring('resources/public'.length);
             }
         }
     );
