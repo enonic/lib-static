@@ -1,0 +1,53 @@
+// Adds the 'makeAdoc' gradle task, which converts README.md into README.adoc.
+
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+
+//////////////////////////////////////////////////  Auto-update current version in docs and package.json:
+
+def README_SOURCE = "README.md"
+
+task makeAdoc(type: Copy) {
+    from("./")
+    into("./")
+    include(README_SOURCE)
+    rename(README_SOURCE, "README.adoc")
+
+    doFirst {
+        new File('README.adoc').delete()
+    }
+
+    filter {
+        String line -> line
+        // MD --> ADOC
+                .replaceAll(/^# (.*?)$/, "= \$1\n:toc: right") // Main header, adding auto ToC
+                .replaceAll(/^## (.*?)$/, "== \$1") // H2-H5
+                .replaceAll(/^### (.*?)$/, "=== \$1")
+                .replaceAll(/^#### (.*?)$/, "==== \$1")
+                .replaceAll(/^##### (.*?)$/, "===== \$1")
+                .replaceAll(/<a name="(.*?)"><\/a>/, "\n[[\$1]]") // Explicit anchor IDs
+                .replaceAll(/\[(.*?)\]\((.*?)\)/, "link:\$2[\$1]") // Links
+                .replaceAll(/^ +```\s*$/, "----") // Indented code block end (inside numbered list)
+                .replaceAll(/^ +```(.*?)$/, "+\n[source,\$1,options=\"nowrap\"]\n----") // Indented code block start (inside numbered list)
+                .replaceAll(/^```$/, "----") // Source code end
+                .replaceAll(/^```(.*?)$/, "[source,\$1,options=\"nowrap\"]\n----") // Source code start
+                .replaceAll(/^(\| ?\*?\*?Version \/ tag\*?\*?[\n \|])(.*?)\|$/, "[%header,cols=3]\n|===\n\$1\$2") // Version table header
+                .replaceAll(/^\| ?-.*?- ?\|$/, "")
+                .replaceAll(/^(\| ?0\.2\.8.*?) ?\|$/, "\$1\n|===") // Version table last line (starts with "0.2.8")
+                .replaceAll(/^(\| ?.*?)\|$/, "\$1") // Version table cells
+                .replaceAll(/<br\/>/, "{zwsp} +") // Empty lines
+                .replaceAll(/<img src="(.*?)" .*? title="(.*?)" width="(.*?)">/, "image:\$1[title=\"\$2\",width=\$3]") // images
+    }
+
+    doLast {
+        File fh1 = new File('README.adoc')
+        def text = fh1.getText('UTF-8')
+        text = text.replaceAll(/\n== Table of Contents\n( *- link:.*?\]\n)*\n/, "")
+        fh1.delete()
+        fh1.write text
+        println "Updated README.adoc from $README_SOURCE"
+    }
+
+    inputs.file("./" + README_SOURCE)
+    outputs.file('./README.adoc')
+}

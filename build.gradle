@@ -66,3 +66,5 @@ task compileTest(type: NodeTask) {
 
 compileTest.dependsOn += compileXP
 test.dependsOn += 'compileTest'
+
+apply from: 'makeAdoc.gradle'
