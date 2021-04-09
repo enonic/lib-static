@@ -460,7 +460,7 @@ const getStatic = libStatic.static({
 <a name="example-etag"></a>
 ### ETag switch
 
-By [default](#behavior), an ETag is generated from the asset and sent along with the response as a header, in XP prod run mode. In XP dev mode, no ETag is generated. 
+By [default](#behavior), an ETag is generated from the asset and sent along with the response as a header, in XP prod run mode. In [XP dev mode](https://developer.enonic.com/docs/enonic-cli/master/dev#start), no ETag is generated. 
 
 This default behavior can be overridden with the `etag` option. If set to `true`, an ETag will always be generated, even in XP dev mode. If set to `false`, no ETag is generated, even in XP prod mode:
 
@@ -616,9 +616,11 @@ Can be used in three ways:
 
 `const getStatic = libStatic.static(optionsWithRoot);`
 
-The getter function (`getStatic`) takes the [XP request object](https://developer.enonic.com/docs/xp/stable/framework/http#http-request) as argument, determines the asset path from that, and returns a [response object](#behaviour) for the asset:
+The getter function (`getStatic`) takes the [XP request object](https://developer.enonic.com/docs/xp/stable/framework/http#http-request) as argument. `request` is used to determine the asset path, and to check the `If-None-Match` header. It then returns a [response object](#behaviour) for the asset:
 
-`const response = getStatic(reques);`
+`const response = getStatic(request);`
+
+An ETag value is generated and cached for the requested asset. If that matches the `If-None-Match` header, the response will only contain: `{status: 304}`, signifying the asset hasn't changed and the cache can be used instead of downloading the asset. If there's no match, the asset will be read out and returned in the [response](#behaviour) under `body`, with a `status` 200.  
 
 <a name="static-params"></a>
 #### Params:
@@ -674,7 +676,7 @@ Unless some of these aspects are overriden by an [options parameter](#options), 
 <a name="status"></a>
 #### status
 
-Follows standard [HTTP error codes](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes), most often 200, 304 and 404. On errors (all codes above 400), see error message in `body`.
+Follows standard [HTTP error codes](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes): 200 - OK, 400 - Bad Request, 404 - Not Found. And for [.static], 304 - Not Modified, signifying a matching ETag and triggering a browser to use its local cached asset. On other errors: 500, and possibly an error message in `body`.
 
 <a name="body"></a>
 #### body
@@ -682,6 +684,8 @@ Follows standard [HTTP error codes](https://en.wikipedia.org/wiki/List_of_HTTP_s
 Content of the requested asset, or an error message. 
 
 When returning a resource, this content is not a string but a **resource stream** from [ioLib](https://developer.enonic.com/docs/xp/stable/api/lib-io) (see resource.getStream). This works seamlessly for returning both binary and non-binary files in the response directly to browsers. But might be less straightforward when writing tests or otherwise intercepting the output.
+
+In [XP dev mode](https://developer.enonic.com/docs/enonic-cli/master/dev#start), 400- and and 404-type errors will have the requested asset path in the body.
 
 
 <a name="content-type"></a>
