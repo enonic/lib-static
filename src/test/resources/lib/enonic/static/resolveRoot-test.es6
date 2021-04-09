@@ -329,13 +329,13 @@ exports.testResolveRoot = () => {
         getPathErrorWasCalled = true;
     }
 
-    lib.static('/please/resolve/this/');
+    lib.buildGetter('/please/resolve/this/');
 
     t.assertTrue(getPathErrorWasCalled, "getPathError should be called with path as part of resolveRoot");
 
 
     // ----
-                                                                                                                        if (verbose) log.info("Testing inner behavior: getPathError is called with the input path, .static fails with with returned string if getPathError returns a string");
+                                                                                                                        if (verbose) log.info("Testing inner behavior: getPathError is called with the input path, .buildGetter fails with with returned string if getPathError returns a string");
 
 
     lib.__getPathError__ = (path) => {
@@ -343,7 +343,7 @@ exports.testResolveRoot = () => {
     }
 
     try {
-        lib.static('/please/fail/');
+        lib.buildGetter('/please/fail/');
         failed = false;
     } catch (e) {
                                                                                                                         if (verbose) log.error(e);
@@ -362,19 +362,19 @@ exports.testResolveRoot = () => {
         resolveRootWasCalled = true;
     }
 
-    lib.static('/please/resolve/this/');
+    lib.buildGetter('/please/resolve/this/');
 
     t.assertTrue(resolveRootWasCalled, "resolveRootWasCalled");
 
     // ----
-                                                                                                                        if (verbose) log.info("Testing inner behavior: error during resolveRoot causes .static to fail");
+                                                                                                                        if (verbose) log.info("Testing inner behavior: error during resolveRoot causes .buildGetter to fail");
 
     lib.__resolveRoot__ = (root) => {
         throw Error("This was thrown on purpose");
     }
 
     try {
-        lib.static('/please/fail/');
+        lib.buildGetter('/please/fail/');
         failed = false;
     } catch (e) {
                                                                                                                         if (verbose) log.error(e);

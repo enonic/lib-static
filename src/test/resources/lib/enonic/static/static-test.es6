@@ -247,11 +247,11 @@ const verbose = false;
 
 
 
-//////////////////////////////////////////////////////////////////  TEST .static innerbehaviour
+//////////////////////////////////////////////////////////////////  TEST .buildGetter innerbehaviour
 
-exports.testStatic_innerbehavior_1arg_parseRootAndOptions_isCalled = () => {
+exports.testbuildGetter_innerbehavior_1arg_parseRootAndOptions_isCalled = () => {
     // const verbose = true;
-                                                                                                                        if (verbose) log.info("\n\n\ntestStatic_innerbehavior_1arg_parseRootAndOptions_isCalled:\n");
+                                                                                                                        if (verbose) log.info("\n\n\ntestbuildGetter_innerbehavior_1arg_parseRootAndOptions_isCalled:\n");
     let parseRootAndOptionsWasCalled = false;
     doMocks({
             options: {
@@ -259,7 +259,7 @@ exports.testStatic_innerbehavior_1arg_parseRootAndOptions_isCalled = () => {
                                                                                                                         if (verbose) log.info(prettify(rootOrOptions, "parseRootAndOptions call - rootOrOptions"));
                                                                                                                         if (verbose) log.info(prettify(options, "parseRootAndOptions call - options"));
 
-                    // Verify that the arguments of .static are passed into parseRootAndOptions the expected way:
+                    // Verify that the arguments of .buildGetter are passed into parseRootAndOptions the expected way:
                     t.assertEquals(undefined, options, "parseRootAndOptions: options");
                     t.assertEquals('object', typeof rootOrOptions , "parseRootAndOptions: rootOrOptions");
                     t.assertEquals('my/root', rootOrOptions.root , "parseRootAndOptions: rootOrOptions.root");
@@ -284,7 +284,7 @@ exports.testStatic_innerbehavior_1arg_parseRootAndOptions_isCalled = () => {
         },
         verbose);
 
-    const getStatic = lib.static({
+    const getStatic = lib.buildGetter({
         root: 'my/root',
         throwErrors: 'throwErrors/should/be/boolean/but/ok',
         cacheControl: 'cacheControl/string/or/function/but/ok',
@@ -296,9 +296,9 @@ exports.testStatic_innerbehavior_1arg_parseRootAndOptions_isCalled = () => {
     t.assertTrue(parseRootAndOptionsWasCalled, "parseRootAndOptionsWasCalled");
 };
 
-exports.testStatic_innerbehavior_2arg_parseRootAndOptions_isCalled = () => {
+exports.testbuildGetter_innerbehavior_2arg_parseRootAndOptions_isCalled = () => {
     // const verbose = true;
-                                                                                                                        if (verbose) log.info("\n\n\ntestStatic_innerbehavior_2arg_parseRootAndOptions_isCalled:\n");
+                                                                                                                        if (verbose) log.info("\n\n\ntestbuildGetter_innerbehavior_2arg_parseRootAndOptions_isCalled:\n");
     let parseRootAndOptionsWasCalled = false;
     doMocks({
             options: {
@@ -306,7 +306,7 @@ exports.testStatic_innerbehavior_2arg_parseRootAndOptions_isCalled = () => {
                                                                                                                         if (verbose) log.info(prettify(rootOrOptions, "parseRootAndOptions call - rootOrOptions"));
                                                                                                                         if (verbose) log.info(prettify(options, "parseRootAndOptions call - options"));
 
-                    // Verify that the arguments of .static are passed into parseRootAndOptions the expected way:
+                    // Verify that the arguments of .buildGetter are passed into parseRootAndOptions the expected way:
                     t.assertEquals('my/root', rootOrOptions , "parseRootAndOptions: rootOrOptions");
                     t.assertEquals('object', typeof options, "parseRootAndOptions: options");
                     t.assertEquals(undefined, options.root , "parseRootAndOptions: options.root");
@@ -331,7 +331,7 @@ exports.testStatic_innerbehavior_2arg_parseRootAndOptions_isCalled = () => {
         },
         verbose);
 
-    const getStatic = lib.static(
+    const getStatic = lib.buildGetter(
         'my/root',
         {
             throwErrors: 'throwErrors/should/be/boolean/but/ok',
@@ -345,9 +345,9 @@ exports.testStatic_innerbehavior_2arg_parseRootAndOptions_isCalled = () => {
     t.assertTrue(parseRootAndOptionsWasCalled, "parseRootAndOptionsWasCalled");
 };
 
-exports.testStatic_innerbehavior_parseRootAndOptions_errorMessage_shouldThrowError = () => {
+exports.testbuildGetter_innerbehavior_parseRootAndOptions_errorMessage_shouldThrowError = () => {
     // const verbose = true;
-                                                                                                                        if (verbose) log.info("\n\n\ntestStatic_innerbehavior_parseRootAndOptions_errorMessage_shouldThrowError:\n");
+                                                                                                                        if (verbose) log.info("\n\n\ntestbuildGetter_innerbehavior_parseRootAndOptions_errorMessage_shouldThrowError:\n");
 
     doMocks({
             options: {
@@ -358,7 +358,7 @@ exports.testStatic_innerbehavior_parseRootAndOptions_errorMessage_shouldThrowErr
 
     let failed = true;
     try {
-        const getStatic = lib.static("my/root");
+        const getStatic = lib.buildGetter("my/root");
         failed = false;
                                                                                                                         if (verbose) log.info(prettify(getStatic, "getStatic"));
     } catch (e) {
@@ -373,9 +373,9 @@ exports.testStatic_innerbehavior_parseRootAndOptions_errorMessage_shouldThrowErr
 
 
 
-exports.testStatic_innerbehavior_parseRootAndOptions_outputs_areUsed = () => {
+exports.testbuildGetter_innerbehavior_parseRootAndOptions_outputs_areUsed = () => {
     // const verbose = true;
-                                                                                                                        if (verbose) log.info("\n\n\ntestStatic_innerbehavior_parseRootAndOptions_outputs_areUsed:\n");
+                                                                                                                        if (verbose) log.info("\n\n\ntestbuildGetter_innerbehavior_parseRootAndOptions_outputs_areUsed:\n");
     let getResourceWasCalled = false;
     let parseRootAndOptionsWasCalled = false;
     let etagReadWasCalled = false;
@@ -431,7 +431,7 @@ exports.testStatic_innerbehavior_parseRootAndOptions_outputs_areUsed = () => {
         },
         verbose);
 
-    const getStatic = lib.static('arg/root/in', {
+    const getStatic = lib.buildGetter('arg/root/in', {
         etag: 'arg/etag/in',
         cacheControl: 'arg/cacheControl/in',
         contentType: 'arg/contentType/in'
@@ -462,11 +462,11 @@ exports.testStatic_innerbehavior_parseRootAndOptions_outputs_areUsed = () => {
 };
 
 
-exports.testStatic_root_noLeadingSlash_isOK = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestStatic_root_noLeadingSlash_isOK:\n");
+exports.testbuildGetter_root_noLeadingSlash_isOK = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestbuildGetter_root_noLeadingSlash_isOK:\n");
     doMocks({}, verbose);
 
-    const getStatic = lib.static('i/am/root');
+    const getStatic = lib.buildGetter('i/am/root');
 
     const result = getStatic({
         rawPath: '/assets/asset-test-target.txt',
@@ -479,11 +479,11 @@ exports.testStatic_root_noLeadingSlash_isOK = () => {
 };
 
 
-exports.testStatic_root_trailingSlash_isOK = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestStatic_root_trailingSlash_isOK:\n");
+exports.testbuildGetter_root_trailingSlash_isOK = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestbuildGetter_root_trailingSlash_isOK:\n");
     doMocks({}, verbose);
 
-    const getStatic = lib.static('i/am/root/');
+    const getStatic = lib.buildGetter('i/am/root/');
 
     const result = getStatic({
         rawPath: '/assets/asset-test-target.txt',
@@ -499,7 +499,7 @@ exports.testGetStatic_rawPath_noLeadingSlash_isOK = () => {
                                                                                                                         if (verbose) log.info("\n\n\ntestGetStatic_rawPath_noLeadingSlash_isOK:\n");
     doMocks({}, verbose);
 
-    const getStatic = lib.static('i/am/root');
+    const getStatic = lib.buildGetter('i/am/root');
 
     const result = getStatic({
         rawPath: 'assets/asset-test-target.txt',
@@ -516,7 +516,7 @@ exports.testGetStatic_contextPath_trailingSlash_isOK = () => {
                                                                                                                         if (verbose) log.info("\n\n\ntestGetStatic_contextPath_trailingSlash_isOK:\n");
     doMocks({}, verbose);
 
-    const getStatic = lib.static('i/am/root/');
+    const getStatic = lib.buildGetter('i/am/root/');
 
     const result = getStatic({
         rawPath: '/assets/asset-test-target.txt',
@@ -532,7 +532,7 @@ exports.testGetStatic_contextPath_noLeadingSlash_isOK = () => {
                                                                                                                         if (verbose) log.info("\n\n\ntestGetStatic_contextPath_noLeadingSlash_isOK:\n");
     doMocks({}, verbose);
 
-    const getStatic = lib.static('i/am/root/');
+    const getStatic = lib.buildGetter('i/am/root/');
 
     const result = getStatic({
         rawPath: '/assets/asset-test-target.txt',
@@ -548,7 +548,7 @@ exports.testGetStatic_request_noLeadingSlashes_isOK = () => {
                                                                                                                         if (verbose) log.info("\n\n\ntestGetStatic_request_noLeadingSlashes_isOK:\n");
     doMocks({}, verbose);
 
-    const getStatic = lib.static('i/am/root/');
+    const getStatic = lib.buildGetter('i/am/root/');
 
     const result = getStatic({
         rawPath: 'assets/asset-test-target.txt',
@@ -564,7 +564,7 @@ exports.testGetStatic_request_otherSlashes_isOK = () => {
                                                                                                                         if (verbose) log.info("\n\n\ntestGetStatic_request_otherSlashes_isOK:\n");
     doMocks({}, verbose);
 
-    const getStatic = lib.static('i/am/root/');
+    const getStatic = lib.buildGetter('i/am/root/');
 
     const result = getStatic({
         rawPath: 'assets/asset-test-target.txt',
@@ -588,7 +588,7 @@ exports.testGetStatic_root_string_FullDefaultResponse = () => {
                                                                                                                         if (verbose) log.info("\n\n\ntestGetStatic_root_string_FullDefaultResponse:\n");
     doMocks({}, verbose);
 
-    const getStatic = lib.static('/i/am/root');
+    const getStatic = lib.buildGetter('/i/am/root');
 
     const result = getStatic({
         rawPath: '/assets/asset-test-target.txt',
@@ -612,7 +612,7 @@ exports.testGetStatic_root_option_FullDefaultResponse = () => {
                                                                                                                         if (verbose) log.info("\n\n\ntestGetStatic_root_option_FullDefaultResponse:\n");
     doMocks({}, verbose);
 
-    const getStatic = lib.static({root: '/i/am/root'});
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     const result = getStatic({
         rawPath: '/assets/asset-test-target.txt',
@@ -637,7 +637,7 @@ exports.testGetStatic_DEV_root_string_FullDefaultResponse = () => {
                                                                                                                         if (verbose) log.info("\n\n\ntestGetStatic_DEV_root_string_FullDefaultResponse:\n");
     doMocks({isDev: true}, verbose);
 
-    const getStatic = lib.static('/i/am/root');
+    const getStatic = lib.buildGetter('/i/am/root');
 
     const result = getStatic({
         rawPath: '/assets/asset-test-target.txt',
@@ -662,7 +662,7 @@ exports.testGetStatic_DEV_root_option_FullDefaultResponse = () => {
                                                                                                                         if (verbose) log.info("\n\n\ntestGetStatic_DEV_root_option_FullDefaultResponse:\n");
     doMocks({isDev: true}, verbose);
 
-    const getStatic = lib.static({root: '/i/am/root'});
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     const result = getStatic({
         rawPath: '/assets/asset-test-target.txt',
@@ -707,7 +707,7 @@ exports.testGetStatic_contentType = () => {
         },
         verbose);
 
-    const getStatic = lib.static({root: '/i/am/root'});
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     // .txt
 
@@ -772,7 +772,7 @@ exports.testGetStatic_cacheControl = () => {
         },
         verbose);
 
-    const getStatic = lib.static({root: '/i/am/root'});
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     // .txt
 
@@ -826,7 +826,7 @@ exports.testGetStatic_getCleanPath = () => {
         },
         verbose);
 
-    const getStatic = lib.static({root: '/i/am/root'});
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     // target1
 
@@ -854,7 +854,7 @@ exports.testGetStatic_getCleanPath = () => {
 
 
 
-// .static problem/error handling:
+// .buildGetter problem/error handling:
 
 exports.testGetStatic_root_noExist_shouldOnly404 = () => {
                                                                                                                         if (verbose) log.info("\n\n\ntestGetStatic_root_noExist_shouldOnly404:\n");
@@ -865,7 +865,7 @@ exports.testGetStatic_root_noExist_shouldOnly404 = () => {
         },
         verbose);
 
-    const getStatic = lib.static({root: '/i/am/root'});
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     const result = getStatic({
         rawPath: '/assets/asset-test-target.txt',
@@ -891,7 +891,7 @@ exports.testGetStatic_DEV_root_noExist_should404withInfo = () => {
         },
         verbose);
 
-    const getStatic = lib.static({root: '/i/am/root'});
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     const result = getStatic({
         rawPath: '/assets/asset-test-target.txt',
@@ -914,7 +914,7 @@ exports.testGetStatic_relativePath_empty_shouldOnly400 = () => {
                                                                                                                         if (verbose) log.info("\n\n\ntestGetStatic_relativePath_empty_shouldOnly400:\n");
     doMocks({}, verbose);
 
-    const getStatic = lib.static({root: '/i/am/root'});
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     const result = getStatic({
         rawPath: '/assets/',
@@ -934,7 +934,7 @@ exports.testGetStatic_DEV_relativePath_empty_should400WithInfo = () => {
                                                                                                                         if (verbose) log.info("\n\n\ntestGetStatic_DEV_relativePath_empty_should400WithInfo:\n");
     doMocks({ isDev: true }, verbose);
 
-    const getStatic = lib.static({root: '/i/am/root'});
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     const result = getStatic({
         rawPath: '/assets/',
@@ -958,7 +958,7 @@ exports.testGetStatic_relativePath_illegalChars_shouldOnly400 = () => {
                                                                                                                         if (verbose) log.info("\n\n\ntestGetStatic_relativePath_illegalChars_shouldOnly400:\n");
     doMocks({}, verbose);
 
-    const getStatic = lib.static({root: '/i/am/root'});
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     const result1 = getStatic({
         rawPath: '/assets/../asset-test-target/.txt',
@@ -1004,7 +1004,7 @@ exports.testGetStatic_DEV_relativePath_illegalChars_should400WithInfo = () => {
                                                                                                                         if (verbose) log.info("\n\n\ntestGetStatic_DEV_relativePath_illegalChars_should400WithInfo:\n");
     doMocks({ isDev: true }, verbose);
 
-    const getStatic = lib.static({root: '/i/am/root'});
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     const result1 = getStatic({
         rawPath: '/assets/../asset-test-target/.txt',
@@ -1061,7 +1061,7 @@ exports.testGetStatic_noRawPath_should500 = () => {
                                                                                                                         if (verbose) log.info("\n\n\ntestGetStatic_noRawPath_should500:\n");
     doMocks({ isDev: true }, verbose);
 
-    const getStatic = lib.static({root: '/i/am/root'});
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     const result = getStatic({
         contextPath: '/assets'
@@ -1083,7 +1083,7 @@ exports.testGetStatic_noContextPath_should500 = () => {
                                                                                                                         if (verbose) log.info("\n\n\ntestGetStatic_noContextPath_should500:\n");
     doMocks({ isDev: true }, verbose);
 
-    const getStatic = lib.static({root: '/i/am/root'});
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     const result = getStatic({
         rawPath: '/assets/asset-test-target.txt',
@@ -1105,7 +1105,7 @@ exports.testGetStatic_outsideContextPath_should500 = () => {
                                                                                                                         if (verbose) log.info("\n\n\ntestGetStatic_outsideContextPath_should500:\n");
     doMocks({ isDev: true }, verbose);
 
-    const getStatic = lib.static({root: '/i/am/root'});
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     const result = getStatic({
         rawPath: 'assets/asset-test-target.txt',
@@ -1137,7 +1137,7 @@ exports.testGetStatic_throwErrors_shouldThrowErrorInsteadOf500 = () => {
         verbose
     );
 
-    const getStatic = lib.static({root: '/i/am/root'});
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     let failed = true;
     try {
@@ -1166,7 +1166,7 @@ exports.testGetStatic_failingContentTypeFunc_should500 = () => {
         verbose
     );
 
-    const getStatic = lib.static({root: '/i/am/root'});
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     const result = getStatic({
         rawPath: '/assets/asset-test-target.txt',
@@ -1190,7 +1190,7 @@ exports.testGetStatic_failingContentTypeFunc_throwErrors_shouldThrowErrorInstead
         verbose
     );
 
-    const getStatic = lib.static({root: '/i/am/root'});
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     let failed = true;
     try {
@@ -1223,7 +1223,7 @@ exports.testGetStatic_failingCacheControlFunc_should500 = () => {
         verbose
     );
 
-    const getStatic = lib.static({root: '/i/am/root'});
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     const result = getStatic({
         rawPath: '/assets/asset-test-target.txt',
@@ -1247,7 +1247,7 @@ exports.testGetStatic_failingCacheControlFunc_throwErrors_shouldThrowErrorInstea
         verbose
     );
 
-    const getStatic = lib.static({root: '/i/am/root'});
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     let failed = true;
     try {
@@ -1280,7 +1280,7 @@ exports.testGetStatic_failingGetCleanPath_should500 = () => {
         verbose
     );
 
-    const getStatic = lib.static({root: '/i/am/root'});
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     const result = getStatic({
         rawPath: '/assets/asset-test-target.txt',
@@ -1304,7 +1304,7 @@ exports.testGetStatic_failingGetCleanPath_throwErrors_shouldThrowErrorInsteadOf5
         verbose
     );
 
-    const getStatic = lib.static({root: '/i/am/root'});
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     let failed = true;
     try {
@@ -1340,7 +1340,7 @@ exports.testGetStatic_ifMatchingEtag_should304 = () => {
         verbose
     );
 
-    const getStatic = lib.static('/i/am/root/');
+    const getStatic = lib.buildGetter('/i/am/root/');
 
     const result = getStatic({
         rawPath: 'my/endpoint/asset-test-target.txt',
@@ -1371,7 +1371,7 @@ exports.testGetStatic_ifNotMatchingEtag_shouldProceedWithAssetRead = () => {
         verbose
     );
 
-    const getStatic = lib.static('/i/am/root/');
+    const getStatic = lib.buildGetter('/i/am/root/');
 
     const result = getStatic({
         rawPath: 'my/endpoint/asset-test-target.txt',
@@ -1397,7 +1397,7 @@ exports.testGetStatic_fail_failuresShouldNotDestroyGetstaticFunction = () => {
 
     doMocks({}, verbose);
 
-    const getStatic = lib.static('static');
+    const getStatic = lib.buildGetter('static');
 
     let result;
 
@@ -1473,7 +1473,7 @@ exports.testGetStatic_fail_failuresShouldNotDestroyGetstaticFunction = () => {
         },
         verbose);
 
-    const getStatic2 = lib.static("assets2");
+    const getStatic2 = lib.buildGetter("assets2");
 
     result = getStatic2({rawPath: 'my/endpoint/w3c_home.txt', contextPath: 'my/endpoint'});
     t.assertEquals(200, result.status, "no runtime error status");
@@ -1505,7 +1505,7 @@ exports.testGetStatic_fail_failuresShouldNotDestroyGetstaticFunction = () => {
         },
         verbose);
 
-    const getStatic3 = lib.static("assets3");
+    const getStatic3 = lib.buildGetter("assets3");
 
     result = getStatic3({rawPath: 'my/endpoint/w3c_home.txt', contextPath: 'my/endpoint'});
     t.assertEquals(200, result.status, "no runtime error status");

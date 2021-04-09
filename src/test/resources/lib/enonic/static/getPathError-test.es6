@@ -331,10 +331,10 @@ exports.testGet_innerbehaviour_getPathError_isUsed = () => {
 
 
 
-//////////////////////////////////////////////////////////////////  TEST .static
+//////////////////////////////////////////////////////////////////  TEST .buildGetter
 
-exports.testStatic_innerbehavior_removesLeadingPathSlashesFromPathBefore__GetPathError__ = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestStatic_innerbehavior_removesLeadingPathSlashesFromPathBefore__GetPathError__:\n");
+exports.testbuildGetter_innerbehavior_removesLeadingPathSlashesFromPathBefore__GetPathError__ = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestbuildGetter_innerbehavior_removesLeadingPathSlashesFromPathBefore__GetPathError__:\n");
     doMocks({}, verbose);
     const lib = require('./index');
 
@@ -344,15 +344,15 @@ exports.testStatic_innerbehavior_removesLeadingPathSlashesFromPathBefore__GetPat
         getPathErrorWasCalled = true;
     }
 
-    lib.static('/my/path');
+    lib.buildGetter('/my/path');
 
     t.assertTrue(getPathErrorWasCalled, "getPathErrorWasCalled");
 }
 
 
 
-exports.testStatic_innerbehaviour_getPathError_stringArg_isCalled = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestStatic_innerbehaviour_getPathError_stringArg_isCalled:\n");
+exports.testbuildGetter_innerbehaviour_getPathError_stringArg_isCalled = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestbuildGetter_innerbehaviour_getPathError_stringArg_isCalled:\n");
     doMocks({
         },
         verbose);
@@ -365,15 +365,15 @@ exports.testStatic_innerbehaviour_getPathError_stringArg_isCalled = () => {
         target = path;
     }
 
-    lib.static("my/unique/testing/path");
+    lib.buildGetter("my/unique/testing/path");
 
     t.assertEquals("my/unique/testing/path", target);
 }
 
 
-exports.testStatic_innerbehaviour_getPathError_optionArg_isCalled = () => {
+exports.testbuildGetter_innerbehaviour_getPathError_optionArg_isCalled = () => {
     const verbose = true;
-                                                                                                                        if (verbose) log.info("\n\n\ntestStatic_innerbehaviour_getPathError_optionArg_isCalled:\n");
+                                                                                                                        if (verbose) log.info("\n\n\ntestbuildGetter_innerbehaviour_getPathError_optionArg_isCalled:\n");
     doMocks({
         },
         verbose);
@@ -386,15 +386,15 @@ exports.testStatic_innerbehaviour_getPathError_optionArg_isCalled = () => {
         target = path;
     }
 
-    lib.static({root: "another/unique/testing/path"});
+    lib.buildGetter({root: "another/unique/testing/path"});
 
     t.assertEquals("another/unique/testing/path", target);
 
 }
 
 
-exports.testStatic_innerbehaviour_getPathError_isUsed = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestStatic_innerbehaviour_getPathError_isUsed:\n");
+exports.testbuildGetter_innerbehaviour_getPathError_isUsed = () => {
+                                                                                                                        if (verbose) log.info("\n\n\ntestbuildGetter_innerbehaviour_getPathError_isUsed:\n");
 
     doMocks({
         },
@@ -408,13 +408,13 @@ exports.testStatic_innerbehaviour_getPathError_isUsed = () => {
 
     let failed = true;
     try {
-        lib.static({path: "yet/another/unique/testing/path"});
+        lib.buildGetter({path: "yet/another/unique/testing/path"});
         failed = false;
     } catch (e) {
                                                                                                                         if (verbose) log.error(e);
     }
 
-    t.assertTrue(failed, "getPathError should have caused .static to fail");
+    t.assertTrue(failed, "getPathError should have caused .buildGetter to fail");
     log.info("OK");
 }
 

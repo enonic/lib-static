@@ -869,7 +869,7 @@ exports.testGet_cacheControlFunc_throwErrors_shouldThrowError = () => {
 
 
 
-//////////////////////////////////////////////////////////////////////  TEST .static
+//////////////////////////////////////////////////////////////////////  TEST .buildGetter
 
 /*
 exports.testStatic_fail_missingRoot_shouldThrowError = () => {
@@ -877,7 +877,7 @@ exports.testStatic_fail_missingRoot_shouldThrowError = () => {
 
     let getStatic, failed = true;
     try {
-        getStatic = lib.static();
+        getStatic = lib.buildGetter();
         failed = false;
     } catch (e) {
         log.info("Ok - errorMessage as expected: " + e.message);
@@ -891,7 +891,7 @@ exports.testStatic_fail_missingRoot_shouldThrowErrorEvenOnFalseThrowerrorsOption
 
     let getStatic, failed = true;
     try {
-        getStatic = lib.static({throwErrors: false});
+        getStatic = lib.buildGetter({throwErrors: false});
         failed = false;
     } catch (e) {
         log.info("Ok - errorMessage as expected: " + e.message);
@@ -905,7 +905,7 @@ exports.testStatic_fail_emptyRoot_argRoot_shouldThrowError = () => {
 
     let getStatic, failed = true;
     try {
-        getStatic = lib.static('');
+        getStatic = lib.buildGetter('');
         failed = false;
     } catch (e) {
         log.info("Ok - errorMessage as expected: " + e.message);
@@ -919,7 +919,7 @@ exports.testStatic_fail_emptyRoot_argOption_shouldThrowError = () => {
 
     let getStatic, failed = true;
     try {
-        getStatic = lib.static({root: ''});
+        getStatic = lib.buildGetter({root: ''});
         failed = false;
     } catch (e) {
         log.info("Ok - errorMessage as expected: " + e.message);
@@ -933,7 +933,7 @@ exports.testStatic_fail_emptyRoot_argOption_shouldThrowErrorEvenOnFalseThrowerro
 
     let getStatic, failed = true;
     try {
-        getStatic = lib.static({root: '', throwErrors: false});
+        getStatic = lib.buildGetter({root: '', throwErrors: false});
         failed = false;
     } catch (e) {
         log.info("Ok - errorMessage as expected: " + e.message);
@@ -947,7 +947,7 @@ exports.testStatic_fail_spacesRoot_argRoot_shouldThrowError = () => {
 
     let getStatic, failed = true;
     try {
-        getStatic = lib.static('  ');
+        getStatic = lib.buildGetter('  ');
         failed = false;
     } catch (e) {
         log.info("Ok - errorMessage as expected: " + e.message);
@@ -960,7 +960,7 @@ exports.testStatic_fail_spacesRoot_argOption_shouldThrowError = () => {
 
     let getStatic, failed = true;
     try {
-        getStatic = lib.static({root: '  '});
+        getStatic = lib.buildGetter({root: '  '});
         failed = false;
     } catch (e) {
         log.info("Ok - errorMessage as expected: " + e.message);
@@ -974,7 +974,7 @@ exports.testStatic_fail_illegalCharRoot_argRoot_shouldThrowError = () => {
 
     let getStatic, failed = true;
     try {
-        getStatic = lib.static('illegal:path');
+        getStatic = lib.buildGetter('illegal:path');
         failed = false;
     } catch (e) {
         log.info("Ok - errorMessage as expected: " + e.message);
@@ -987,7 +987,7 @@ exports.testStatic_fail_illegalCharRoot_argOption_shouldThrowError = () => {
 
     let getStatic, failed = true;
     try {
-        getStatic = lib.static({root: 'illegal:path'});
+        getStatic = lib.buildGetter({root: 'illegal:path'});
         failed = false;
     } catch (e) {
         log.info("Ok - errorMessage as expected: " + e.message);
@@ -1001,7 +1001,7 @@ exports.testStatic_fail_illegalDoubleDotRoot_argRoot_shouldThrowError = () => {
 
     let getStatic, failed = true;
     try {
-        getStatic = lib.static('illegal/../path');
+        getStatic = lib.buildGetter('illegal/../path');
         failed = false;
     } catch (e) {
         log.info("Ok - errorMessage as expected: " + e.message);
@@ -1014,7 +1014,7 @@ exports.testStatic_fail_illegalDoubleDotRoot_argOption_shouldThrowError = () => 
 
     let getStatic, failed = true;
     try {
-        getStatic = lib.static({root: 'illegal/../path'});
+        getStatic = lib.buildGetter({root: 'illegal/../path'});
         failed = false;
     } catch (e) {
         log.info("Ok - errorMessage as expected: " + e.message);
@@ -1028,7 +1028,7 @@ exports.testStatic_fail_illegalSlashRoot_argRoot_shouldThrowError = () => {
 
     let getStatic, failed = true;
     try {
-        getStatic = lib.static('/');
+        getStatic = lib.buildGetter('/');
         failed = false;
     } catch (e) {
         log.info("Ok - errorMessage as expected: " + e.message);
@@ -1041,7 +1041,7 @@ exports.testStatic_fail_illegalSlashRoot_argOption_shouldThrowError = () => {
 
     let getStatic, failed = true;
     try {
-        getStatic = lib.static({root: '/'});
+        getStatic = lib.buildGetter({root: '/'});
         failed = false;
     } catch (e) {
         log.info("Ok - errorMessage as expected: " + e.message);
@@ -1055,7 +1055,7 @@ exports.testStatic_fail_illegalTypeRoot_argRoot_shouldThrowError = () => {
 
     let getStatic, failed = true;
     try {
-        getStatic = lib.static(42);
+        getStatic = lib.buildGetter(42);
         failed = false;
     } catch (e) {
         log.info("Ok - errorMessage as expected: " + e.message);
@@ -1068,7 +1068,7 @@ exports.testStatic_fail_illegalTypeRoot_argOption_shouldThrowError = () => {
 
     let getStatic, failed = true;
     try {
-        getStatic = lib.static({root: 42});
+        getStatic = lib.buildGetter({root: 42});
         failed = false;
     } catch (e) {
         log.info("Ok - errorMessage as expected: " + e.message);
@@ -1082,7 +1082,7 @@ exports.testStatic_fail_illegalArrayRoot_argRoot_shouldThrowError = () => {
 
     let getStatic, failed = true;
     try {
-        getStatic = lib.static(["this", "is", "no", "good"]);
+        getStatic = lib.buildGetter(["this", "is", "no", "good"]);
         failed = false;
     } catch (e) {
         log.info("Ok - errorMessage as expected: " + e.message);
@@ -1095,7 +1095,7 @@ exports.testStatic_fail_illegalZeroRoot_argOption_shouldThrowError = () => {
 
     let getStatic, failed = true;
     try {
-        getStatic = lib.static({root: 0});
+        getStatic = lib.buildGetter({root: 0});
         failed = false;
     } catch (e) {
         log.info("Ok - errorMessage as expected: " + e.message);
@@ -1110,7 +1110,7 @@ exports.testStatic_fail_optionParsingError_arg2_shouldThrowError = () => {
 
     let getStatic, failed = true;
     try {
-        getStatic = lib.static('assets', {etag: ["not", "valid"]});
+        getStatic = lib.buildGetter('assets', {etag: ["not", "valid"]});
         failed = false;
     } catch (e) {
         log.info("Ok - errorMessage as expected: " + e.message);
@@ -1123,7 +1123,7 @@ exports.testStatic_fail_optionParsingError_arg2_shouldThrowErrorEvenWithThrowErr
 
     let getStatic, failed = true;
     try {
-        getStatic = lib.static('assets', {etag: ["not", "valid"], throwErrors: false});
+        getStatic = lib.buildGetter('assets', {etag: ["not", "valid"], throwErrors: false});
         failed = false;
     } catch (e) {
         log.info("Ok - errorMessage as expected: " + e.message);
@@ -1136,7 +1136,7 @@ exports.testStatic_fail_optionParsingError_arg1_shouldThrowError = () => {
 
     let getStatic, failed = true;
     try {
-        getStatic = lib.static({root: 'assets', etag: ["not", "valid"]});
+        getStatic = lib.buildGetter({root: 'assets', etag: ["not", "valid"]});
         failed = false;
     } catch (e) {
         log.info("Ok - errorMessage as expected: " + e.message);
@@ -1149,7 +1149,7 @@ exports.testStatic_fail_optionParsingError_arg1_shouldThrowErrorEvenWithThrowErr
 
     let getStatic, failed = true;
     try {
-        getStatic = lib.static({root: 'assets', etag: ["not", "valid"], throwErrors: false});
+        getStatic = lib.buildGetter({root: 'assets', etag: ["not", "valid"], throwErrors: false});
         failed = false;
     } catch (e) {
         log.info("Ok - errorMessage as expected: " + e.message);
@@ -1164,7 +1164,7 @@ exports.testStatic_fail_optionParsingError_arg1_shouldThrowErrorEvenWithThrowErr
 exports.testGetStatic_root_Asset_FullDefaultResponse = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static('assets');            // Root folder: '/assets/'
+    const getStatic = lib.buildGetter('assets');            // Root folder: '/assets/'
 
     // Simulate an XP GET request from frontend
     const request = {
@@ -1185,7 +1185,7 @@ exports.testGetStatic_root_Asset_FullDefaultResponse = () => {
     t.assertTrue(result.headers.ETag.length > 0);
     t.assertEquals(optionsParser.DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"]);
 
-    log.info(".static example: full get response readout, body is a resource object (" +
+    log.info(".buildGetter example: full get response readout, body is a resource object (" +
         (typeof result + (result && typeof result === 'object' ? (" with keys: " + JSON.stringify(Object.keys(result))) : "")
         ) + "): " + JSON.stringify(result, null, 2)
     );
@@ -1195,7 +1195,7 @@ exports.testGetStatic_root_Asset_FullDefaultResponse = () => {
 exports.testGetStatic_optionsRoot = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static({root: 'assets'});            // Root folder: '/assets/'
+    const getStatic = lib.buildGetter({root: 'assets'});            // Root folder: '/assets/'
 
     // Simulate an XP GET request from frontend
     const request = {
@@ -1220,7 +1220,7 @@ exports.testGetStatic_optionsRoot = () => {
 exports.testGetStatic_ifNoneMatch_matchingEtagValues_should304 = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static('assets');
+    const getStatic = lib.buildGetter('assets');
 
     const request = {
         rawPath: 'my/endpoint/asset-test-target.txt',
@@ -1238,7 +1238,7 @@ exports.testGetStatic_ifNoneMatch_matchingEtagValues_should304 = () => {
 exports.testGetStatic_ifNoneMatch_nonMatchingEtagValues_should200WithUpdatedContentAndEtag = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static('assets');
+    const getStatic = lib.buildGetter('assets');
 
     const request = {
         rawPath: 'my/endpoint/asset-test-target.txt',
@@ -1265,7 +1265,7 @@ exports.testGetStatic_ifNoneMatch_nonMatchingEtagValues_should200WithUpdatedCont
 exports.testGetStatic_option_arg2_getCleanPath = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static('assets', {
+    const getStatic = lib.buildGetter('assets', {
         getCleanPath: request =>  request.rawPath.substring('my/endpoint'.length)
     });
 
@@ -1286,7 +1286,7 @@ exports.testGetStatic_option_arg2_getCleanPath = () => {
 exports.testGetStatic_option_arg1_getCleanPath = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static({
+    const getStatic = lib.buildGetter({
         root: 'assets',
         getCleanPath: request =>  request.rawPath.substring('my/endpoint'.length)
     });
@@ -1310,7 +1310,7 @@ exports.testGetStatic_HTML_FullDefaultResponse = () => {
     const lib = require('./index');
 
 
-    const getStatic = lib.static('static');
+    const getStatic = lib.buildGetter('static');
     const request = {
         rawPath: 'my/endpoint/static-test-html.html',
         contextPath: 'my/endpoint'
@@ -1333,7 +1333,7 @@ exports.testGetStatic_HTML_FullDefaultResponse = () => {
 exports.testGetStatic_Css = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static('static');
+    const getStatic = lib.buildGetter('static');
     const request = {
         rawPath: 'my/endpoint/static-test-css.css',
         contextPath: 'my/endpoint'
@@ -1355,7 +1355,7 @@ exports.testGetStatic_Css = () => {
 exports.testGetStatic_JS = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static('static');
+    const getStatic = lib.buildGetter('static');
     const request = {
         rawPath: 'my/endpoint/static-test-js.js',
         contextPath: 'my/endpoint'
@@ -1378,7 +1378,7 @@ exports.testGetStatic_JS = () => {
 exports.testGetStatic_JSON = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static('static');
+    const getStatic = lib.buildGetter('static');
     const request = {
         rawPath: 'my/endpoint/static-test-json.json',
         contextPath: 'my/endpoint'
@@ -1406,7 +1406,7 @@ exports.testGetStatic_JSON = () => {
 exports.testGetStatic_XML = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static('static');
+    const getStatic = lib.buildGetter('static');
     const request = {
         rawPath: 'my/endpoint/static-test-xml.xml',
         contextPath: 'my/endpoint'
@@ -1432,7 +1432,7 @@ exports.testGetStatic_XML = () => {
 exports.testGetStatic_Text = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static('static');
+    const getStatic = lib.buildGetter('static');
     const request = {
         rawPath: 'my/endpoint/static-test-text.txt',
         contextPath: 'my/endpoint'
@@ -1454,7 +1454,7 @@ exports.testGetStatic_Text = () => {
 exports.testGetStatic_JPG = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static('static');
+    const getStatic = lib.buildGetter('static');
     const request = {
         rawPath: 'my/endpoint/w3c_home.jpg',
         contextPath: 'my/endpoint'
@@ -1476,7 +1476,7 @@ exports.testGetStatic_JPG = () => {
 exports.testGetStatic_GIF = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static('static');
+    const getStatic = lib.buildGetter('static');
     const request = {
         rawPath: 'my/endpoint/w3c_home.gif',
         contextPath: 'my/endpoint'
@@ -1502,7 +1502,7 @@ exports.testGetStatic_GIF = () => {
 exports.testGetStatic_fail_rootArg_NotFoundFile_should404 = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static('static');
+    const getStatic = lib.buildGetter('static');
     const request = {
         rawPath: 'my/endpoint/doesNotExist.txt',
         contextPath: 'my/endpoint'
@@ -1522,7 +1522,7 @@ exports.testGetStatic_fail_rootArg_NotFoundFile_should404 = () => {
 exports.testGetStatic_fail_optionsArg_NotFoundFile_should404 = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static({root: 'static'});              // Same as above, just root as named parameter
+    const getStatic = lib.buildGetter({root: 'static'});              // Same as above, just root as named parameter
     const request = {
         rawPath: 'my/endpoint/doesNotExist.txt',
         contextPath: 'my/endpoint'
@@ -1542,7 +1542,7 @@ exports.testGetStatic_fail_optionsArg_NotFoundFile_should404 = () => {
 exports.testGetStatic_fail_NotFoundInRoot_should404 = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static('assets');
+    const getStatic = lib.buildGetter('assets');
     const request = {
         rawPath: 'my/endpoint/static-test-text.txt',
         contextPath: 'my/endpoint'
@@ -1563,7 +1563,7 @@ exports.testGetStatic_fail_NotFoundInRoot_should404 = () => {
 exports.testGetStatic_fail_empty_should400 = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static('assets');
+    const getStatic = lib.buildGetter('assets');
     const request = {
         rawPath: 'my/endpoint',                                // --> /assets/ yields empty relative path
         contextPath: 'my/endpoint'
@@ -1584,7 +1584,7 @@ exports.testGetStatic_fail_empty_should400 = () => {
 exports.testGetStatic_fail_slash_should400 = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static('assets');
+    const getStatic = lib.buildGetter('assets');
     const request = {
         rawPath: 'my/endpoint/',                                // --> yields relative path '/'
         contextPath: 'my/endpoint'
@@ -1604,7 +1604,7 @@ exports.testGetStatic_fail_slash_should400 = () => {
 exports.testGetStatic_fail_slashes_should400 = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static('assets');
+    const getStatic = lib.buildGetter('assets');
     const request = {
         rawPath: 'my/endpoint///',                                // --> yields relative path '///', counts as empty
         contextPath: 'my/endpoint'
@@ -1624,7 +1624,7 @@ exports.testGetStatic_fail_slashes_should400 = () => {
 exports.testGetStatic_fail_illegalChars_should400 = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static('assets');
+    const getStatic = lib.buildGetter('assets');
     const request = {
         rawPath: 'my/endpoint/the_characters>and<are_no_good',
         contextPath: 'my/endpoint'
@@ -1644,7 +1644,7 @@ exports.testGetStatic_fail_illegalChars_should400 = () => {
 exports.testGetStatic_fail_illegalDoubledots_should400 = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static('assets');
+    const getStatic = lib.buildGetter('assets');
     const request = {
         rawPath: 'my/endpoint/trying/to/../hack/this',
         contextPath: 'my/endpoint'
@@ -1664,7 +1664,7 @@ exports.testGetStatic_fail_illegalDoubledots_should400 = () => {
 exports.testGetStatic_fail_illegalWildcards_should400 = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static('assets');
+    const getStatic = lib.buildGetter('assets');
     const request = {
         rawPath: 'my/endpoint/trying/to/???/hack/*.this',
         contextPath: 'my/endpoint'
@@ -1684,7 +1684,7 @@ exports.testGetStatic_fail_illegalWildcards_should400 = () => {
 exports.testGetStatic_fail_pathNotUnderContextPath_should500 = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static('assets');
+    const getStatic = lib.buildGetter('assets');
     const request = {
         rawPath: 'another/endpoint/trying/to/???/hack/*.this',
         contextPath: 'my/endpoint'
@@ -1706,7 +1706,7 @@ exports.testGetStatic_fail_pathNotUnderContextPath_should500 = () => {
 exports.testGetStatic_fail_contentTypeFunc_runtimeError_should500withMessage = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static('assets', {
+    const getStatic = lib.buildGetter('assets', {
         contentType: () => {
             throw Error("This will be thrown outside of parsePathAndFunctions. Should still be handled.");
         }
@@ -1731,7 +1731,7 @@ exports.testGetStatic_fail_contentTypeFunc_runtimeError_should500withMessage = (
 exports.testGetStatic_fail_contentTypeFunc_runtimeError_throwErrors = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static('assets', {
+    const getStatic = lib.buildGetter('assets', {
         contentType: () => {
             throw Error("This will be thrown outside of parsePathAndFunctions. Should still be handled.");
         },
@@ -1760,7 +1760,7 @@ exports.testGetStatic_fail_contentTypeFunc_runtimeError_throwErrors = () => {
 exports.testGetStatic_fail_cacheControlFunc_runtimeError_should500withMessage = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static('assets', {
+    const getStatic = lib.buildGetter('assets', {
         cacheControl: () => {
             throw Error("This will be thrown outside of parsePathAndFunctions. Should still be handled.");
         }
@@ -1785,7 +1785,7 @@ exports.testGetStatic_fail_cacheControlFunc_runtimeError_should500withMessage = 
 exports.testGetStatic_fail_cacheControlFunc_runtimeError_throwErrors = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static('assets', {
+    const getStatic = lib.buildGetter('assets', {
         cacheControl: () => {
             throw Error("This will be thrown outside of parsePathAndFunctions. Should still be handled.");
         },
@@ -1815,7 +1815,7 @@ exports.testGetStatic_fail_cacheControlFunc_runtimeError_throwErrors = () => {
 exports.testGetStatic_fail_failuresShouldNotDestroyGetstaticFunction = () => {
     const lib = require('./index');
 
-    const getStatic = lib.static({
+    const getStatic = lib.buildGetter({
         root: 'static',
         getCleanPath: req => req.rawPath.substring('my/endpoint'.length)
     });

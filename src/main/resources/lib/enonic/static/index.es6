@@ -168,7 +168,7 @@ exports.get = (pathOrOptions, options) => {
 };
 
 
-/////////////////////////////////////////////////////////////////////////////  .static
+/////////////////////////////////////////////////////////////////////////////  .buildGetter
 
 const resolvePath = (path) => {
     const rootArr = path.split(/\/+/).filter(i => !!i);
@@ -181,7 +181,7 @@ const resolvePath = (path) => {
     return rootArr.join('/').trim();
 }
 
-/* .static helper: creates a resource path from the request, relative to the root folder (which will be prefixed later).
+/* .buildGetter helper: creates a resource path from the request, relative to the root folder (which will be prefixed later).
 *  Overridable with the getCleanPath option param. */
 const getRelativeResourcePath = (request) => {
     let {rawPath, contextPath} = (request || {});
@@ -229,7 +229,7 @@ exports.__resolveRoot__ = (root) => {
 };
 
 
-exports.static = (rootOrOptions, options) => {
+exports.buildGetter = (rootOrOptions, options) => {
     let {
         root,
         cacheControlFunc,
@@ -275,7 +275,7 @@ exports.static = (rootOrOptions, options) => {
             return getResponse200(absolutePath, resource, contentTypeFunc, cacheControlFunc, etag);
 
         } catch (e) {
-            return errorLogAndResponse500(e, throwErrors, rootOrOptions, options, "static", "Root");
+            return errorLogAndResponse500(e, throwErrors, rootOrOptions, options, "buildGetter#getStatic", "Root");
         }
     }
 };
