@@ -74,15 +74,15 @@ const libStatic = require('/lib/enonic/static');
 
 One way to use lib-static is in an link:https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service[XP service], and use it to fetch the resource and serve the entire response object to the front end.
 
-Say you have some resources under a folder _/my/folder_ in your app. Making a service serve these as resources to the frontend can be as simple as importing lib-static, using `.static` to set up a getter function, and using the getter function when serving GET requests. Let's call the service _servemyfolder_:
+Say you have some resources under a folder _/my/folder_ in your app. Making a service serve these as resources to the frontend can be as simple as importing lib-static, using `.buildGetter` to set up a getter function, and using the getter function when serving GET requests. Let's call the service _servemyfolder_:
 
 .src/main/resources/services/servemyfolder/servemyfolder.js
 [source,javascript,options="nowrap"]
 ----
 const libStatic = require('/lib/enonic/static');
 
-// .static sets up a new, reusable getter function: getStatic
-const getStatic = libStatic.static({
+// .buildGetter sets up a new, reusable getter function: getStatic
+const getStatic = libStatic.buildGetter({
     root: 'my/folder',
 });
 
@@ -98,14 +98,14 @@ If this was the entire content of _src/main/resources/services/servemyfolder/ser
 
 NOTE: Using link:https://developer.enonic.com/docs/xp/stable/api/lib-portal#serviceurl[libPortal.serviceUrl] is recommended (for example:  `libPortal.serviceUrl('servemyfolder')`).
 
-Calling `libStatic.static` returns a reusable function (`getStatic`) that takes `request` as argument. It link:#example-path[uses the request] to resolve the resource path relative to the service's own URL. So when calling `<domain>/_/service/my.xp.app/servemyfolder/some/subdir/some.file`, the resource path would be `some/subdir/some.file`. And since we initially used `root` to set up `getStatic` to look for resource files under the folder _my/folder_, it will look for _my/folder/some/subdir/some.file_.
+Calling `libStatic.buildGetter` returns a reusable function (`getStatic`) that takes `request` as argument. It link:#example-path[uses the request] to resolve the resource path relative to the service's own URL. So when calling `<domain>/_/service/my.xp.app/servemyfolder/some/subdir/some.file`, the resource path would be `some/subdir/some.file`. And since we initially used `root` to set up `getStatic` to look for resource files under the folder _my/folder_, it will look for _my/folder/some/subdir/some.file_.
 
 [NOTE]
 ====
-It's recommended to use `.static` in an link:https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service[XP service controller] like this. Here, routing is included and easy to handle: the endpoint's standard root path is already provided by XP in `request.contextPath`, and the asset path is automatically determined relative to that by simply subtracting `request.contextPath` from the beginning of `request.rawPath`. If you use `.static` in a context where the asset path (relative to `root`) can't be determined this way, you should add a link:#example-path[`getCleanPath` option parameter].
+It's recommended to use `.buildGetter` in an link:https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service[XP service controller] like this. Here, routing is included and easy to handle: the endpoint's standard root path is already provided by XP in `request.contextPath`, and the asset path is automatically determined relative to that by simply subtracting `request.contextPath` from the beginning of `request.rawPath`. If you use `.buildGetter` in a context where the asset path (relative to `root`) can't be determined this way, you should add a link:#example-path[`getCleanPath` option parameter].
 ====
 
-👉 See the link:#example-path[path resolution] and link:#api-static[API reference] below for more details.
+👉 See the link:#example-path[path resolution] and link:#api-buildgetter[API reference] below for more details.
 
 ==== Output
 If _my/folder/some/subdir/some.file_ exists as a (readable) file, a full link:https://developer.enonic.com/docs/xp/stable/framework/http#http-response[XP response object] is returned. Most importantly:
@@ -123,11 +123,11 @@ There will also be headers for Cache-Control, ETag and contentType. If the file 
 👉 link:#behaviour[Default behaviour]
 
 ==== Syntax variations
-Above, `'my/folder'` is provided to `libStatic.static` as a named `root` attribute in a parameters object. If you prefer a simpler syntax (and don't need additional link:#example-options[options]), just use a string as a first-positional argument:
+Above, `'my/folder'` is provided to `.buildGetter` as a named `root` attribute in a parameters object. If you prefer a simpler syntax (and don't need additional link:#example-options[options]), just use a string as a first-positional argument:
 
 [source,javascript,options="nowrap"]
 ----
-const getStatic = libStatic.static('my/folder');
+const getStatic = libStatic.buildGetter('my/folder');
 ----
 
 Also, since `getStatic` is a function that takes a `request` argument, it's directly interchangable with `exports.get`. So if you're really into one-liners, **the entire service above could be:**
@@ -136,10 +136,10 @@ Also, since `getStatic` is a function that takes a `request` argument, it's dire
 [source,javascript,options="nowrap"]
 ----
 const libStatic = require('/lib/enonic/static');
-exports.get = libStatic.static('my/folder');
+exports.get = libStatic.buildGetter('my/folder');
 ----
 
-👉 link:#api-static[.static API reference]
+👉 link:#api-buildgetter[.buildGetter API reference]
 
 {zwsp} +
 
@@ -182,14 +182,14 @@ exports.get = function(req) {
 [[example-options]]
 === Options and syntax
 
-The behaviour of the returned getter function from `.static` can be controlled with more link:#options[options], in addition to the `root`.
+The behaviour of the returned getter function from `.buildGetter` can be controlled with more link:#options[options], in addition to the `root`.
 
 If you set `root` with a pure string as the first argument, add a second argument object for the options. If you use the named-parameter way to set `root`, the options must be in the same first-argument object - in practice, just _never use two objects as parameters_.
 
 These are valid and equivalent:
 [source,javascript,options="nowrap"]
 ----
-libStatic.static({
+libStatic.buildGetter({
     root: 'my/folder',
     option1: "option value 1",
     option2: "option value 2"
@@ -198,7 +198,7 @@ libStatic.static({
 ...and:
 [source,javascript,options="nowrap"]
 ----
-libStatic.static('my/folder', {
+libStatic.buildGetter('my/folder', {
     option1: "option value 1",
     option2: "option value 2"
 });
@@ -222,18 +222,18 @@ Example from a request object:
   contextPath: "/_/service/my.xp.app/servemyfolder"
 }
 ----
-From this request, the relative resource path is resolved to _some/subdir/some.file_, expected to be found below the `root` folder set with `libStatic.static`.
+From this request, the relative resource path is resolved to _some/subdir/some.file_, expected to be found below the `root` folder set with `libStatic.buildGetter`.
 
 
 [[example-getcleanpath]]
 ==== getCleanPath
 However, there can be cases where you need to customize the relative-asset-path resolution - for example, using an link:https://developer.enonic.com/docs/xp/stable/cms/mappings[XP controller mapping] for setting up an endpoint that uses lib-static.
 
-Send an link:#example-options[option] function `getCleanPath` to `.static`. `getCleanPath` takes the `request` argument and returns a relative asset path. The rest is up to you:
+Send an link:#example-options[option] function `getCleanPath` to `.buildGetter`. `getCleanPath` takes the `request` argument and returns a relative asset path. The rest is up to you:
 
 [source,javascript,options="nowrap"]
 ----
-exports.get = libStatic.static({
+exports.get = libStatic.buildGetter({
     root: 'my/folder',
     getCleanPath: function(request) {
         // In a perfect imaginary example world, all requests handled here have a
@@ -253,7 +253,7 @@ exports.get = libStatic.static({
 
 [source,javascript,options="nowrap"]
 ----
-exports.get = libStatic.static({
+exports.get = libStatic.buildGetter({
     root: 'my/folder',
     getCleanPath: function(request) {
         return request.params.filename + ".txt";
@@ -292,7 +292,7 @@ exports.all = function(req) {
 
 // Handling <webappURL>/getResource/...
 libRouter.get( `/getResource/{resourcePath:.+}`,
-    libStatic.static({
+    libStatic.buildGetter({
         root: `'my/folder`,
         // Override relative path resolution (since request.contextPath is the root of the webapp,
         // not <webappURL>/getResource/... which is what resource paths should be relative to).
@@ -349,7 +349,7 @@ By default, lib-static detects link:https://developer.mozilla.org/en-US/docs/Web
 If set as the **boolean** `false`, the detection and handling is switched off and no `Content-Type` header is returned:
 [source,javascript,options="nowrap"]
 ----
-const getStatic = libStatic.static({
+const getStatic = libStatic.buildGetter({
     root: 'my/folder',
     contentType: false // <-- Empty string does the same
 });
@@ -358,7 +358,7 @@ const getStatic = libStatic.static({
 If set as a (non-empty) **string**, there will be no processing, but that string will be returned as a fixed content type (a bad idea for handling multiple resource types, of course):
 [source,javascript,options="nowrap"]
 ----
-const getStatic = libStatic.static({
+const getStatic = libStatic.buildGetter({
     root: 'my/folder',
     contentType: "everything/thismimetype"
 });
@@ -367,7 +367,7 @@ const getStatic = libStatic.static({
 If set as an **object**, keys are file types (that is, the extensions of the requested asset file names, so beware of file extensions changing during compilation. To be clear, you want the post-compilation extension) and values are the returned MIME-type strings:
 [source,javascript,options="nowrap"]
 ----
-const getStatic = libStatic.static({
+const getStatic = libStatic.buildGetter({
     root: 'my/folder',
     contentType: {
         json: "application/json",
@@ -381,7 +381,7 @@ For any extension not found in that object, it will fall back to automatically d
 It can also be set as a **function**: `(path, resource) => mimeTypeString?` for fine-grained control: for each circumstance, return a specific mime-type string value, or `false` to leave the `contentType` out of the response, or `null` to fall back to lib-static's built-in detection:
 [source,javascript,options="nowrap"]
 ----
-const getStatic = libStatic.static({
+const getStatic = libStatic.buildGetter({
     root: 'my/folder',
     contentType: function(path, resource) {
         if (path.endsWith('.myspoon') && resource.getSize() > 10000000) {
@@ -405,7 +405,7 @@ The `cacheControl` link:#example-options[option] controls the link:https://devel
 Setting it to the **boolean** `false` means turning the entire cache-control header off in the response:
 [source,javascript,options="nowrap"]
 ----
-const getStatic = libStatic.static({
+const getStatic = libStatic.buildGetter({
     root: 'my/folder',
     cacheControl: false
 });
@@ -414,7 +414,7 @@ const getStatic = libStatic.static({
 Setting it as a **string** instead, always returns that string:
 [source,javascript,options="nowrap"]
 ----
-const getStatic = libStatic.static({
+const getStatic = libStatic.buildGetter({
     root: 'my/folder',
     cacheControl: 'immutable'
 });
@@ -424,7 +424,7 @@ It can also be set as a **function**: `(path, resource, mimeType) => cacheContro
 
 [source,javascript,options="nowrap"]
 ----
-const getStatic = libStatic.static({
+const getStatic = libStatic.buildGetter({
     root: 'my/folder',
     cacheControl: function(path, resource, mimeType) {
         if (path.startsWith('/uncached')) {
@@ -455,7 +455,7 @@ This default behaviour can be overridden with the `etag` option. If set to `true
 
 [source,javascript,options="nowrap"]
 ----
-const getStatic = libStatic.static({
+const getStatic = libStatic.buildGetter({
     root: 'my/folder',
     etag: false
 });
@@ -469,13 +469,13 @@ const getStatic = libStatic.static({
 [[example-errors]]
 === Errors: throw instead of return
 
-By link:#behaviour[default], runtime errors during `.get` or during the returned getter function from `.static` will log the error message and return a 500-status response to the client.
+By link:#behaviour[default], runtime errors during `.get` or during the returned getter function from `.buildGetter` will log the error message and return a 500-status response to the client.
 
 If you instead want to catch these errors and handle them yourself, set a `throwErrors: true` option:
 
 [source,javascript,options="nowrap"]
 ----
-const getStatic = libStatic.static({
+const getStatic = libStatic.buildGetter({
     root: 'my/folder',
     throwErrors: true
 });
@@ -509,19 +509,19 @@ Lib-static can be set up to respond with several instances in parallel, thereby 
 [[example-get]]
 === Low-level: .get
 
-Lib-static exposes a second function `.get` (in addition to `.static`) for doing a direct resource fetch when the resource path is already known/resolved. The idea is to allow closer control with each call: implement your own logic and handling around it.
+Lib-static exposes a second function `.get` (in addition to `.buildGetter`), for doing a direct resource fetch when the resource path is already known/resolved. The idea is to allow closer control with each call: implement your own logic and handling around it.
 
-NOTE: For most scenarios though, you'll probably want to use link:#api-static[`.static`].
+NOTE: For most scenarios though, you'll probably want to use link:#api-buildgetter[`.buildGetter`].
 
 ==== Similarities
-- Just like the getter function returned by `.static`, `.get` also returns a link:#behaviour[full response object] with status, body, content type and a generated ETag, and has error detection and corresponding responses (statuses 400, 404 and 500).
+- Just like the getter function returned by `.buildGetter`, `.get` also returns a link:#behaviour[full response object] with status, body, content type and a generated ETag, and has error detection and corresponding responses (statuses 400, 404 and 500).
 - The link:#options[options] are also mostly the same.
 
 ==== Differences
-`.get` is different from `.static` in these ways:
+`.get` is different from `.buildGetter` in these ways:
 
 - `.get` is intended for lower-level usage (wraps less functionality, but gives the opportunity for even more controlled usage).
-- Only one call: whereas `.static` sets up a reusable getter function, `.get` _is_ the getter function.
+- Only one call: whereas `.buildGetter` sets up a reusable getter function, `.get` _is_ the getter function.
 - No root folder is set up with `.get`. In every call, instead of the `request` argument, `.get` takes a full, absolute resource `path` (relative to JAR root) string. This allows _any valid path_ inside the JAR except the root `/` itself - including source code! **Be careful** how you resolve the `path` string in the controller to avoid security flaws, such as opening a service to reading _any file in the JAR_, etc.
 - Since `.get` doesn't resolve the resource path from the request, there's no `getCleanPath` override option here.
 - There is no check for matching ETag (`If-None-Match` header), and no functionality to return a body-less status 304. `.get` always tries to fetch the resource.
@@ -555,7 +555,7 @@ This is equivalent with using the `path` attribute:
     // ...
 ----
 
-It's also open to the same link:#options[options] as `.static` - except for `getCleanPath` which doesn't exist for `.get`:
+It's also open to the same link:#options[options] as `.buildGetter` - except for `getCleanPath` which doesn't exist for `.get`:
 
 [source,javascript,options="nowrap"]
 ----
@@ -591,7 +591,7 @@ It's also open to the same link:#options[options] as `.static` - except for `get
 
 Two controller functions are exposed.
 
-- The first, link:#api-static[static], is a broad configure-once/catch-all approach that's based on the relative path in the request. This is the one you usually want.
+- The first, link:#api-buildgetter[buildgetter], is a broad configure-once/catch-all approach that's based on the relative path in the request. This is the one you usually want.
 - The second, link:#api-get[get], specifically gets an asset based on a path string and options for each particular call.
 
 👉 link:#example-get[Similarities and differences]
@@ -600,18 +600,18 @@ Two controller functions are exposed.
 {zwsp} +
 
 
-[[api-static]]
-=== .static
+[[api-buildgetter]]
+=== .buildGetter
 
 Sets up and returns a reusable resource-getter function.
 
 Can be used in three ways:
 
-`const getStatic = libStatic.static(root);`
+`const getStatic = libStatic.buildGetter(root);`
 
-`const getStatic = libStatic.static(root, options);`
+`const getStatic = libStatic.buildGetter(root, options);`
 
-`const getStatic = libStatic.static(optionsWithRoot);`
+`const getStatic = libStatic.buildGetter(optionsWithRoot);`
 
 The getter function (`getStatic`) takes the link:https://developer.enonic.com/docs/xp/stable/framework/http#http-request[XP request object] as argument. `request` is used to determine the asset path, and to check the `If-None-Match` header. It then returns a link:#behaviour[response object] for the asset:
 
@@ -620,7 +620,7 @@ The getter function (`getStatic`) takes the link:https://developer.enonic.com/do
 An ETag value is generated and cached for the requested asset. If that matches the `If-None-Match` header, the response will only contain: `{status: 304}`, signifying the asset hasn't changed and the cache can be used instead of downloading the asset. If there's no match, the asset will be read out and returned in the link:#behaviour[response] under `body`, with a `status` 200.
 
 
-[[static-params]]
+[[buildgetter-params]]
 ==== Params:
 - `root` (string): path to a root folder where resources are found. This string points to a root folder in the built JAR.
     > NOTE: The phrase _"a root folder in the built JAR"_ is accurate, but if you think JAR's can be a bit obscure here's an easier mental model: `root` points to a folder below and relative to the _build/resources/main_. This is where all assets are collected when building the JAR. And when running XP in link:https://developer.enonic.com/docs/enonic-cli/master/dev#start[dev mode], it actually IS where assets are served from. Depending on specific build setups, you can also think of `root` as being relative to _src/main/resources/_.
@@ -650,7 +650,7 @@ Three optional and equivalent syntaxes:
 
 
 ==== Params:
-- `path` (string): path and full file name to an asset file, relative to the JAR root (or relative to _build/resources/main_ in XP dev mode, see link:#static-params[the 'root' param explanation] above. Cannot contain `..` or any of the characters `: | < > ' " ´ * ?` or backslash or backtick.
+- `path` (string): path and full file name to an asset file, relative to the JAR root (or relative to _build/resources/main_ in XP dev mode, see link:#buildgetter-params[the 'root' param explanation] above. Cannot contain `..` or any of the characters `: | < > ' " ´ * ?` or backslash or backtick.
 - `options` (object): add an link:#options[options object] after `path` to control behaviour for this specific response.
 - `optionsWithPath` (object): same as above, an link:#options[options object] but when used as the first and only argument, this object _must_ include a `{ path: ..., }` attribute too - a path string same as above. This is simply for convenience if you prefer named parameters instead of a positional `path` argument. If both are supplied, the positional `path` argument is used.
 
@@ -666,7 +666,7 @@ If `path` (either as a string argument or as an attribute in a `options` object)
 
 [[behaviour]]
 == API: response and default behaviour
-Unless some of these aspects are overriden by an link:#options[options parameter], the returned object (from both `.get` and the getter function created by `.static`) is a standard link:https://developer.enonic.com/docs/xp/stable/framework/http#http-response[XP response object] ready to be returned from an XP controller.
+Unless some of these aspects are overriden by an link:#options[options parameter], the returned object (from both `.get` and the getter function created by `.buildGetter`) is a standard link:https://developer.enonic.com/docs/xp/stable/framework/http#http-response[XP response object] ready to be returned from an XP controller.
 
 **Response signature:**
 
@@ -693,7 +693,7 @@ For example:
 [[status]]
 ==== status
 
-Follows standard link:https://en.wikipedia.org/wiki/List_of_HTTP_status_codes[HTTP error codes]: 200 - OK, 400 - Bad Request, 404 - Not Found. And for [.static], 304 - Not Modified, signifying a matching ETag and triggering a browser to use its local cached asset. On other errors: 500, and possibly an error message in `body`.
+Follows standard link:https://en.wikipedia.org/wiki/List_of_HTTP_status_codes[HTTP error codes]: 200 - OK, 400 - Bad Request, 404 - Not Found. And for [.buildGetter], 304 - Not Modified, signifying a matching ETag and triggering a browser to use its local cached asset. On other errors: 500, and possibly an error message in `body`.
 
 {zwsp} +
 
@@ -794,12 +794,12 @@ An output _contentType_ string is used directly in the response.
 [[option-getcleanpath]]
 ==== getCleanPath
 
-(function) Only used in link:#api-static[.static]. The default behaviour of the returned `getStatic` function is to take a request object, and compare the beginning of the current requested path (`request.rawPath`) to the endpoint's own root path (`request.contextPath`) and get a relative asset path below `root` (so that later, prefixing the `root` value to that relative path will give the absolute full path to the resource in the JAR). In cases where this default behaviour is not enough, you can override it by adding a `getCleanPath` param: `(request) => '<resource/path/below/root>'`. Emphasis: the returned 'clean' path from this function should be _relative to the `root` folder_, not an absolute path in the JAR.
+(function) Only used in link:#api-buildgetter[.buildGetter]. The default behaviour of the returned `getStatic` function is to take a request object, and compare the beginning of the current requested path (`request.rawPath`) to the endpoint's own root path (`request.contextPath`) and get a relative asset path below `root` (so that later, prefixing the `root` value to that relative path will give the absolute full path to the resource in the JAR). In cases where this default behaviour is not enough, you can override it by adding a `getCleanPath` param: `(request) => '<resource/path/below/root>'`. Emphasis: the returned 'clean' path from this function should be _relative to the `root` folder_, not an absolute path in the JAR.
 
     - **For example:** if a controller _getAnyStatic.es6_ is accessed with a link:https://developer.enonic.com/docs/xp/stable/cms/mappings[controller mapping] at _https://someDomain.com/resources/public_, then that's an endpoint with the path `resources/public` - but that can't be determined from the request. So the automatic extraction of a relative path needs a `getCleanPath` override. Super simplified here:
 +
 ----
-    const getStatic = libStatic.static(
+    const getStatic = libStatic.buildGetter(
         'my-resources',
         {
             getCleanPath: (request) => {
@@ -862,7 +862,7 @@ Mutable assets _can_ be handled by this library (since ETag support is in place 
 }
 ----
 +
-In this last case, if the content hasn't changed, a simple 304 status code is returned by `.static` and `.get`, with nothing in the body - so nothing will be downloaded.
+In this last case, if the content hasn't changed, a simple 304 status code is returned by the getter from `.buildGetter`, with nothing in the body - so nothing will be downloaded.
 
 
 [[mutable-implementation]]
@@ -885,9 +885,9 @@ If you have mutable assets in your project, there are several ways you could imp
     const libStatic = require('lib/enonic/static');
 
     // Root: /immutable folder. Only immutable assets there, since they are served with immutable-optimized header by default!
-    const getImmutableAsset = libStatic.static('immutable');
+    const getImmutableAsset = libStatic.buildGetter('immutable');
 
-    const getMutableAsset = libStatic.static(
+    const getMutableAsset = libStatic.buildGetter(
 
         // Root: /mutable folder. Any assets can be under there...
         'mutable',
@@ -905,18 +905,18 @@ If you have mutable assets in your project, there are several ways you could imp
 ----
     const libStatic = require('lib/enonic/static');
 
-    // Reliable static-filename regex pattern in this case:
+    // Reliable immutable-filename regex pattern in this case:
     const immutablePattern = /\w+\.[0-9a-fA-F].\w+$/;
 
-    const getStaticAsset = libStatic.static(
+    const getStatic = libStatic.buildGetter(
 
-        // Root: /static contains both immutable and mutable files:
+        // Root: the /static folder contains both immutable and mutable files:
         'static',
 
         {
             cacheControl: (filePathAndName, content) => {
                 if (filePathAndName.match(immutablePattern)) {
-                    // fingerprinted file, ergo static:
+                    // fingerprinted file, ergo immutable:
                     return 'public, max-age=31536000, immutable';
                 } else {
                     // mutable file:
