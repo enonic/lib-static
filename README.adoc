@@ -617,7 +617,7 @@ The getter function (`getStatic`) takes the link:https://developer.enonic.com/do
 
 `const response = getStatic(request);`
 
-An ETag value is generated and cached for the requested asset. If that matches the `If-None-Match` header, the response will only contain: `{status: 304}`, signifying the asset hasn't changed and the cache can be used instead of downloading the asset. If there's no match, the asset will be read out and returned in the link:#behaviour[response] under `body`, with a `status` 200.
+An ETag value is generated and cached for the requested asset. If that matches the `If-None-Match` header in the request, the response will only contain: `{status: 304}`, signifying the asset hasn't changed and the cache can be used instead of downloading the asset. If there's no match, the asset will be read out and returned in the link:#behaviour[response] under `body`, with a `status` 200.
 
 
 [[buildgetter-params]]
