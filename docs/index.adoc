@@ -98,7 +98,7 @@ If this was the entire content of _src/main/resources/services/servemyfolder/ser
 
 NOTE: Using link:https://developer.enonic.com/docs/xp/stable/api/lib-portal#serviceurl[libPortal.serviceUrl] is recommended (for example:  `libPortal.serviceUrl('servemyfolder')`).
 
-Calling `libStatic.buildGetter` returns a reusable function (`getStatic`) that takes `request` as argument. It link:#example-path[uses the request] to resolve the resource path relative to the service's own URL. So when calling `<domain>/\_/service/my.xp.app/servemyfolder/some/subdir/some.file`, the resource path would be `some/subdir/some.file`. And since we initially used `root` to set up `getStatic` to look for resource files under the folder _my/folder_, it will look for _my/folder/some/subdir/some.file_.
+Calling `libStatic.buildGetter` returns a reusable function (`getStatic`) that takes `request` as argument. It link:#example-path[uses the request] to resolve the resource path relative to the service's own URL. So when calling `<domain>/\_/service/my.xp.app/servemyfolder/some/subdir/some.file`, the resource path would be `some/subdir/some.file`. And since we initially used `root` to set up `getStatic` to look for resource files under the folder my/folder, it will look for my/folder/some/subdir/some.file.
 
 [NOTE]
 ====
