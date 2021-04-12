@@ -212,7 +212,7 @@ libStatic.buildGetter('my/folder', {
 [[example-path]]
 === Path resolution on other endpoints
 
-Usually, the path to the resource file (relative to the root folder) is link:#example-service-urls[determinied from the request]. But this depends on several things: the request object must contain a `rawPath` and `contextPath` attribute to compare, and there must be some routing involved: the controller must be able to accept requests from sub-URIs. In link:https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service[XP services] (and link:https://developer.enonic.com/docs/xp/stable/runtime/engines/webapp-engine[XP webapps], but with caveats) this is supported out of the box, making it easiest to use a service to implement an endpoint.
+Usually, the path to the resource file (relative to the root folder) is link:#example-service-urls[determined from the request]. But this depends on several things: the request object must contain a `rawPath` and `contextPath` attribute to compare, and there must be some routing involved: the controller must be able to accept requests from sub-URIs. In link:https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service[XP services] (and link:https://developer.enonic.com/docs/xp/stable/runtime/engines/webapp-engine[XP webapps], but with caveats) this is supported out of the box, making it easiest to use a service to implement an endpoint.
 
 Example from a request object:
 [source,javascript,options="nowrap"]
