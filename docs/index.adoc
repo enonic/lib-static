@@ -739,8 +739,14 @@ Mutable assets *should not* be served with the default 'Cache-Control' header `'
 
 As described above, an options object can be added with optional attributes to **override** the link:#behaviour[default behaviour]:
 
+.For .buildGetter:
 ----
 { cacheControl, contentType, etag, getCleanPath, throwErrors }
+----
+
+.For .get:
+----
+{ cacheControl, contentType, etag, throwErrors }
 ----
 
 {zwsp} +

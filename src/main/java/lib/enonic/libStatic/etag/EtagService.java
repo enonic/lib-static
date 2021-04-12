@@ -1,6 +1,5 @@
 package lib.enonic.libStatic.etag;
 
-import com.enonic.xp.resource.Resource;
 import com.enonic.xp.resource.ResourceKey;
 import com.enonic.xp.resource.ResourceProcessor;
 import com.enonic.xp.resource.ResourceService;
@@ -18,11 +17,10 @@ public class EtagService
 {
     private static final Logger LOG = LoggerFactory.getLogger( EtagService.class );
 
-    private static final Hasher HASHER = new Hasher();
-
-    protected static boolean isDev = RunMode.get() != RunMode.PROD;
+    boolean isDev = RunMode.get() == RunMode.DEV;
 
     Supplier<ResourceService> resourceServiceSupplier;
+    ProcessorFactory processorFactory = new ProcessorFactory();
 
 
     public static final String ERROR_KEY = "error";
@@ -48,16 +46,18 @@ public class EtagService
      */
     public Map<String, String> getEtag( String path, Integer etagOverrideMode )
     {
-        final ResourceService resourceService = resourceServiceSupplier.get();
         try
         {
-            boolean doProcessEtag =
-                etagOverrideMode > ( isDev ? 0 : -1 ); // 0: true in prod, false in dev. 1 forces true in dev, -1 forces false in prod.
+            final ResourceService resourceService = resourceServiceSupplier.get();
+
+            // 0: true in prod, false in dev. 1 forces true in dev, -1 forces false in prod:
+            boolean doProcessEtag = etagOverrideMode > ( isDev ? 0 : -1 );
 
             if ( doProcessEtag )
             {
-                Resource resource = resourceService.getResource( ResourceKey.from( path ) );
-                final String etag = resourceService.processResource( createEtagProcessor( resource.getKey() ) );
+                // Leaving getResource( resourceKey ) and the actual hasher to the processor:
+                ResourceProcessor<ResourceKey, String> processor =  processorFactory.createEtagProcessor( ResourceKey.from(path) );
+                final String etag = resourceService.processResource( processor );
                 return Map.of( ETAG_KEY, etag );
 
             }
@@ -71,7 +71,6 @@ public class EtagService
         {
             long errorRnd = (long) ( Math.random() * Long.MAX_VALUE );
             String errorMsg = "Couldn't process etag from resource '" + path + "' (error ID: " + Long.toString( errorRnd, 36 ) + ")";
-            LOG.error(errorMsg, e );
             return Map.of( ERROR_KEY, errorMsg );
         }
     }
@@ -80,15 +79,5 @@ public class EtagService
     public void initialize( BeanContext context )
     {
         this.resourceServiceSupplier = context.getService( ResourceService.class );
-    }
-
-    private static ResourceProcessor<ResourceKey, String> createEtagProcessor( final ResourceKey key )
-    {
-        return new ResourceProcessor.Builder<ResourceKey, String>().
-            key( key ).
-            segment( "lib-static" ).
-            keyTranslator( k -> k ).
-            processor( resource -> "\"" + HASHER.getHash( resource.readBytes() ) + "\"" ).
-            build();
     }
 }

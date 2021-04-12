@@ -1,14 +1,13 @@
 const etagReader = require('/lib/enonic/static/etagReader');
 const optionsParser = require('/lib/enonic/static/options');
 const ioLib = require('/lib/enonic/static/io');
-
-var IS_DEV = Java.type('com.enonic.xp.server.RunMode').get().toString() !== 'PROD';
+const runMode = require('/lib/enonic/static/runMode');
 
 const getResponse200 = (path, resource, contentTypeFunc, cacheControlFunc, etag) => {
     const contentType = contentTypeFunc(path, resource);
     const cacheControlHeader = cacheControlFunc(path, resource, contentType);
 
-    // Preventing any keys at all with null/undefined values in header (since those cause NPE):
+    // Preventing any keys under 'header' with null/undefined values (since those cause NPE):
     const headers = {};
     if (cacheControlHeader) {
         headers['Cache-Control'] = cacheControlHeader;
@@ -75,11 +74,11 @@ const errorLogAndResponse500 = (e, throwErrors, stringOrOptions, options, method
 
 const getResourceOr400 = (path, pathError) => {
     if (pathError) {
-        if (!IS_DEV) {
+        if (!runMode.isDev()) {
             log.warning(pathError);
         }
         return {
-            response400: (IS_DEV)
+            response400: (runMode.isDev())
                 ? {
                     status: 400,
                     body: pathError,
@@ -93,11 +92,11 @@ const getResourceOr400 = (path, pathError) => {
 
     const resource = ioLib.getResource(path);
     if (!resource.exists()) {
-        if (!IS_DEV) {
+        if (!runMode.isDev()) {
             log.warning(`Not found: ${path}`);
         }
         return {
-            response400: (IS_DEV)
+            response400: (runMode.isDev())
                 ? {
                     status: 404,
                     body: `Not found: ${path}`,
@@ -113,6 +112,21 @@ const getResourceOr400 = (path, pathError) => {
 };
 
 
+
+// Very conservative filename verification:
+// Actual filenames with these characters are rare and more likely to be attempted attacks.
+// For now, easier/cheaper to just prevent them. Revisit this later if necessary.
+const doubleDotRx = /\.\./;
+const illegalCharsRx = /[<>:"'`´\\|?*]/;
+// Exported for testing only
+exports.__getPathError__ = (trimmedPathString) => {
+    if (trimmedPathString.match(doubleDotRx) || trimmedPathString.match(illegalCharsRx)) {
+        return "can't contain '..' or any of these characters: \\ | ? * < > ' \" ` ´";
+    }
+    if (!trimmedPathString) {
+        return "resolves to the JAR root / empty or all-spaces";
+    }
+};
 
 /////////////////////////////////////////////////////////////////////////////  .get
 
@@ -134,7 +148,7 @@ exports.get = (pathOrOptions, options) => {
         }
 
         path = path.replace(/^\/+/, '');
-        const pathError = getPathError(path);
+        const pathError = exports.__getPathError__(path);
 
         path = `/${path}`;
 
@@ -154,7 +168,7 @@ exports.get = (pathOrOptions, options) => {
 };
 
 
-/////////////////////////////////////////////////////////////////////////////  .static
+/////////////////////////////////////////////////////////////////////////////  .buildGetter
 
 const resolvePath = (path) => {
     const rootArr = path.split(/\/+/).filter(i => !!i);
@@ -167,52 +181,43 @@ const resolvePath = (path) => {
     return rootArr.join('/').trim();
 }
 
-/* .static helper: creates a resource path from the request, relative to the root folder (which will be prefixed later).
+/* .buildGetter helper: creates a resource path from the request, relative to the root folder (which will be prefixed later).
 *  Overridable with the getCleanPath option param. */
 const getRelativeResourcePath = (request) => {
-    if (!(request || {}).rawPath) {
-        throw Error(`Can't resolve relative asset path - request doesn't have a .rawPath attribute: ` + JSON.stringify(request));
+    let {rawPath, contextPath} = (request || {});
+
+    if (!rawPath) {
+        throw Error(`Default functionality can't resolve relative asset path: the request doesn't have a .rawPath attribute. You may need to supply a getCleanPath(request) function parameter to extract a relative asset path from the request. Request: ${JSON.stringify(request)}`);
     }
 
-    const removePrefix = request.contextPath.trim() || '** missing or falsy **';
+    let removePrefix = (contextPath || '').trim() || '** missing or falsy **';
 
-    if (!request.rawPath.startsWith(removePrefix)) {
+    // Normalize: remove leading slashes from both
+    rawPath = rawPath.replace(/^\/+/, '');
+    removePrefix = removePrefix.replace(/^\/+/, '');
+
+    if (!rawPath.startsWith(removePrefix)) {
         // Gives 500-type error
-        throw Error(`Can't resolve relative asset path: request.contextPath (${JSON.stringify(request.contextPath)}) was expected to be a non-empty prefix of request.rawPath (${JSON.stringify(request.rawPath)}). You may need to supply a getCleanPath(request) function parameter to extract a relative asset path from the request.`);
+        throw Error(`Default functionality can't resolve relative asset path: the request was expected to contain a .contextPath string attribute that is a prefix in a .rawPath string attribute. You may need to supply a getCleanPath(request) function parameter to extract a relative asset path from the request. Request: ${JSON.stringify(request)}`);
     }
 
-    return request.rawPath
+    return rawPath
         .trim()
         .substring(removePrefix.length)
-        .replace(/^\/+/, '');
 }
 
 
-// Very conservative filename verification:
-// Actual filenames with these characters are rare and more likely to be attempted attacks.
-// For now, easier/cheaper to just prevent them. Revisit this later if necessary.
-const doubleDotRx = /\.\./;
-const illegalCharsRx = /[<>:"'`´\\|?*]/;
-const getPathError = (trimmedPathString) => {
-    if (trimmedPathString.match(doubleDotRx) || trimmedPathString.match(illegalCharsRx)) {
-        return "can't contain '..' or any of these characters: \\ | ? * < > ' \" ` ´";
-    }
-    if (!trimmedPathString) {
-        return "is empty or all-spaces";
-    }
-};
-exports.getPathError = getPathError;
 
-
-const resolveRoot = (root) => {
+// Exported for testing only
+exports.__resolveRoot__ = (root) => {
     let resolvedRoot = resolvePath(root.replace(/^\/+/, '').replace(/\/+$/, ''));
-    let errorMessage = getPathError(resolvedRoot);
+    let errorMessage = exports.__getPathError__(resolvedRoot);
     resolvedRoot = "/" + resolvedRoot;
 
     if (!errorMessage) {
         // TODO: verify that root exists and is a directory?
         if (!resolvedRoot) {
-            errorMessage = "is empty or all-spaces";
+            errorMessage = "resolves to the JAR root / empty or all-spaces";
         }
     }
 
@@ -224,7 +229,7 @@ const resolveRoot = (root) => {
 };
 
 
-exports.static = (rootOrOptions, options) => {
+exports.buildGetter = (rootOrOptions, options) => {
     let {
         root,
         cacheControlFunc,
@@ -239,16 +244,17 @@ exports.static = (rootOrOptions, options) => {
         throw Error(errorMessage);
     }
 
-    root = resolveRoot(root, errorMessage);
+    root = exports.__resolveRoot__(root, errorMessage);
 
     // Allow option override of the function that gets the relative resource path from the request
     const getRelativePathFunc = getCleanPath || getRelativeResourcePath;
 
     return function getStatic(request) {
         try {
-            const relativePath = getRelativePathFunc(request);
+            const relativePath = getRelativePathFunc(request)
+                .replace(/^\/+/, '');
 
-            const error = getPathError(relativePath);
+            const error = exports.__getPathError__(relativePath);
             const pathError = (error)
                 ? `Illegal relative resource path '${relativePath}': ${error}`      // 400-type error
                 : error;
@@ -269,7 +275,7 @@ exports.static = (rootOrOptions, options) => {
             return getResponse200(absolutePath, resource, contentTypeFunc, cacheControlFunc, etag);
 
         } catch (e) {
-            return errorLogAndResponse500(e, throwErrors, rootOrOptions, options, "static", "Root");
+            return errorLogAndResponse500(e, throwErrors, rootOrOptions, options, "buildGetter#getStatic", "Root");
         }
     }
 };

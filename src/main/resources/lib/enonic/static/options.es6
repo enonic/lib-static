@@ -244,7 +244,7 @@ exports.parsePathAndOptions = (pathOrOptions, options) =>
 
 
 
-/** ENTRY: type-verifies and parses the root and options for index.js.static.
+/** ENTRY: type-verifies and parses the root and options for index.js.buildGetter.
  *  - If everything's okay, the root string will be extracted from the options object (.root attribute) or rootOrOptions as a first string argument,
  *  and the rest of the options parsed into the returned object: { root, etagOverride, cacheControlFunc, contentTypeFunc, throwErrors }.
  *

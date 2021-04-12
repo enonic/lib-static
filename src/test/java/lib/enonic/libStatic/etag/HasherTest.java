@@ -11,8 +11,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.security.NoSuchAlgorithmException;
-
 /* Tests: getEtag
     - Always return an etag
     - Etag is consistent for one contentBytes
@@ -60,7 +58,7 @@ public class HasherTest extends ScriptTestSupport {
 
 
     @Test
-    public void testGetHash_shouldDifferentForDifferentContentBytes() throws NoSuchAlgorithmException {
+    public void testGetHash_shouldDifferentForDifferentContentBytes() {
         String hugeEtag = hasher.getHash(hugeAssetBytes1);
         String textEtag = hasher.getHash(textAssetBytes1);
         String gifEtag = hasher.getHash(gifAssetBytes1);
@@ -75,7 +73,7 @@ public class HasherTest extends ScriptTestSupport {
     }
 
     @Test
-    public void testGetHash_shouldConsistentForSameContentBytes() throws NoSuchAlgorithmException {
+    public void testGetHash_shouldConsistentForSameContentBytes() {
         String hugeEtag1 = hasher.getHash(hugeAssetBytes1);
         String hugeEtag2 = hasher.getHash(hugeAssetBytes2);
 
@@ -91,7 +89,7 @@ public class HasherTest extends ScriptTestSupport {
     }
 
     @Test
-    public void testGetHash_expectTimeDifferenceForHugeResource() throws NoSuchAlgorithmException {
+    public void testGetHash_expectTimeDifferenceForHugeResource() {
         Long zero = System.nanoTime();
         hasher.getHash(hugeAssetBytes1);
         hasher.getHash(hugeAssetBytes2);
