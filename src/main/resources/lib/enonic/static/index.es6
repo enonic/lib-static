@@ -3,9 +3,11 @@ const optionsParser = require('/lib/enonic/static/options');
 const ioLib = require('/lib/enonic/static/io');
 const runMode = require('/lib/enonic/static/runMode');
 
-const getResponse200 = (path, resource, contentTypeFunc, cacheControlFunc, etag) => {
-    const contentType = contentTypeFunc(path, resource);
-    const cacheControlHeader = cacheControlFunc(path, resource, contentType);
+const getResponse200 = (path, fallbackPath, resource, contentTypeFunc, cacheControlFunc, etag) => {
+    const contentType = contentTypeFunc(fallbackPath || path, resource);
+    const cacheControlHeader = fallbackPath
+        ? 'must-revalidate'
+        : cacheControlFunc(path, resource, contentType);
 
     // Preventing any keys under 'header' with null/undefined values (since those cause NPE):
     const headers = {};
@@ -70,9 +72,13 @@ const errorLogAndResponse500 = (e, throwErrors, stringOrOptions, options, method
     }
 }
 
+// TODO: if other options than index.html are preferrable or overridable by options later (Issue #57),
+//  replace this function at runtime with indexFallbackFunc.
+//  Implemented as array in preparation for that.
+const getIndexFallbacks = () => ['index.html'];
 
 
-const getResourceOr400 = (path, pathError) => {
+const getResourceOr400orRedirect = (path, request, pathError) => {
     if (pathError) {
         if (!runMode.isDev()) {
             log.warning(pathError);
@@ -90,25 +96,61 @@ const getResourceOr400 = (path, pathError) => {
         };
     }
 
-    const resource = ioLib.getResource(path);
-    if (!resource.exists()) {
-        if (!runMode.isDev()) {
-            log.warning(`Not found: ${path}`);
-        }
-        return {
-            response400: (runMode.isDev())
-                ? {
-                    status: 404,
-                    body: `Not found: ${path}`,
-                    contentType: 'text/plain; charset=utf-8'
-                }
-                : {
-                    status: 404
-                }
+    const hasTrailingSlash = path.endsWith('/');
+
+    if (!hasTrailingSlash) {
+        const resource = ioLib.getResource(path);
+        if (resource.exists()) {
+            return { resource };
         }
     }
 
-    return { resource };
+    const indexFallbacks = getIndexFallbacks(path).map( indexFile =>
+        path +
+        (!hasTrailingSlash ? '/' : '') +
+        indexFile
+    );
+
+    for (let i=0; i<indexFallbacks.length; i++) {
+
+        const fallbackPath = indexFallbacks[i];
+        const resource = ioLib.getResource(fallbackPath);
+
+        if (resource.exists()) {
+            if (hasTrailingSlash) {
+                if (runMode.isDev()) {
+                    log.info(`Resource fallback for '${path}': returning '${fallbackPath}'`);
+                }
+                return { resource, fallbackPath };
+
+            } else {
+                if (runMode.isDev()) {
+                    log.info(`Not found: '${path}', but fallback found at '${request.rawPath}/' - redirecting.`);
+                }
+                return {
+                    response400: {
+                        // ASSUMES that this is always the correct redirect, whatever happened in a getCleanPath override
+                        redirect: request.rawPath + '/'
+                    }
+                };
+            }
+        }
+    }
+
+    if (!runMode.isDev()) {
+        log.warning(`Not found: ${JSON.stringify(path)}`);
+    }
+    return {
+        response400: (runMode.isDev())
+            ? {
+                status: 404,
+                body: `Not found: ${path}`,
+                contentType: 'text/plain; charset=utf-8'
+            }
+            : {
+                status: 404
+            }
+    }
 };
 
 
@@ -152,7 +194,7 @@ exports.get = (pathOrOptions, options) => {
 
         path = `/${path}`;
 
-        const { resource, response400 } = getResourceOr400(path, pathError ? `Resource path '${path}' ${pathError}` : undefined);
+        const { resource, response400, fallbackPath } = getResourceOr400orRedirect(path, request, pathError ? `Resource path '${path}' ${pathError}` : undefined);
         if (response400) {
             return response400;
         }
@@ -160,7 +202,7 @@ exports.get = (pathOrOptions, options) => {
 
         const etag = etagReader.read(path, etagOverride);
 
-        return getResponse200(path, resource, contentTypeFunc, cacheControlFunc, etag);
+        return getResponse200(path, fallbackPath, resource, contentTypeFunc, cacheControlFunc, etag);
 
     } catch (e) {
         return errorLogAndResponse500(e, throwErrors, pathOrOptions, options, "get", "Path");
@@ -211,21 +253,19 @@ const getRelativeResourcePath = (request) => {
 // Exported for testing only
 exports.__resolveRoot__ = (root) => {
     let resolvedRoot = resolvePath(root.replace(/^\/+/, '').replace(/\/+$/, ''));
-    let errorMessage = exports.__getPathError__(resolvedRoot);
-    resolvedRoot = "/" + resolvedRoot;
 
+    let errorMessage = exports.__getPathError__(resolvedRoot);
     if (!errorMessage) {
         // TODO: verify that root exists and is a directory?
         if (!resolvedRoot) {
             errorMessage = "resolves to the JAR root / empty or all-spaces";
         }
     }
-
     if (errorMessage) {
         throw Error(`Illegal root argument (or .root option attribute) ${JSON.stringify(root)}: ${errorMessage}`);
     }
 
-    return resolvedRoot;
+    return "/" + resolvedRoot;
 };
 
 
@@ -251,18 +291,21 @@ exports.buildGetter = (rootOrOptions, options) => {
 
     return function getStatic(request) {
         try {
-            const relativePath = getRelativePathFunc(request)
-                .replace(/^\/+/, '');
+            const relativePath = getRelativePathFunc(request);
 
-            const error = exports.__getPathError__(relativePath);
+            const absolutePath =
+                root +
+                ( (relativePath && !relativePath.startsWith('/')) ? '/' : '' ) +
+                relativePath;
+
+            const error = exports.__getPathError__(absolutePath);
             const pathError = (error)
-                ? `Illegal relative resource path '${relativePath}': ${error}`      // 400-type error
+                ? `Illegal absolute resource path '${absolutePath}' (resolved relative path: '${relativePath}'): ${error}`      // 400-type error
                 : error;
 
 
-            const absolutePath = `${root}/${relativePath}`;
 
-            const { resource, response400 } = getResourceOr400(absolutePath, pathError);
+            const { resource, response400, fallbackPath } = getResourceOr400orRedirect(absolutePath, request, pathError);
             if (response400) {
                 return response400;
             }
@@ -272,7 +315,7 @@ exports.buildGetter = (rootOrOptions, options) => {
                 return response304
             }
 
-            return getResponse200(absolutePath, resource, contentTypeFunc, cacheControlFunc, etag);
+            return getResponse200(absolutePath, fallbackPath, resource, contentTypeFunc, cacheControlFunc, etag);
 
         } catch (e) {
             return errorLogAndResponse500(e, throwErrors, rootOrOptions, options, "buildGetter#getStatic", "Root");
