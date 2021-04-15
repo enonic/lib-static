@@ -911,6 +911,7 @@ exports.testGetStatic_DEV_root_noExist_should404withInfo = () => {
 
 
 exports.testGetStatic_relativePath_empty_shouldOnly400 = () => {
+    const verbose = true;
                                                                                                                         if (verbose) log.info("\n\n\ntestGetStatic_relativePath_empty_shouldOnly400:\n");
     doMocks({}, verbose);
 
@@ -927,10 +928,13 @@ exports.testGetStatic_relativePath_empty_shouldOnly400 = () => {
     t.assertEquals(undefined, result.body, "result.body");
     t.assertEquals(undefined, result.contentType, "result.contentType");
     t.assertEquals(undefined, result.headers, "result.headers");
+
+                                                                                                                        if (verbose) t.assertTrue(false, "OK");
 }
 
 
 exports.testGetStatic_DEV_relativePath_empty_should400WithInfo = () => {
+    const verbose = true;
                                                                                                                         if (verbose) log.info("\n\n\ntestGetStatic_DEV_relativePath_empty_should400WithInfo:\n");
     doMocks({ isDev: true }, verbose);
 
@@ -950,6 +954,8 @@ exports.testGetStatic_DEV_relativePath_empty_should400WithInfo = () => {
     t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain' in dev");
 
     t.assertEquals(undefined, result.headers, "result.headers");
+
+                                                                                                                        if (verbose) t.assertTrue(false, "OK");
 }
 
 
@@ -1392,7 +1398,7 @@ exports.testGetStatic_ifNotMatchingEtag_shouldProceedWithAssetRead = () => {
 
 // Verify that a even if the getStatic function fails once, it will keep working for new requests later
 exports.testGetStatic_fail_failuresShouldNotDestroyGetstaticFunction = () => {
-    // const verbose = true;
+    const verbose = true;
                                                                                                                         if (verbose) log.info("\n\n\ntestGetStatic_fail_failuresShouldNotDestroyGetstaticFunction:\n");
 
     doMocks({}, verbose);

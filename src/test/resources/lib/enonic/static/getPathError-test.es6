@@ -308,6 +308,7 @@ exports.testGet_innerbehaviour_getPathError_optionArg_isCalled = () => {
 
 
 exports.testGet_innerbehaviour_getPathError_isUsed = () => {
+    const verbose = true;
                                                                                                                         if (verbose) log.info("\n\n\ntestGet_innerbehaviour_getPathError_isUsed:\n");
 
     doMocks({
@@ -325,6 +326,7 @@ exports.testGet_innerbehaviour_getPathError_isUsed = () => {
 
     t.assertEquals(400, result.status, "result.status");
     log.info("OK")
+                                                                                                                        if (verbose) t.assertTrue(false, "OK");
 }
 
 
