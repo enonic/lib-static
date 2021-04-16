@@ -910,21 +910,142 @@ exports.testGetStatic_DEV_root_noExist_should404withInfo = () => {
 };
 
 
-exports.testGetStatic_relativePath_empty_shouldOnly400 = () => {
-    const verbose = true;
-                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_relativePath_empty_shouldOnly400:\n");
-    doMocks({}, verbose);
+exports.testGetStatic_relativePath_slash_indexfallbackExists_shouldFallbackWith200andMustRevalidate = () => {
+    //const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_relativePath_slash_indexfallbackExists_shouldFallbackWith200andMustRevalidate:\n");
+    doMocks({
+        io: {
+            getResource: (path) => {
+                const data = {
+                    path: path,
+                    exists: path.endsWith("/index.html") // Mocking: '/i/am/root' will not exist, but '/i/am/root/index.html' will, during the fallback detection
+                };
+                data.content = `Mocked content of '${path}'`;
+
+                const res = ioMock.getResource(data.path, data.exists, data.content);
+
+                if (verbose) log.info(prettify(data, "Mocked io.getResource(" + JSON.stringify(path) + ")"));
+                return res;
+            }
+        }
+    }, verbose);
 
     const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     const result = getStatic({
-        rawPath: '/assets/',
+        rawPath: '/assets/',        // Trailing slash, compared to contextPath it resolves relativePath to '/'
         contextPath: '/assets'
     });
                                                                                                                         if (verbose) log.info(prettify(result, "result"));
 
-    t.assertEquals(400, result.status, "result.status");
+    t.assertEquals(200, result.status, "result.status");
+    t.assertEquals("Mocked content of '/i/am/root/index.html'", ioMock.readText(result.body), "result.body");
 
+    t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/html'");
+    t.assertTrue(result.contentType.indexOf("text/html") !== -1, "Expected string contentType containing 'text/html'");
+
+    t.assertTrue(!!result.headers, "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals('object', typeof result.headers, "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals( "MockedETagPlaceholder", result.headers.ETag, "result.headers should be an object with ETag and must-revalidate Cache-Control");
+    t.assertTrue(result.headers.ETag.length > 0, "result.headers should be an object with ETag and must-revalidate Cache-Control");
+    t.assertEquals('must-revalidate', result.headers["Cache-Control"], "result.headers should be an object with ETag and must-revalidate Cache-Control");
+
+    t.assertEquals(undefined, result.redirect, "result.redirect");
+
+                                                                                                                        if (verbose) t.assertTrue(false, "OK");
+}
+
+exports.testGetStatic_relativePath_slash_fallbackNotExist_shouldOnly404 = () => {
+    //const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_relativePath_slash_fallbackNotExist_shouldOnly404:\n");
+    doMocks({
+        io: {
+            exists: false
+        }
+    }, verbose);
+
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
+
+    const result = getStatic({
+        rawPath: '/assets/',        // Trailing slash, compared to contextPath it resolves relativePath to '/'
+        contextPath: '/assets'
+    });
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+
+    t.assertEquals(404, result.status, "result.status");
+
+    t.assertEquals(undefined, result.body, "result.body");
+    t.assertEquals(undefined, result.contentType, "result.contentType");
+    t.assertEquals(undefined, result.headers, "result.headers");
+    t.assertEquals(undefined, result.redirect, "result.redirect");
+
+                                                                                                                        if (verbose) t.assertTrue(false, "OK");
+}
+
+exports.testGetStatic_DEV_relativePath_slash_fallbackNotExist_should404withInfo = () => {
+    //const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_DEV_relativePath_slash_fallbackNotExist_should404withInfo:\n");
+    doMocks({
+        isDev: true,
+        io: {
+            exists: false
+        }
+    }, verbose);
+
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
+
+    const result = getStatic({
+        rawPath: '/assets/',        // Trailing slash, compared to contextPath it resolves relativePath to '/'
+        contextPath: '/assets'
+    });
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+
+    t.assertEquals(404, result.status, "result.status");
+
+    t.assertEquals('string', typeof result.body, "Expected string body containing path in dev");
+    t.assertTrue(result.body.indexOf('/i/am/root/') !== -1, "Expected string body containing path in dev");
+
+    t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/plain' in dev");
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain' in dev");
+
+    t.assertEquals(undefined, result.headers, "result.headers");
+    t.assertEquals(undefined, result.redirect, "result.redirect");
+
+                                                                                                                        if (verbose) t.assertTrue(false, "OK");
+}
+
+
+exports.testGetStatic_relativePath_empty_fallbackExists_shouldRedirectToSlash = () => {
+    //const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_relativePath_empty_fallbackExists_shouldRedirectToSlash:\n");
+    doMocks({
+        io: {
+            getResource: (path) => {
+                const data = {
+                    path: path,
+                    exists: path.endsWith("/index.html") // Mocking: '/i/am/root' will not exist, but '/i/am/root/index.html' will, during the fallback detection
+                };
+                data.content = `Mocked content of '${path}'`;
+
+                const res = ioMock.getResource(data.path, data.exists, data.content);
+
+                                                                                                                        if (verbose) log.info(prettify(data, "Mocked io.getResource(" + JSON.stringify(path) + ")"));
+                return res;
+            }
+        }
+    }, verbose);
+
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
+
+    const result = getStatic({
+        rawPath: '/assets',         // No trailing slash, compared with contextPath it will resolve relativePath to ''
+        contextPath: '/assets'
+    });
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+
+    t.assertEquals('/assets/', result.redirect, "result.redirect");
+
+    t.assertEquals(undefined, result.status, "result.status");
     t.assertEquals(undefined, result.body, "result.body");
     t.assertEquals(undefined, result.contentType, "result.contentType");
     t.assertEquals(undefined, result.headers, "result.headers");
@@ -932,31 +1053,65 @@ exports.testGetStatic_relativePath_empty_shouldOnly400 = () => {
                                                                                                                         if (verbose) t.assertTrue(false, "OK");
 }
 
-
-exports.testGetStatic_DEV_relativePath_empty_should400WithInfo = () => {
-    const verbose = true;
-                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_DEV_relativePath_empty_should400WithInfo:\n");
-    doMocks({ isDev: true }, verbose);
+exports.testGetStatic_relativePath_empty_fallbackNotExist_shouldOnly404 = () => {
+    //const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_relativePath_empty_fallbackNotExist_shouldOnly404:\n");
+    doMocks({
+        io: {
+            exists: false
+        }
+    }, verbose);
 
     const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     const result = getStatic({
-        rawPath: '/assets/',
+        rawPath: '/assets',         // No trailing slash
         contextPath: '/assets'
     });
                                                                                                                         if (verbose) log.info(prettify(result, "result"));
 
-    t.assertEquals(400, result.status, "result.status");
+    t.assertEquals(404, result.status, "result.status");
 
-    t.assertEquals('string', typeof result.body, "Expected string body with error message in dev");
+    t.assertEquals(undefined, result.body, "result.body");
+    t.assertEquals(undefined, result.contentType, "result.contentType");
+    t.assertEquals(undefined, result.headers, "result.headers");
+    t.assertEquals(undefined, result.redirect, "result.redirect");
+
+                                                                                                                        if (verbose) t.assertTrue(false, "OK");
+}
+
+exports.testGetStatic_DEV_relativePath_empty_fallbackNotExist_should404withInfo = () => {
+    //const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_DEV_relativePath_empty_fallbackNotExist_should404withInfo:\n");
+    doMocks({
+        isDev: true,
+        io: {
+            exists: false
+        }
+    }, verbose);
+
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
+
+    const result = getStatic({
+        rawPath: '/assets',         // No trailing slash
+        contextPath: '/assets'
+    });
+                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+
+    t.assertEquals(404, result.status, "result.status");
+
+    t.assertEquals('string', typeof result.body, "Expected string body containing path in dev");
+    t.assertTrue(result.body.indexOf('/i/am/root') !== -1, "Expected string body containing path in dev");
 
     t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/plain' in dev");
     t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain' in dev");
 
     t.assertEquals(undefined, result.headers, "result.headers");
+    t.assertEquals(undefined, result.redirect, "result.redirect");
 
                                                                                                                         if (verbose) t.assertTrue(false, "OK");
 }
+
 
 
 
@@ -1398,12 +1553,12 @@ exports.testGetStatic_ifNotMatchingEtag_shouldProceedWithAssetRead = () => {
 
 // Verify that a even if the getStatic function fails once, it will keep working for new requests later
 exports.testGetStatic_fail_failuresShouldNotDestroyGetstaticFunction = () => {
-    const verbose = true;
+    //const verbose = true;
                                                                                                                         if (verbose) log.info("\n\n\ntestGetStatic_fail_failuresShouldNotDestroyGetstaticFunction:\n");
 
     doMocks({}, verbose);
 
-    const getStatic = lib.buildGetter('static');
+    const getStatic = lib.buildGetter('i/am/root');
 
     let result;
 
@@ -1448,14 +1603,33 @@ exports.testGetStatic_fail_failuresShouldNotDestroyGetstaticFunction = () => {
     result = getStatic({rawPath: 'my/endpoint/w3c_home.gif', contextPath: 'my/endpoint'});
     t.assertEquals(200, result.status, "Expected 200 OK. Result: " + JSON.stringify(result));
 
+    doMocks({
+        io: {
+            getResource: (path) => {
+                const data = {
+                    path: path,
+                    exists: path.endsWith("/index.html") // Mocking: '/i/am/root' will not exist, but '/i/am/root/index.html' will, during the fallback detection
+                };
+                data.content = `Mocked content of '${path}'`;
+
+                const res = ioMock.getResource(data.path, data.exists, data.content);
+
+                                                                                                                        if (verbose) log.info(prettify(data, "Mocked io.getResource(" + JSON.stringify(path) + ")"));
+                return res;
+            }
+        }
+    }, verbose);
     result = getStatic({contextPath: 'my/endpoint'});
+    																													//if (verbose) log.info(prettify(result, "result"));
     t.assertTrue(result.status >= 400, "Expected a failing getStatic call: missing relative path. Result: " + JSON.stringify(result));
                                                                                                                         if (verbose) log.info(`OK: ${result.status} - ${result.body}`);
 
     result = getStatic({rawPath: 'my/endpoint/', contextPath: 'my/endpoint'});
-    t.assertTrue(result.status >= 400, "Expected a failing getStatic call: missing relative path. Result: " + JSON.stringify(result));
+                                                                                                                        // if (verbose) log.info(prettify(result, "result"));
+    t.assertEquals(200, result.status, "Expected an index fallback, so, 200 OK. Result: " + JSON.stringify(result));
                                                                                                                         if (verbose) log.info(`OK: ${result.status} - ${result.body}`);
 
+    doMocks({}, verbose);
     result = getStatic({rawPath: 'my/endpoint/w3c_home.jpg', contextPath: 'my/endpoint'});
     t.assertEquals(200, result.status, "Expected 200 OK. Result: " + JSON.stringify(result));
 
@@ -1530,7 +1704,9 @@ exports.testGetStatic_fail_failuresShouldNotDestroyGetstaticFunction = () => {
 
     result = getStatic3({rawPath: 'my/endpoint/w3c_home.gif', contextPath: 'my/endpoint'});
     t.assertEquals(200, result.status, "no runtime error status");
-                                                                                                                        if (verbose) log.info(`OK: ${result.status} - ${result.body}`);
+
+                                                                                                                        if (verbose) t.assertTrue(false, "OK");
+    log.info(`OK: ${result.status} - ${result.body}`);
 }
 
 
