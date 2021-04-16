@@ -7,11 +7,12 @@ import com.enonic.xp.script.bean.ScriptBean;
 import com.enonic.xp.util.MediaTypes;
 import com.google.common.io.ByteSource;
 import com.google.common.net.MediaType;
-import org.apache.commons.io.Charsets;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class IoMock
     implements ScriptBean
@@ -42,7 +43,7 @@ public class IoMock
     }
 
     public String readText(ByteSource byteSource) throws IOException {
-        return byteSource.asCharSource(Charsets.UTF_8).read();
+        return byteSource.asCharSource( StandardCharsets.UTF_8 ).read();
     }
 
     private ResourceKey toResourceKey( final Object value )
