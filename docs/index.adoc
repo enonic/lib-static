@@ -525,7 +525,7 @@ NOTE: For most scenarios though, you'll probably want to use link:#api-buildgett
 - Just like the getter function returned by `.buildGetter`, `.get` also returns a link:#behaviour[full response object] with status, body, content type and a generated ETag, and has error detection and corresponding responses (statuses 400, 404 and 500).
 - The link:#options[options] are also mostly the same.
 
-==== Differences
+==== b) Differences
 `.get` is different from `.buildGetter` in these ways:
 
 - `.get` is intended for lower-level usage (wraps less functionality, but gives the opportunity for even more controlled usage).
@@ -535,7 +535,7 @@ NOTE: For most scenarios though, you'll probably want to use link:#api-buildgett
 - There is no check for matching ETag (`If-None-Match` header), and no functionality to return a body-less status 304. `.get` always tries to fetch the resource.
 
 
-==== b) Examples
+==== c) Examples
 
 An example service _getSingleStatic.es6_ that always returns a particular asset _/public/my-folder/another-asset.css_ from the JAR:
 
