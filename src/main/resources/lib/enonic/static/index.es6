@@ -2,11 +2,14 @@ const etagReader = require('/lib/enonic/static/etagReader');
 const optionsParser = require('/lib/enonic/static/options');
 const ioLib = require('/lib/enonic/static/io');
 const runMode = require('/lib/enonic/static/runMode');
+const constants = require('/lib/enonic/static/constants');
+
+/////////////////////////////////////////////////////////////////////////////  Response builder functions
 
 const getResponse200 = (path, resource, contentTypeFunc, cacheControlFunc, etag, fallbackPath) => {
     const contentType = contentTypeFunc(fallbackPath || path, resource);
     const cacheControlHeader = fallbackPath
-        ? 'must-revalidate'
+        ? constants.INDEXFALLBACK_CACHE_CONTROL
         : cacheControlFunc(path, resource, contentType);
 
     // Preventing any keys under 'header' with null/undefined values (since those cause NPE):

@@ -1,5 +1,4 @@
-const DEFAULT_CACHE_CONTROL = require('/lib/enonic/static/options').DEFAULT_CACHE_CONTROL;
-
+const constants = require('/lib/enonic/static/constants');
 const ioMock = require('/lib/enonic/static/ioMock');
 
 const t = require('/lib/xp/testing');
@@ -128,7 +127,7 @@ const doMocks = (params={}, verbose= false) => {
             : ioMock.getMimeType,
         cacheControlFunc: (optionParams.cacheControl !== undefined)
             ? () => optionParams.cacheControl
-            : () => DEFAULT_CACHE_CONTROL
+            : () => constants.DEFAULT_CACHE_CONTROL
     };
     mockedOptionsparserFuncs.parsePathAndOptions = optionParams.parsePathAndOptions || (
         (pathOrOptions, options) => {
@@ -390,7 +389,7 @@ exports.testGet_path_string_FullDefaultResponse = () => {
     t.assertEquals('object', typeof result.headers, "result.headers should be an object with ETag and Cache-Control");
     t.assertEquals( "MockedETagPlaceholder", result.headers.ETag, "result.headers should be an object with ETag and Cache-Control");
     t.assertTrue(result.headers.ETag.length > 0, "result.headers should be an object with ETag and Cache-Control");
-    t.assertEquals(DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals(constants.DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
 
                                                                                                                         if (verbose) t.assertTrue(false, "OK");
 };
@@ -412,7 +411,7 @@ exports.testGet_path_option_FullDefaultResponse = () => {
     t.assertEquals('object', typeof result.headers, "result.headers should be an object with ETag and Cache-Control");
     t.assertEquals( "MockedETagPlaceholder", result.headers.ETag, "result.headers should be an object with ETag and Cache-Control");
     t.assertTrue(result.headers.ETag.length > 0, "result.headers should be an object with ETag and Cache-Control");
-    t.assertEquals(DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals(constants.DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
                                                                                                                         if (verbose) t.assertTrue(false, "OK");
 };
 
@@ -434,7 +433,7 @@ exports.testGet_DEV_path_string_FullDefaultResponse_DEV = () => {
     t.assertEquals('object', typeof result.headers, "result.headers should be an object with ETag and Cache-Control");
     t.assertEquals( "MockedETagPlaceholder", result.headers.ETag, "result.headers should be an object with ETag and Cache-Control");
     t.assertTrue(result.headers.ETag.length > 0, "result.headers should be an object with ETag and Cache-Control");
-    t.assertEquals(DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals(constants.DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
 
                                                                                                                         if (verbose) t.assertTrue(false, "OK");
 };
@@ -456,7 +455,7 @@ exports.testGet_DEV_path_option_FullDefaultResponse = () => {
     t.assertEquals('object', typeof result.headers, "result.headers should be an object with ETag and Cache-Control");
     t.assertEquals( "MockedETagPlaceholder", result.headers.ETag, "result.headers should be an object with ETag and Cache-Control");
     t.assertTrue(result.headers.ETag.length > 0, "result.headers should be an object with ETag and Cache-Control");
-    t.assertEquals(DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals(constants.DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
 
                                                                                                                         if (verbose) t.assertTrue(false, "OK");
 };

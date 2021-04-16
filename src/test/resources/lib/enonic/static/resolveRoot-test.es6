@@ -1,5 +1,4 @@
-const DEFAULT_CACHE_CONTROL = require('/lib/enonic/static/options').DEFAULT_CACHE_CONTROL;
-
+const constants = require('/lib/enonic/static/constants');
 const ioMock = require('/lib/enonic/static/ioMock');
 
 const t = require('/lib/xp/testing');
@@ -129,7 +128,7 @@ const doMocks = (params={}, verbose= false) => {
             : ioMock.getMimeType,
         cacheControlFunc: (optionParams.cacheControl !== undefined)
             ? () => optionParams.cacheControl
-            : () => DEFAULT_CACHE_CONTROL
+            : () => constants.DEFAULT_CACHE_CONTROL
     };
     mockedOptionsparserFuncs.parsePathAndOptions = optionParams.parsePathAndOptions || (
         (pathOrOptions, options) => {

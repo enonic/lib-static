@@ -1,4 +1,5 @@
 const ioLib = require('/lib/enonic/static/io');
+const constants = require('/lib/enonic/static/constants');
 
 const lib = require('/lib/enonic/static/options');
 const t = require('/lib/xp/testing');
@@ -7,7 +8,7 @@ const t = require('/lib/xp/testing');
 ////////////////////////////////////////////////////////////////// Helpers
 
 // Turning the strings to regex patterns
-const DEFAULT_CACHE_CONTROL_PATTERNS = lib.DEFAULT_CACHE_CONTROL_FIELDS.map(item => {
+const DEFAULT_CACHE_CONTROL_PATTERNS = constants.DEFAULT_CACHE_CONTROL_FIELDS.map(item => {
     const replacedItem = item
         .replace(/\s*([=])\s*/g,"\\s*$1\\s*");
     return new RegExp("(" +
@@ -32,7 +33,7 @@ const assertCacheControlIsDefault = (cacheControl) => {
     DEFAULT_CACHE_CONTROL_PATTERNS.forEach((pattern, i) => {
         t.assertTrue(
             !!cacheControl.match(pattern),
-            "Couldn't find the expected item '" + lib.DEFAULT_CACHE_CONTROL_FIELDS[i] + "' in the produced 'Cache-Control' header value: " + JSON.stringify(cacheControl) + ". Should be something like " + JSON.stringify(lib.DEFAULT_CACHE_CONTROL));
+            "Couldn't find the expected item '" + constants.DEFAULT_CACHE_CONTROL_FIELDS[i] + "' in the produced 'Cache-Control' header value: " + JSON.stringify(cacheControl) + ". Should be something like " + JSON.stringify(constants.DEFAULT_CACHE_CONTROL));
     });
 
     // Verify: find only the default headers
@@ -44,7 +45,7 @@ const assertCacheControlIsDefault = (cacheControl) => {
                 DEFAULT_CACHE_CONTROL_PATTERNS.forEach(ccPattern => {
                     ccFound = ccFound || ccHeader.match(ccPattern);
                 });
-                t.assertTrue(ccFound, "Unexpected item '" + ccHeader + "' found in the produced 'Cache-Control' header value: " + JSON.stringify(cacheControl)  + ". Should be something like " + JSON.stringify(lib.DEFAULT_CACHE_CONTROL));
+                t.assertTrue(ccFound, "Unexpected item '" + ccHeader + "' found in the produced 'Cache-Control' header value: " + JSON.stringify(cacheControl)  + ". Should be something like " + JSON.stringify(constants.DEFAULT_CACHE_CONTROL));
             }
         });
 }
@@ -161,10 +162,10 @@ exports.testParsePathAndOptions_path_validStringOnly_producesDefaultMimeDetectin
 exports.testParsePathAndOptions_path_validStringOnly_producesDefaultCacheControlFunction = () => {
     const { cacheControlFunc } = lib.parsePathAndOptions("i/am/a/path.txt");
 
-    t.assertEquals(lib.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.txt", "Some random content", "text/plain"));
-    t.assertEquals(lib.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.js", "Some random content", "application/javascript"));
-    t.assertEquals(lib.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.json", "Some random content", "application/javascripton"));
-    t.assertEquals(lib.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.html", "Some random content", "text/html"));
+    t.assertEquals(constants.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.txt", "Some random content", "text/plain"));
+    t.assertEquals(constants.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.js", "Some random content", "application/javascript"));
+    t.assertEquals(constants.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.json", "Some random content", "application/javascripton"));
+    t.assertEquals(constants.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.html", "Some random content", "text/html"));
 }
 
 
@@ -219,10 +220,10 @@ exports.testParsePathAndOptions_optionsWithPath_validObj_producesDefaultMimeDete
 exports.testParsePathAndOptions_optionsWithPath_validObj_producesDefaultCacheControlFunction = () => {
     const { cacheControlFunc } = lib.parsePathAndOptions({path: "i/am/a/path.txt"});
 
-    t.assertEquals(lib.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.txt", "Some random content", "text/plain"));
-    t.assertEquals(lib.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.js", "Some random content", "application/javascript"));
-    t.assertEquals(lib.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.json", "Some random content", "application/javascripton"));
-    t.assertEquals(lib.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.html", "Some random content", "text/html"));
+    t.assertEquals(constants.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.txt", "Some random content", "text/plain"));
+    t.assertEquals(constants.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.js", "Some random content", "application/javascript"));
+    t.assertEquals(constants.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.json", "Some random content", "application/javascripton"));
+    t.assertEquals(constants.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.html", "Some random content", "text/html"));
 }
 
 exports.testParsePathAndOptions_path_pathArg_emptyString_passThrough = () => {
@@ -1903,10 +1904,10 @@ exports.testParseRootAndOptions_path_validStringOnly_producesDefaultMimeDetectin
 exports.testParseRootAndOptions_path_validStringOnly_producesDefaultCacheControlFunction = () => {
     const { cacheControlFunc } = lib.parseRootAndOptions("i/am/root");
 
-    t.assertEquals(lib.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.txt", "Some random content", "text/plain"));
-    t.assertEquals(lib.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.js", "Some random content", "application/javascript"));
-    t.assertEquals(lib.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.json", "Some random content", "application/javascripton"));
-    t.assertEquals(lib.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.html", "Some random content", "text/html"));
+    t.assertEquals(constants.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.txt", "Some random content", "text/plain"));
+    t.assertEquals(constants.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.js", "Some random content", "application/javascript"));
+    t.assertEquals(constants.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.json", "Some random content", "application/javascripton"));
+    t.assertEquals(constants.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.html", "Some random content", "text/html"));
 }
 
 
@@ -1961,10 +1962,10 @@ exports.testParseRootAndOptions_optionsWithPath_validObj_producesDefaultMimeDete
 exports.testParseRootAndOptions_optionsWithPath_validObj_producesDefaultCacheControlFunction = () => {
     const { cacheControlFunc } = lib.parseRootAndOptions({root: "i/am/root"});
 
-    t.assertEquals(lib.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.txt", "Some random content", "text/plain"));
-    t.assertEquals(lib.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.js", "Some random content", "application/javascript"));
-    t.assertEquals(lib.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.json", "Some random content", "application/javascripton"));
-    t.assertEquals(lib.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.html", "Some random content", "text/html"));
+    t.assertEquals(constants.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.txt", "Some random content", "text/plain"));
+    t.assertEquals(constants.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.js", "Some random content", "application/javascript"));
+    t.assertEquals(constants.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.json", "Some random content", "application/javascripton"));
+    t.assertEquals(constants.DEFAULT_CACHE_CONTROL, cacheControlFunc("i/am/a/path.html", "Some random content", "text/html"));
 }
 
 exports.testParseRootAndOptions_path_pathArg_emptyString_passThrough = () => {

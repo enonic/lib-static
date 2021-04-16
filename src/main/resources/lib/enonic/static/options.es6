@@ -1,15 +1,6 @@
 const ioLib = require('/lib/enonic/static/io');
+const constants = require('/lib/enonic/static/constants');
 
-const DEFAULT_MAX_AGE = 31536000;
-
-exports.DEFAULT_CACHE_CONTROL_FIELDS = [
-    "public",
-    "max-age=" + DEFAULT_MAX_AGE,
-    "immutable"
-];
-
-const DEFAULT_CACHE_CONTROL = exports.DEFAULT_CACHE_CONTROL_FIELDS.join(", ");
-exports.DEFAULT_CACHE_CONTROL = DEFAULT_CACHE_CONTROL;
 
 const verifyEtagOption = (etag) => {
     if (etag !== true && etag !== false && etag !== undefined) {
@@ -49,7 +40,7 @@ const getCacheControlFunc = (cacheControl) => {
 
     if (cacheControl === undefined || cacheControl === true) {
         // Ignoring other absent/no-override values
-        return () => DEFAULT_CACHE_CONTROL;
+        return () => constants.DEFAULT_CACHE_CONTROL;
     }
 
     const argType = typeof cacheControl;
@@ -62,7 +53,7 @@ const getCacheControlFunc = (cacheControl) => {
         return (path, resource, mimeType) => {
             const result = cacheControl(path, resource, mimeType);
             if (result === null) {
-                return DEFAULT_CACHE_CONTROL;
+                return constants.DEFAULT_CACHE_CONTROL;
             }
             return result;
         }
