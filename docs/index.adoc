@@ -442,7 +442,7 @@ const getStatic = libStatic.buildGetter({
             return "max-age=3600";
         }
         if (resource.getSize() < 100) {
-            return "must-revalidate";
+            return "no-cache";
         }
         return null;
     }
