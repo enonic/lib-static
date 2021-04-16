@@ -20,7 +20,7 @@ Some relevant sources: link:https://web.dev/http-cache/[web.dev], link:https://e
 [[why]]
 === Why use lib-static instead of portal.assetUrl?
 
-Enonic XP already comes with an link:https://developer.enonic.com/docs/xp/stable/runtime/engines/asset-service[asset service], where you can just put resources in the _/assets_ root folder and use `portal.assetUrl(resourcePath)` to generate URLs from where to fetch them. Lib-static basically does the same thing, but allows you more control:
+Enonic XP already comes with an link:https://developer.enonic.com/docs/xp/stable/runtime/engines/asset-service[asset service], where you can just put resources in the _/assets_ root folder and use `portal.assetUrl(resourcePath)` to generate URLs from where to fetch them. Lib-static basically does the same thing, but with more features and control:
 
 - **Caching behaviour:** With `assetUrl`, you get a URL where the current installation/version of the app is baked in as a hash. It will change whenever the app is updated, forcing browsers to skip their locally cached resources and request new ones, even if the resource wasn't changed during the update. Using lib-static with link:#mutable-assets[immutable assets] retains stable URLs and has several ways to adapt the header to direct browsers' caching behaviour more effectively, even for mutable assets.
 - **Endpoint URLs:** make your resource endpoints anywhere,
@@ -28,6 +28,7 @@ Enonic XP already comes with an link:https://developer.enonic.com/docs/xp/stable
 - **Control resource folders:** As long as the resources are built into the app JAR, resources can be served from anywhere - even with multiple lib-static instances at once: serve from multiple specific-purpose folders, or use multi-instances to specify multiple rules from the same folder.
   - Security issues around this are handled in the standard usage: a set root folder is required (and not at the JAR root), and URL navigation out from it is prevented. But if you still REALLY want to circumvent this, there is a lower-level API too.
 - **Error handling:** 500-type errors can be set to throw instead of returning an error response - leaving the handling to you.
+- **Index fallback:** A URL that refers to the name of a directory that contains a fallback file (`index.html`), will fetch the fallback file.
 
 {zwsp} +
 {zwsp} +
@@ -68,9 +69,10 @@ const libStatic = require('/lib/enonic/static');
 [[examples]]
 == Usage examples
 
+{zwsp} +
 
 [[example-service]]
-=== A simple service
+=== 1. A simple service
 
 One way to use lib-static is in an link:https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service[XP service], and use it to fetch the resource and serve the entire response object to the front end.
 
@@ -93,7 +95,7 @@ exports.get = function(request) {
 
 
 [[example-service-urls]]
-==== Resource path and URL
+==== a) Resource path and URL
 If this was the entire content of _src/main/resources/services/servemyfolder/servemyfolder.js_ in an app with the app name/key `my.xp.app`, then XP would respond to GET requests at the URL `<domain>/_/service/my.xp.app/servemyfolder` (where `<domain>` is the domain or other prefix, depending on vhosts etc).
 
 NOTE: Using link:https://developer.enonic.com/docs/xp/stable/api/lib-portal#serviceurl[libPortal.serviceUrl] is recommended (for example:  `libPortal.serviceUrl('servemyfolder')`).
@@ -107,22 +109,28 @@ It's recommended to use `.buildGetter` in an link:https://developer.enonic.com/d
 
 👉 See the link:#example-path[path resolution] and link:#api-buildgetter[API reference] below for more details.
 
-==== Output
-If _my/folder/some/subdir/some.file_ exists as a (readable) file, a full link:https://developer.enonic.com/docs/xp/stable/framework/http#http-response[XP response object] is returned. Most importantly:
+[[example-output]]
+==== b) Output
+If _my/folder/some/subdir/some.file_ exists as a (readable) file, a full link:https://developer.enonic.com/docs/xp/stable/framework/http#http-response[XP response object] is returned. Typically something like:
 
 [source,javascript,options="nowrap"]
 ----
 {
   status: 200,
-  body: "<file content from some/subdir/some.file>"
+  body: "File content from some/subdir/some.file",
+  contentType: "text/plain",
+  headers: {
+    ETag: "1234567890abcdef",
+    "Cache-Control": "public, max-age=31536000, immutable"
+  }
 }
 ----
 
-There will also be headers for Cache-Control, ETag and contentType. If the file doesn't exist (or other circumstances), other statuses are returned: 304, 400, 404 and 500. And of course, `body` can be text or binary, depending on the file and type.
+If the link:#example-etag[ETag/client-cache functionality] is active and the file hasn't changed since a previous download, a `status:304` response is sent (and _only_ `status` - instructing browsers to use locally cached resources and saving some downloading time).
 
-👉 link:#behaviour[Default behaviour]
+👉 link:#behaviour[API: response and default behaviour]
 
-==== Syntax variations
+==== c) Syntax variations
 Above, `'my/folder'` is provided to `.buildGetter` as a named `root` attribute in a parameters object. If you prefer a simpler syntax (and don't need additional link:#example-options[options]), just use a string as a first-positional argument:
 
 [source,javascript,options="nowrap"]
@@ -145,7 +153,7 @@ exports.get = libStatic.buildGetter('my/folder');
 
 
 [[example-urls]]
-=== Resource URLs
+=== 2. Resource URLs
 Once a service (or a link:#example-path[different endpoint]) has been set up like this, it can serve the resources as regular assets to the frontend. An link:https://developer.enonic.com/docs/xp/stable/runtime/engines/webapp-engine[XP webapp] for example just needs to resolve the base URL. In the previous example we set up the the _servemyfolder_ service, so we can just use `serviceUrl` here to call on it from a webapp, for example:
 
 .src/main/resources/webapp/webapp.js:
@@ -180,7 +188,7 @@ exports.get = function(req) {
 
 
 [[example-options]]
-=== Options and syntax
+=== 3. Options and syntax
 
 The behaviour of the returned getter function from `.buildGetter` can be controlled with more link:#options[options], in addition to the `root`.
 
@@ -210,7 +218,7 @@ libStatic.buildGetter('my/folder', {
 
 
 [[example-path]]
-=== Path resolution on other endpoints
+=== 4. Path resolution on other endpoints
 
 Usually, the path to the resource file (relative to the root folder) is link:#example-service-urls[determined from the request]. But this depends on several things: the request object must contain a `rawPath` and `contextPath` attribute to compare, and there must be some routing involved: the controller must be able to accept requests from sub-URIs. In link:https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service[XP services] (and link:https://developer.enonic.com/docs/xp/stable/runtime/engines/webapp-engine[XP webapps], but with caveats) this is supported out of the box, making it easiest to use a service to implement an endpoint.
 
@@ -226,7 +234,7 @@ From this request, the relative resource path is resolved to _some/subdir/some.f
 
 
 [[example-getcleanpath]]
-==== getCleanPath
+==== a) getCleanPath
 However, there can be cases where you need to customize the relative-asset-path resolution - for example, using an link:https://developer.enonic.com/docs/xp/stable/cms/mappings[XP controller mapping] for setting up an endpoint that uses lib-static.
 
 Send an link:#example-options[option] function `getCleanPath` to `.buildGetter`. `getCleanPath` takes the `request` argument and returns a relative asset path. The rest is up to you:
@@ -273,7 +281,7 @@ exports.get = libStatic.buildGetter({
 
 
 [[example-webapp]]
-=== A webapp with lib-router
+=== 5. A webapp with lib-router
 
 Combining `.getCleanPath` with link:https://developer.enonic.com/docs/router-library/master[lib-router] can be an easy alternative to setting up separate services the way we did above. Just let the webapp itself use lib-router to detect sub-URI's and handle the resource serving too, all from the same controller:
 
@@ -342,7 +350,7 @@ Prefixing with `request.contextPath` solves it in this case. Your mileage may va
 
 
 [[example-content]]
-=== Custom content type handling
+=== 6. Custom content type handling
 
 By default, lib-static detects link:https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types[MIME-type] automatically. But you can use the `contentType` link:#example-options[option] to override it. Either way, the result is a string returned with link:#behaviour[the response object].
 
@@ -398,7 +406,7 @@ const getStatic = libStatic.buildGetter({
 
 
 [[example-cache]]
-=== Custom Cache-Control headers
+=== 7. Custom Cache-Control headers
 
 The `cacheControl` link:#example-options[option] controls the link:https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control['Cache-Control'] string that's returned in the header with a successful resource fetch. The string value, if any, directs the intraction between a browser and the server on subsequent requests for the same resource. By link:#behaviour[default] the string `"public, max-age=31536000, immutable"` is returned, the `cacheControl` option overrides this to return a different string, or switch it off:
 
@@ -434,7 +442,7 @@ const getStatic = libStatic.buildGetter({
             return "max-age=3600";
         }
         if (resource.getSize() < 100) {
-            return "must-revalidate";
+            return "no-cache";
         }
         return null;
     }
@@ -447,7 +455,7 @@ const getStatic = libStatic.buildGetter({
 
 
 [[example-etag]]
-=== ETag switch
+=== 8. ETag switch
 
 By link:#behaviour[default], an ETag is generated from the asset and sent along with the response as a header, in XP prod run mode. In link:https://developer.enonic.com/docs/enonic-cli/master/dev#start[XP dev mode], no ETag is generated.
 
@@ -467,7 +475,7 @@ const getStatic = libStatic.buildGetter({
 
 
 [[example-errors]]
-=== Errors: throw instead of return
+=== 9. Errors: throw instead of return
 
 By link:#behaviour[default], runtime errors during `.get` or during the returned getter function from `.buildGetter` will log the error message and return a 500-status response to the client.
 
@@ -496,7 +504,7 @@ exports.get = function(req) {
 
 
 [[example-multi]]
-=== Multiple instances
+=== 10. Multiple instances
 
 Lib-static can be set up to respond with several instances in parallel, thereby defining different rules for different files/folders/scenarios.
 
@@ -507,27 +515,28 @@ Lib-static can be set up to respond with several instances in parallel, thereby 
 
 
 [[example-get]]
-=== Low-level: .get
+=== 11. Low-level: .get
 
 Lib-static exposes a second function `.get` (in addition to `.buildGetter`), for doing a direct resource fetch when the resource path is already known/resolved. The idea is to allow closer control with each call: implement your own logic and handling around it.
 
 NOTE: For most scenarios though, you'll probably want to use link:#api-buildgetter[`.buildGetter`].
 
-==== Similarities
+==== a) Similarities
 - Just like the getter function returned by `.buildGetter`, `.get` also returns a link:#behaviour[full response object] with status, body, content type and a generated ETag, and has error detection and corresponding responses (statuses 400, 404 and 500).
 - The link:#options[options] are also mostly the same.
 
-==== Differences
+==== b) Differences
 `.get` is different from `.buildGetter` in these ways:
 
 - `.get` is intended for lower-level usage (wraps less functionality, but gives the opportunity for even more controlled usage).
 - Only one call: whereas `.buildGetter` sets up a reusable getter function, `.get` _is_ the getter function.
 - No root folder is set up with `.get`. In every call, instead of the `request` argument, `.get` takes a full, absolute resource `path` (relative to JAR root) string. This allows _any valid path_ inside the JAR except the root `/` itself - including source code! **Be careful** how you resolve the `path` string in the controller to avoid security flaws, such as opening a service to reading _any file in the JAR_, etc.
 - Since `.get` doesn't resolve the resource path from the request, there's no `getCleanPath` override option here.
-- There is no check for matching ETag (`If-None-Match` header), and no functionality to return a body-less status 304. `.get` always tries to fetch the resource.
+- There is no check in `.get` for matching ETag (`If-None-Match` header), and no functionality to return a body-less status 304. `.get` always tries to fetch the resource.
+- There is no link:#index-fallback[index fallback] functionality in `.get`.
 
 
-==== Examples
+==== c) Examples
 
 An example service _getSingleStatic.es6_ that always returns a particular asset _/public/my-folder/another-asset.css_ from the JAR:
 
@@ -688,23 +697,47 @@ For example:
 }
 ----
 
+👉  link:#example-output[Output: intro/example]
+
+{zwsp} +
+
+[[index-fallback]]
+==== Index fallback
+
+If the URL points to a folder instead of a file, and that folder contains a fallback file (`index.html`), the fallback file is served with the appropriate contentType and a cache-busting Cache-Control header.
+
+If the folder-name URL does not end with a trailing slash, this slash is automatically added via a redirect. This is to ensure that later relative links will work.
+
+This is a feature in link:#api-buildgetter[.buildGetter], but not link:#api-get[.get] - if you use .get you must implement it yourself.
+
+
+
 {zwsp} +
 
 [[status]]
 ==== status
 
-Follows standard link:https://en.wikipedia.org/wiki/List_of_HTTP_status_codes[HTTP error codes]: 200 - OK, 400 - Bad Request, 404 - Not Found. And for [.buildGetter], 304 - Not Modified, signifying a matching ETag and triggering a browser to use its local cached asset. On other errors: 500, and possibly an error message in `body`.
+Standard link:https://en.wikipedia.org/wiki/List_of_HTTP_status_codes[HTTP error codes]:
+
+- `200` (OK): successful, resource fetched. Either the resource path pointed to a readable file, or to a folder where a link:#index-fallback[index fallback] file was found (index fallback is an automatic feature of link:#api-buildgetter[.buildGetter], but not link:#api-get[.get]).
+- `303` (Redirect): resource path hit a folder with an index fallback file in it, but the path doesnt end with a slash. It needs the slash, so make a redirect to add it. This is an automatic feature of link:#api-buildgetter[.buildGetter], but not link:#api-get[.get].
+- `304` (Not Modified): matching ETag - the requested resource hasn't changed since a previous download. So a response with this status only is a signal to browsers to reuse their locally cached resource instead of downloading it again. This is an automatic feature of link:#api-buildgetter[.buildGetter], but not link:#api-get[.get].
+- `400` (Bad Request): the resource path is illegal, that is, resolves to an empty path or contains illegal characters: `: | < > ' " ´ * ?` or backslash or backtick.
+- `404` (Not Found): a valid resource path, but it doesn't point to a readable file or a directory with an index fallback in it.
+- `500` (Error): a server-side error happened. Details will be found in the server log, but not returned to the user.
 
 {zwsp} +
 
 [[body]]
 ==== body
 
-Content of the requested asset, or an error message.
+On status-`200` responses, this is the content of the requested asset. Can be text or binary, depending on the file and type. May also carry error messages.
 
-When returning a resource, this content is not a string but a **resource stream** from link:https://developer.enonic.com/docs/xp/stable/api/lib-io[ioLib] (see resource.getStream). This works seamlessly for returning both binary and non-binary files in the response directly to browsers. But might be less straightforward when writing tests or otherwise intercepting the output.
+Empty on status-`304`.
 
-In link:https://developer.enonic.com/docs/enonic-cli/master/dev#start[XP dev mode], 400- and and 404-type errors will have the requested asset path in the body.
+Interally in XP (before returning it to the browser), this content is not a string but a **resource stream** from link:https://developer.enonic.com/docs/xp/stable/api/lib-io[ioLib] (see resource.getStream). This works seamlessly for returning both binary and non-binary files in the response directly to browsers. But might be less straightforward when writing tests or otherwise intercepting the output.
+
+In link:https://developer.enonic.com/docs/enonic-cli/master/dev#start[XP dev mode], `400`- and and `404`-status errors will have the requested asset path in the body.
 
 {zwsp} +
 
@@ -720,9 +753,11 @@ link:https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
 
 **Default headers** optimized for immutable and link:https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching#private_browser_caches[browser cached] resources.
 
+Typically, there's an `ETag` and a `Cache-Control` attribute, but this may depend on whether they are active in link:#options[options], and on XP runtime mode: ETag is usually switched off in dev mode.
+
 [NOTE]
 ====
-Mutable assets *should not* be served with the default 'Cache-Control' header `'public, max-age=31536000, immutable'`.
+**Important:** mutable assets should not be served with the default 'Cache-Control' header: `'public, max-age=31536000, immutable'`.
 
 👉  link:#mutable-headers[Handling mutable assets]
 ====
@@ -864,7 +899,7 @@ Mutable assets _can_ be handled by this library (since ETag support is in place 
 [source,javascript,options="nowrap"]
 ----
 {
-    'Cache-Control': 'must-revalidate',
+    'Cache-Control': 'no-cache',
 }
 ----
 +
@@ -900,7 +935,7 @@ If you have mutable assets in your project, there are several ways you could imp
 
         // ...because the options object overrides the Cache-Control header (and only that - etag is preserved, importantly):
         {
-            cacheControl: 'must-revalidate'
+            cacheControl: 'no-cache'
         }
     );
 ----
@@ -945,12 +980,14 @@ If you have mutable assets in your project, there are several ways you could imp
 == TODO: Later versions
 
 === Options params
-- `index` (string or array of strings): filename(s) (without path) to fall back to, look for and serve, in cases where the asset path requested is a folder. If not set, requesting a folder will yield an error. Implementaion: before throwing a 404, check if postfixing any of the chosen /index files (with the slash) resolves it. If so, return that.
-  The rest is up to the developer, and their responsibility how it's used: what htm/html/other they explicitly add in this parameter. And cache headers, just same as if they had asked directly for the index file.
+- `indexFallback` (`false`, string, string array, object or function(absolutePath -> stringOrStringarrayOrFalse)): filename(s) (without slashes or path) to fall back to, look for and serve, in cases where the asset path requested is a folder. If not set, requesting a folder will yield an error. Implementaion: before throwing a 404, check if postfixing any of the chosen /index files (with the slash) resolves it. If so, return that.
+  The rest is up to the developer, and their responsibility how it's used: what htm/html/other they explicitly add in this parameter. And cache headers, just same as if they had asked directly for the index file. Set to `false` (or have the object or function return it) to skip the index fallback.
 
 === Response
 - `'Last-Modified'` header, determined on file modified date
-- `'Accept-Ranges': 'bytes'` header. Implement range handling.
+
+=== Range handling
+- `'Accept-Ranges': 'bytes'` header
 
 === .resolvePath(globPath/regex, root)
 Probably not in this lib? Worth mentioning though:
@@ -964,3 +1001,4 @@ For example, if a fingerprinted asset _bundle.92d34fd72.js_ is built into _/stat
 ----
 - Besides, `resolvePath` can/should be part of a different library. Can be its own library (‘lib-resolvepath’?) or part of some other general-purpose lib, for example lib-util.
 - In dev mode, `resolvePath` will often find more than one match and select the most recently updated one (and should log it at least once if that’s the case). In prod mode, it should throw an error if more than one is found, and if only one is found, cache it internally.
+
