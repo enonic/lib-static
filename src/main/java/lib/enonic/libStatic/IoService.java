@@ -1,17 +1,23 @@
 package lib.enonic.libStatic;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.function.Supplier;
+
+import com.google.common.io.ByteSource;
+import com.google.common.net.MediaType;
+
 import com.enonic.xp.resource.Resource;
+import com.enonic.xp.resource.ResourceBase;
 import com.enonic.xp.resource.ResourceKey;
 import com.enonic.xp.resource.ResourceService;
 import com.enonic.xp.script.bean.BeanContext;
 import com.enonic.xp.script.bean.ScriptBean;
 import com.enonic.xp.util.MediaTypes;
-import com.google.common.io.ByteSource;
-import com.google.common.net.MediaType;
-import org.apache.commons.io.Charsets;
-
-import java.io.IOException;
-import java.util.function.Supplier;
 
 public class IoService
     implements ScriptBean
@@ -34,11 +40,13 @@ public class IoService
     {
         final ResourceKey resourceKey = toResourceKey( key );
         final ResourceService service = this.resourceServiceSupplier.get();
-        return service.getResource( resourceKey );
+        return new ResourceWrapper( service.getResource( resourceKey ) );
     }
 
-    public String readText(ByteSource byteSource) throws IOException {
-        return byteSource.asCharSource(Charsets.UTF_8).read();
+    public String readText( ByteSource byteSource )
+        throws IOException
+    {
+        return byteSource.asCharSource( StandardCharsets.UTF_8 ).read();
     }
 
     private ResourceKey toResourceKey( final Object value )
@@ -61,5 +69,85 @@ public class IoService
     {
         this.resourceServiceSupplier = context.getService( ResourceService.class );
         this.parentResourceKey = context.getResourceKey();
+    }
+
+    private static class ResourceWrapper
+        extends ResourceBase
+    {
+        Resource resource;
+
+        public ResourceWrapper( final Resource resource )
+        {
+            super( resource.getKey() );
+            this.resource = resource;
+        }
+
+        @Override
+        public URL getUrl()
+        {
+            return resource.getUrl();
+        }
+
+        @Override
+        public boolean exists()
+        {
+            final boolean exists = resource.exists();
+            if ( !exists )
+            {
+                return false;
+            }
+
+            final URL url = resource.getUrl();
+            if ( url == null )
+            {
+                return false;
+            }
+            if ( url.getFile().endsWith( "/" ) )
+            {
+                return false;
+            }
+            if ( "file".equalsIgnoreCase( url.getProtocol() ) )
+            {
+                try
+                {
+                    if ( Files.isDirectory( Path.of( url.toURI() ) ) )
+                    {
+                        return false;
+                    }
+                }
+                catch ( URISyntaxException e )
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public long getSize()
+        {
+            if ( !exists() )
+            {
+                return -1;
+            }
+            return resource.getSize();
+        }
+
+        @Override
+        public long getTimestamp()
+        {
+            if ( !exists() )
+            {
+                return -1;
+            }
+            return resource.getTimestamp();
+        }
+
+        @Override
+        public ByteSource getBytes()
+        {
+            requireExists();
+            return resource.getBytes();
+        }
     }
 }
