@@ -532,7 +532,8 @@ NOTE: For most scenarios though, you'll probably want to use link:#api-buildgett
 - Only one call: whereas `.buildGetter` sets up a reusable getter function, `.get` _is_ the getter function.
 - No root folder is set up with `.get`. In every call, instead of the `request` argument, `.get` takes a full, absolute resource `path` (relative to JAR root) string. This allows _any valid path_ inside the JAR except the root `/` itself - including source code! **Be careful** how you resolve the `path` string in the controller to avoid security flaws, such as opening a service to reading _any file in the JAR_, etc.
 - Since `.get` doesn't resolve the resource path from the request, there's no `getCleanPath` override option here.
-- There is no check for matching ETag (`If-None-Match` header), and no functionality to return a body-less status 304. `.get` always tries to fetch the resource.
+- There is no check in `.get` for matching ETag (`If-None-Match` header), and no functionality to return a body-less status 304. `.get` always tries to fetch the resource.
+- There is no link:#index-fallback[index fallback] functionality in `.get`.
 
 
 ==== c) Examples
@@ -696,17 +697,20 @@ For example:
 }
 ----
 
+👉  link:#example-output[Output: intro/example]
+
+{zwsp} +
+
 [[index-fallback]]
-[NOTE]
-====
-**Index fallback**
+==== Index fallback
 
 If the URL points to a folder instead of a file, and that folder contains a fallback file (`index.html`), the fallback file is served with the appropriate contentType and a cache-busting Cache-Control header.
 
 If the folder-name URL does not end with a trailing slash, this slash is automatically added via a redirect. This is to ensure that later relative links will work.
-====
 
-👉  link:#example-output[Output: intro/example]
+This is a feature in link:#api-buildgetter[.buildGetter], but not link:#api-get[.get] - if you use .get you must implement it yourself.
+
+
 
 {zwsp} +
 
@@ -715,8 +719,8 @@ If the folder-name URL does not end with a trailing slash, this slash is automat
 
 Standard link:https://en.wikipedia.org/wiki/List_of_HTTP_status_codes[HTTP error codes]:
 
-- `200` (OK): successful, resource fetched. Either the resource path pointed to a readable file, or to a folder where a link:#index-fallback[index fallback] file was found.
-- `303` (Redirect): resource path hit a folder with an index fallback file in it, but the path doesnt end with a slash. It needs the slash, so make a redirect to add it.
+- `200` (OK): successful, resource fetched. Either the resource path pointed to a readable file, or to a folder where a link:#index-fallback[index fallback] file was found (index fallback is an automatic feature of link:#api-buildgetter[.buildGetter], but not link:#api-get[.get]).
+- `303` (Redirect): resource path hit a folder with an index fallback file in it, but the path doesnt end with a slash. It needs the slash, so make a redirect to add it. This is an automatic feature of link:#api-buildgetter[.buildGetter], but not link:#api-get[.get].
 - `304` (Not Modified): matching ETag - the requested resource hasn't changed since a previous download. So a response with this status only is a signal to browsers to reuse their locally cached resource instead of downloading it again. This is an automatic feature of link:#api-buildgetter[.buildGetter], but not link:#api-get[.get].
 - `400` (Bad Request): the resource path is illegal, that is, resolves to an empty path or contains illegal characters: `: | < > ' " ´ * ?` or backslash or backtick.
 - `404` (Not Found): a valid resource path, but it doesn't point to a readable file or a directory with an index fallback in it.
@@ -749,6 +753,7 @@ link:https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
 
 **Default headers** optimized for immutable and link:https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching#private_browser_caches[browser cached] resources.
 
+Typically, there's an `ETag` and a `Cache-Control` attribute, but this may depend on whether they are active in link:#options[options], and on XP runtime mode: ETag is usually switched off in dev mode.
 
 [NOTE]
 ====
@@ -975,8 +980,8 @@ If you have mutable assets in your project, there are several ways you could imp
 == TODO: Later versions
 
 === Options params
-- `indexFallback` (string,  string array, object or function(absolutePath -> stringOrStringArray)): filename(s) (without slashes or path) to fall back to, look for and serve, in cases where the asset path requested is a folder. If not set, requesting a folder will yield an error. Implementaion: before throwing a 404, check if postfixing any of the chosen /index files (with the slash) resolves it. If so, return that.
-  The rest is up to the developer, and their responsibility how it's used: what htm/html/other they explicitly add in this parameter. And cache headers, just same as if they had asked directly for the index file.
+- `indexFallback` (`false`, string, string array, object or function(absolutePath -> stringOrStringarrayOrFalse)): filename(s) (without slashes or path) to fall back to, look for and serve, in cases where the asset path requested is a folder. If not set, requesting a folder will yield an error. Implementaion: before throwing a 404, check if postfixing any of the chosen /index files (with the slash) resolves it. If so, return that.
+  The rest is up to the developer, and their responsibility how it's used: what htm/html/other they explicitly add in this parameter. And cache headers, just same as if they had asked directly for the index file. Set to `false` (or have the object or function return it) to skip the index fallback.
 
 === Response
 - `'Last-Modified'` header, determined on file modified date
