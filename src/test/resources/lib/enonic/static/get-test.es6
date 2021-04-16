@@ -356,7 +356,7 @@ exports.testGet_innerbehavior_parsePathAndOptions_error_shouldLogAndAbort = () =
 
 
 exports.testGet_innerbehavior_parsePathAndOptions_outputs_areUsed = () => {
-    const verbose = true;
+    //const verbose = true;
                                                                                                                         if (verbose) log.info("\n\n\ntestGet_innerbehavior_parsePathAndOptions_outputs_areUsed:\n");
     let getResourceWasCalled = false;
     let etagReadWasCalled = false;
@@ -446,7 +446,7 @@ exports.testGet_innerbehavior_removesLeadingPathSlashesFromPathBeforeGetPathErro
 // Path string argument
 
 exports.testGet_path_string_FullDefaultResponse = () => {
-    const verbose = true;
+    //const verbose = true;
                                                                                                                         if (verbose) log.info("\n\n\ntestGet_path_string_FullDefaultResponse:\n");
     doMocks({}, verbose);
 
@@ -468,7 +468,7 @@ exports.testGet_path_string_FullDefaultResponse = () => {
                                                                                                                         if (verbose) t.assertTrue(false, "OK");
 };
 exports.testGet_path_option_FullDefaultResponse = () => {
-    const verbose = true;
+    //const verbose = true;
                                                                                                                         if (verbose) log.info("\n\n\ntestGet_path_option_FullDefaultResponse:\n");
     doMocks({}, verbose);
 
@@ -490,7 +490,7 @@ exports.testGet_path_option_FullDefaultResponse = () => {
 };
 
 exports.testGet_DEV_path_string_FullDefaultResponse_DEV = () => {
-    const verbose = true;
+    //const verbose = true;
                                                                                                                         if (verbose) log.info("\n\n\ntestGet_DEV_path_string_FullDefaultResponse_DEV:\n");
     doMocks({isDev: true}, verbose);
 
@@ -512,7 +512,7 @@ exports.testGet_DEV_path_string_FullDefaultResponse_DEV = () => {
                                                                                                                         if (verbose) t.assertTrue(false, "OK");
 };
 exports.testGet_DEV_path_option_FullDefaultResponse = () => {
-    const verbose = true;
+    //const verbose = true;
                                                                                                                         if (verbose) log.info("\n\n\ntestGet_DEV_path_option_FullDefaultResponse:\n");
     doMocks({isDev: true}, verbose);
 
@@ -535,8 +535,8 @@ exports.testGet_DEV_path_option_FullDefaultResponse = () => {
 };
 
 exports.testGet_contentType_HTML = () => {
-    const verbose = true;
-                                                                                                                        if (verbose) log.info("\n\n\ntestGet_path_HTML_FullDefaultResponse:\n");
+    //const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestGet_contentType_HTML:\n");
     doMocks({
             io: {
                 mimeType: "text/html"
@@ -558,7 +558,7 @@ exports.testGet_contentType_HTML = () => {
 // .get problem/error handling:
 
 exports.testGet_path_noExist_shouldOnly404 = () => {
-    const verbose = true;
+    //const verbose = true;
                                                                                                                         if (verbose) log.info("\n\n\ntestGet_path_noExist_shouldOnly404:\n");
     doMocks({
             io: {
@@ -580,7 +580,7 @@ exports.testGet_path_noExist_shouldOnly404 = () => {
 };
 
 exports.testGet_DEV_path_noExist_should404withInfo = () => {
-    const verbose = true;
+    //const verbose = true;
                                                                                                                         if (verbose) log.info("\n\n\ntestGet_DEV_path_noExist_should404withInfo:\n");
     doMocks({
             isDev: true,
@@ -606,7 +606,7 @@ exports.testGet_DEV_path_noExist_should404withInfo = () => {
 };
 
 exports.testGet_path_empty_shouldOnly400 = () => {
-    const verbose = true;
+    //const verbose = true;
                                                                                                                         if (verbose) log.info("\n\n\ntestGet_path_empty_shouldOnly400:\n");
     doMocks({
             options: {
@@ -629,7 +629,7 @@ exports.testGet_path_empty_shouldOnly400 = () => {
 
 
 exports.testGet_DEV_path_empty_should400WithInfo = () => {
-    const verbose = true;
+    //const verbose = true;
                                                                                                                         if (verbose) log.info("\n\n\ntestGet_DEV_path_empty_should400WithInfo:\n");
     doMocks({
             isDev: true,
@@ -656,7 +656,7 @@ exports.testGet_DEV_path_empty_should400WithInfo = () => {
 
 
 exports.testGet_path_slash_shouldOnly400 = () => {
-    const verbose = true;
+    //const verbose = true;
                                                                                                                         if (verbose) log.info("\n\n\ntestGet_path_slash_shouldOnly400:\n");
     doMocks({
         },
@@ -674,7 +674,7 @@ exports.testGet_path_slash_shouldOnly400 = () => {
 }
 
 exports.testGet_path_slashes_shouldOnly400 = () => {
-    const verbose = true;
+    //const verbose = true;
                                                                                                                         if (verbose) log.info("\n\n\ntestGet_path_slashes_shouldOnly400:\n");
     doMocks({
         },
@@ -688,7 +688,7 @@ exports.testGet_path_slashes_shouldOnly400 = () => {
     t.assertEquals(undefined, result.body, "result.body");
     t.assertEquals(undefined, result.contentType, "result.contentType");
     t.assertEquals(undefined, result.headers, "result.headers");
-                                                                                                                        t.assertTrue(false, "OK");
+                                                                                                                        if (verbose) t.assertTrue(false, "OK");
 }
 
 
@@ -715,7 +715,7 @@ exports.testGet_DEV_path_slash_should400WithInfo = () => {
 }
 
 exports.testGet_DEV_path_slashes_should400WithInfo = () => {
-    const verbose = true;
+    //const verbose = true;
                                                                                                                         if (verbose) log.info("\n\n\ntestGet_DEV_path_slashes_should400WithInfo:\n");
     doMocks({
             isDev: true
