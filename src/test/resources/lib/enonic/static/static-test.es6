@@ -1,5 +1,4 @@
-const DEFAULT_CACHE_CONTROL = require('/lib/enonic/static/options').DEFAULT_CACHE_CONTROL;
-
+const constants = require('/lib/enonic/static/constants');
 const ioMock = require('/lib/enonic/static/ioMock');
 
 const t = require('/lib/xp/testing');
@@ -32,78 +31,6 @@ const lib = require('./index');
 
 //////////////////////////////////////////////////////////////////  HELPERS
 
-                                                                                                                        const prettify = (obj, label, suppressCode= false, indent = 0) => {
-                                                                                                                            let str = " ".repeat(indent) + (
-                                                                                                                                label !== undefined
-                                                                                                                                    ? label + ": "
-                                                                                                                                    : ""
-                                                                                                                            );
-
-                                                                                                                            if (typeof obj === 'function') {
-                                                                                                                                if (!suppressCode) {
-                                                                                                                                    return `${str}···· (function)\n${" ".repeat(indent + 4)}` +
-                                                                                                                                        obj.toString()
-                                                                                                                                            .replace(
-                                                                                                                                                /\r?\n\r?/g,
-                                                                                                                                                `\n${" ".repeat(indent + 4)}`
-                                                                                                                                            ) +
-                                                                                                                                        "\n" + " ".repeat(indent) + "····"
-                                                                                                                                        ;
-                                                                                                                                } else {
-                                                                                                                                    return `${str}···· (function)`;
-                                                                                                                                }
-
-                                                                                                                            } else if (Array.isArray(obj)) {
-                                                                                                                                return obj.length === 0
-                                                                                                                                    ? `${str}[]`
-                                                                                                                                    : (
-                                                                                                                                        `${str}[\n` +
-                                                                                                                                        obj.map(
-                                                                                                                                            (item, i) =>
-                                                                                                                                                prettify(item, i, suppressCode, indent + 4)
-                                                                                                                                        )
-                                                                                                                                            .join(",\n") +
-                                                                                                                                        `\n${" ".repeat(indent)}]`
-                                                                                                                                    );
-
-                                                                                                                            } else if (obj && typeof obj === 'object') {
-                                                                                                                                try {
-                                                                                                                                    if (Object.keys(obj).length === 0) {
-                                                                                                                                        return `${str}{}`;
-                                                                                                                                    } else {
-                                                                                                                                        return `${str}{\n` +
-                                                                                                                                            Object.keys(obj).map(
-                                                                                                                                                key => prettify(obj[key], key, suppressCode, indent + 4)
-                                                                                                                                            ).join(",\n") +
-                                                                                                                                            `\n${" ".repeat(indent)}}`
-                                                                                                                                    }
-                                                                                                                                } catch (e) {
-                                                                                                                                    log.info(e);
-                                                                                                                                    return `${str}···· (${typeof obj})\n${" ".repeat(indent + 4)}` +
-                                                                                                                                        obj.toString()
-                                                                                                                                            .replace(
-                                                                                                                                                /\r?\n\r?/g,
-                                                                                                                                                `\n${" ".repeat(indent + 4)}`
-                                                                                                                                            ) +
-                                                                                                                                        "\n" + " ".repeat(indent) + `····`;
-                                                                                                                                }
-                                                                                                                            } else if (obj === undefined || obj === null) {
-                                                                                                                                return `${str}${obj}`;
-                                                                                                                            } else if (JSON.stringify(obj) !== undefined) {
-                                                                                                                                return `${str}` + JSON.stringify(obj, null, 2).replace(
-                                                                                                                                    /\r?\n\r?/g,
-                                                                                                                                    `\n${" ".repeat(indent + 2)}`
-                                                                                                                                );
-                                                                                                                            } else {
-                                                                                                                                return `${str}···· (${typeof obj})\n${" ".repeat(indent + 4)}` +
-                                                                                                                                    obj.toString()
-                                                                                                                                        .replace(
-                                                                                                                                            /\r?\n\r?/g,
-                                                                                                                                            `\n${" ".repeat(indent + 4)}`
-                                                                                                                                        ) +
-                                                                                                                                    "\n" + " ".repeat(indent) + `····`;
-                                                                                                                            }
-                                                                                                                        };
 
 /* Mocks runMode.js, io.js, etagReader.js and options.js.
   Optional params: {
@@ -146,7 +73,7 @@ const doMocks = (params={}, verbose= false) => {
 
     mockedRunmodeFuncs.isDev = (typeof params.isDev === 'boolean' )
         ? () => {
-                                                                                                                        if (verbose) log.info(prettify(params.isDev, "Mocked isDev"));
+                                                                                                                        if (verbose) log.info("Mocked isDev: " + JSON.stringify(params.isDev, null, 2));
             return params.isDev
         }
         : () => false;
@@ -165,21 +92,21 @@ const doMocks = (params={}, verbose= false) => {
 
             const res = ioMock.getResource(data.path, data.exists, data.content);
 
-                                                                                                                        if (verbose) log.info(prettify(data, "Mocked io.getResource(" + JSON.stringify(path) + ")"));
+                                                                                                                        if (verbose) log.info("Mocked io.getResource(" + JSON.stringify(path) + "): " + JSON.stringify(data, null, 2));
             return res;
         }
     );
     mockedIoFuncs.readText = io.readText || (
         (stream) => {
             const text = io.text || ioMock.readText(stream);
-                                                                                                                        if (verbose) log.info(prettify(text,"Mocked io.readText(stream)"));
+                                                                                                                        if (verbose) log.info("Mocked io.readText(stream): " + JSON.stringify(text, null, 2));
             return text;
         }
     );
     mockedIoFuncs.getMimeType = io.getMimeType || (
         (name) => {
             const mimeType = io.mimeType || ioMock.getMimeType(name);
-                                                                                                                        if (verbose) log.info(prettify(mimeType, "Mocked io.getMimeType(" + JSON.stringify(name) + ")"));
+                                                                                                                        if (verbose) log.info("Mocked io.getMimeType(" + JSON.stringify(name) + "): " + JSON.stringify(mimeType, null, 2));
             return mimeType;
         }
     );
@@ -191,7 +118,7 @@ const doMocks = (params={}, verbose= false) => {
     mockedEtagreaderFuncs.read = etagReader.read || (
         (path, etagOverride) => {
             const etag = etagReader.etag || "MockedETagPlaceholder";
-                                                                                                                        if (verbose) log.info(prettify(etag, "Mocked etagReader.read(" + JSON.stringify({path, etagOverride}) + ")"));
+                                                                                                                        if (verbose) log.info("Mocked etagReader.read(" + JSON.stringify({path, etagOverride}) + "): " + JSON.stringify(etag, null, 2));
             return etag;
         }
     );
@@ -206,14 +133,14 @@ const doMocks = (params={}, verbose= false) => {
             : ioMock.getMimeType,
         cacheControlFunc: (optionParams.cacheControl !== undefined)
             ? () => optionParams.cacheControl
-            : () => DEFAULT_CACHE_CONTROL
+            : () => constants.DEFAULT_CACHE_CONTROL
     };
     mockedOptionsparserFuncs.parsePathAndOptions = optionParams.parsePathAndOptions || (
         (pathOrOptions, options) => {
             const parsed = (typeof pathOrOptions === 'string')
                 ? { path: pathOrOptions, ...defaultOptions, ...options, ...optionParams }
                 : { ...defaultOptions, ...pathOrOptions, ...optionParams };
-                                                                                                                        if (verbose) log.info(prettify(parsed, "Mocked parseRootAndOptions(" + JSON.stringify({pathOrOptions, options}) + ")"));
+                                                                                                                        if (verbose) log.info("Mocked parseRootAndOptions(" + JSON.stringify({pathOrOptions, options}) + "): " + JSON.stringify(parsed, null, 2));
             return parsed;
         }
     );
@@ -222,7 +149,7 @@ const doMocks = (params={}, verbose= false) => {
             const parsed = (typeof rootOrOptions === 'string')
                 ? { root: rootOrOptions, ...defaultOptions, ...options, ...optionParams }
                 : { ...defaultOptions, ...rootOrOptions, ...optionParams };
-                                                                                                                        if (verbose) log.info(prettify(parsed, "Mocked parseRootAndOptions(" + JSON.stringify({rootOrOptions, options}) + ")"));
+                                                                                                                        if (verbose) log.info("Mocked parseRootAndOptions(" + JSON.stringify({rootOrOptions, options}) + "): " + JSON.stringify(parsed, null, 2));
             return parsed;
         }
     );
@@ -256,8 +183,8 @@ exports.testbuildGetter_innerbehavior_1arg_parseRootAndOptions_isCalled = () => 
     doMocks({
             options: {
                 parseRootAndOptions: (rootOrOptions, options) => {
-                                                                                                                        if (verbose) log.info(prettify(rootOrOptions, "parseRootAndOptions call - rootOrOptions"));
-                                                                                                                        if (verbose) log.info(prettify(options, "parseRootAndOptions call - options"));
+                                                                                                                        if (verbose) log.info("parseRootAndOptions call - rootOrOptions: " + JSON.stringify(rootOrOptions, null, 2));
+                                                                                                                        if (verbose) log.info("parseRootAndOptions call - options: " + JSON.stringify(options, null, 2));
 
                     // Verify that the arguments of .buildGetter are passed into parseRootAndOptions the expected way:
                     t.assertEquals(undefined, options, "parseRootAndOptions: options");
@@ -292,7 +219,7 @@ exports.testbuildGetter_innerbehavior_1arg_parseRootAndOptions_isCalled = () => 
         etag: 'etag/should/be/boolean/but/ok',
         getCleanPath: 'getCleanPath/should/be/function/but/ok'
     });
-                                                                                                                        if (verbose) log.info(prettify(getStatic, "getStatic"));
+                                                                                                                        if (verbose) log.info("getStatic: " + JSON.stringify(getStatic, null, 2));
     t.assertTrue(parseRootAndOptionsWasCalled, "parseRootAndOptionsWasCalled");
 };
 
@@ -303,8 +230,8 @@ exports.testbuildGetter_innerbehavior_2arg_parseRootAndOptions_isCalled = () => 
     doMocks({
             options: {
                 parseRootAndOptions: (rootOrOptions, options) => {
-                                                                                                                        if (verbose) log.info(prettify(rootOrOptions, "parseRootAndOptions call - rootOrOptions"));
-                                                                                                                        if (verbose) log.info(prettify(options, "parseRootAndOptions call - options"));
+                                                                                                                        if (verbose) log.info("parseRootAndOptions call - rootOrOptions: " + JSON.stringify(rootOrOptions, null, 2));
+                                                                                                                        if (verbose) log.info("parseRootAndOptions call - options: " + JSON.stringify(options, null, 2));
 
                     // Verify that the arguments of .buildGetter are passed into parseRootAndOptions the expected way:
                     t.assertEquals('my/root', rootOrOptions , "parseRootAndOptions: rootOrOptions");
@@ -341,7 +268,7 @@ exports.testbuildGetter_innerbehavior_2arg_parseRootAndOptions_isCalled = () => 
             getCleanPath: 'getCleanPath/should/be/function/but/ok'
         }
     );
-                                                                                                                        if (verbose) log.info(prettify(getStatic, "getStatic"));
+                                                                                                                        if (verbose) log.info("getStatic: " + JSON.stringify(getStatic, null, 2));
     t.assertTrue(parseRootAndOptionsWasCalled, "parseRootAndOptionsWasCalled");
 };
 
@@ -360,7 +287,7 @@ exports.testbuildGetter_innerbehavior_parseRootAndOptions_errorMessage_shouldThr
     try {
         const getStatic = lib.buildGetter("my/root");
         failed = false;
-                                                                                                                        if (verbose) log.info(prettify(getStatic, "getStatic"));
+                                                                                                                        if (verbose) log.info("getStatic: " + JSON.stringify(getStatic, null, 2));
     } catch (e) {
                                                                                                                         if (verbose) log.error(e);
         t.assertTrue(e.message.indexOf("on purpose") > -1, "Expected purposefully thrown error");
@@ -436,7 +363,7 @@ exports.testbuildGetter_innerbehavior_parseRootAndOptions_outputs_areUsed = () =
         cacheControl: 'arg/cacheControl/in',
         contentType: 'arg/contentType/in'
     });
-                                                                                                                        if (verbose) log.info(prettify(getStatic, "getStatic"));
+                                                                                                                        if (verbose) log.info("getStatic: " + JSON.stringify(getStatic, null, 2));
     t.assertTrue(parseRootAndOptionsWasCalled, "parseRootAndOptionsWasCalled");
 
     t.assertFalse(getResourceWasCalled, "getResourceWasCalled");
@@ -472,7 +399,7 @@ exports.testbuildGetter_root_noLeadingSlash_isOK = () => {
         rawPath: '/assets/asset-test-target.txt',
         contextPath: '/assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
 
     t.assertEquals(200, result.status, "result.status");
     t.assertEquals("Mocked content of '/i/am/root/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
@@ -489,7 +416,7 @@ exports.testbuildGetter_root_trailingSlash_isOK = () => {
         rawPath: '/assets/asset-test-target.txt',
         contextPath: '/assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
 
     t.assertEquals(200, result.status, "result.status");
     t.assertEquals("Mocked content of '/i/am/root/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
@@ -505,7 +432,7 @@ exports.testGetStatic_rawPath_noLeadingSlash_isOK = () => {
         rawPath: 'assets/asset-test-target.txt',
         contextPath: '/assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
 
     t.assertEquals(200, result.status, "result.status");
     t.assertEquals("Mocked content of '/i/am/root/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
@@ -522,7 +449,7 @@ exports.testGetStatic_contextPath_trailingSlash_isOK = () => {
         rawPath: '/assets/asset-test-target.txt',
         contextPath: 'assets/'
     });
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
 
     t.assertEquals(200, result.status, "result.status");
     t.assertEquals("Mocked content of '/i/am/root/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
@@ -538,7 +465,7 @@ exports.testGetStatic_contextPath_noLeadingSlash_isOK = () => {
         rawPath: '/assets/asset-test-target.txt',
         contextPath: 'assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
 
     t.assertEquals(200, result.status, "result.status");
     t.assertEquals("Mocked content of '/i/am/root/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
@@ -554,7 +481,7 @@ exports.testGetStatic_request_noLeadingSlashes_isOK = () => {
         rawPath: 'assets/asset-test-target.txt',
         contextPath: 'assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
 
     t.assertEquals(200, result.status, "result.status");
     t.assertEquals("Mocked content of '/i/am/root/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
@@ -570,7 +497,7 @@ exports.testGetStatic_request_otherSlashes_isOK = () => {
         rawPath: 'assets/asset-test-target.txt',
         contextPath: 'assets/'
     });
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
 
     t.assertEquals(200, result.status, "result.status");
     t.assertEquals("Mocked content of '/i/am/root/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
@@ -594,7 +521,7 @@ exports.testGetStatic_root_string_FullDefaultResponse = () => {
         rawPath: '/assets/asset-test-target.txt',
         contextPath: '/assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
     t.assertEquals(200, result.status, "result.status");
     t.assertEquals("Mocked content of '/i/am/root/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
 
@@ -605,7 +532,7 @@ exports.testGetStatic_root_string_FullDefaultResponse = () => {
     t.assertEquals('object', typeof result.headers, "result.headers should be an object with ETag and Cache-Control");
     t.assertEquals( "MockedETagPlaceholder", result.headers.ETag, "result.headers should be an object with ETag and Cache-Control");
     t.assertTrue(result.headers.ETag.length > 0, "result.headers should be an object with ETag and Cache-Control");
-    t.assertEquals(DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals(constants.DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
 };
 
 exports.testGetStatic_root_option_FullDefaultResponse = () => {
@@ -617,7 +544,7 @@ exports.testGetStatic_root_option_FullDefaultResponse = () => {
     const result = getStatic({
         rawPath: '/assets/asset-test-target.txt',
         contextPath: '/assets'
-    });                                                                                                                 if (verbose) log.info(prettify(result, "result"));
+    });                                                                                                                 if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
 
     t.assertEquals(200, result.status, "result.status");
     t.assertEquals("Mocked content of '/i/am/root/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
@@ -629,7 +556,7 @@ exports.testGetStatic_root_option_FullDefaultResponse = () => {
     t.assertEquals('object', typeof result.headers, "result.headers should be an object with ETag and Cache-Control");
     t.assertEquals( "MockedETagPlaceholder", result.headers.ETag, "result.headers should be an object with ETag and Cache-Control");
     t.assertTrue(result.headers.ETag.length > 0, "result.headers should be an object with ETag and Cache-Control");
-    t.assertEquals(DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals(constants.DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
 
 };
 
@@ -643,7 +570,7 @@ exports.testGetStatic_DEV_root_string_FullDefaultResponse = () => {
         rawPath: '/assets/asset-test-target.txt',
         contextPath: '/assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
 
     t.assertEquals(200, result.status, "result.status");
     t.assertEquals("Mocked content of '/i/am/root/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
@@ -655,7 +582,7 @@ exports.testGetStatic_DEV_root_string_FullDefaultResponse = () => {
     t.assertEquals('object', typeof result.headers, "result.headers should be an object with ETag and Cache-Control");
     t.assertEquals( "MockedETagPlaceholder", result.headers.ETag, "result.headers should be an object with ETag and Cache-Control");
     t.assertTrue(result.headers.ETag.length > 0, "result.headers should be an object with ETag and Cache-Control");
-    t.assertEquals(DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals(constants.DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
 };
 
 exports.testGetStatic_DEV_root_option_FullDefaultResponse = () => {
@@ -668,7 +595,7 @@ exports.testGetStatic_DEV_root_option_FullDefaultResponse = () => {
         rawPath: '/assets/asset-test-target.txt',
         contextPath: '/assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
 
     t.assertEquals(200, result.status, "result.status");
     t.assertEquals("Mocked content of '/i/am/root/asset-test-target.txt'", ioMock.readText(result.body), "result.body");
@@ -680,7 +607,7 @@ exports.testGetStatic_DEV_root_option_FullDefaultResponse = () => {
     t.assertEquals('object', typeof result.headers, "result.headers should be an object with ETag and Cache-Control");
     t.assertEquals( "MockedETagPlaceholder", result.headers.ETag, "result.headers should be an object with ETag and Cache-Control");
     t.assertTrue(result.headers.ETag.length > 0, "result.headers should be an object with ETag and Cache-Control");
-    t.assertEquals(DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals(constants.DEFAULT_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and Cache-Control");
 };
 
 
@@ -691,8 +618,8 @@ exports.testGetStatic_contentType = () => {
     doMocks({
             options: {
                 contentTypeFunc: (filePathAndName, resource) => {
-                                                                                                                        if (verbose) log.info(prettify(filePathAndName, "contentTypeFunc.filePathAndName"));
-                                                                                                                        if (verbose) log.info(prettify(resource, "contentTypeFunc.resource"));
+                                                                                                                        if (verbose) log.info("contentTypeFunc.filePathAndName: " + JSON.stringify(filePathAndName, null, 2));
+                                                                                                                        if (verbose) log.info("contentTypeFunc.resource: " + JSON.stringify(resource, null, 2));
                     if (filePathAndName.endsWith(".html")) {
                         return "teKSt/html";
                     }
@@ -715,7 +642,7 @@ exports.testGetStatic_contentType = () => {
         rawPath: '/assets/asset-test-target.txt',
         contextPath: '/assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result1, "result1"));
+                                                                                                                        if (verbose) log.info("result1: " + JSON.stringify(result1, null, 2));
 
     t.assertEquals(200, result1.status, "result1.status");
 
@@ -728,7 +655,7 @@ exports.testGetStatic_contentType = () => {
         rawPath: '/assets/asset-test-target.html',
         contextPath: '/assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result2, "result2"));
+                                                                                                                        if (verbose) log.info("result2: " + JSON.stringify(result2, null, 2));
 
     t.assertEquals(200, result2.status, "result2.status");
 
@@ -741,7 +668,7 @@ exports.testGetStatic_contentType = () => {
         rawPath: '/assets/asset-test-target.json',
         contextPath: '/assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result3, "result3"));
+                                                                                                                        if (verbose) log.info("result3: " + JSON.stringify(result3, null, 2));
 
     t.assertEquals(200, result3.status, "result3.status");
 
@@ -757,9 +684,9 @@ exports.testGetStatic_cacheControl = () => {
     doMocks({
             options: {
                 cacheControlFunc: (filePathAndName, resource, mimeType) => {
-                                                                                                                        if (verbose) log.info(prettify(filePathAndName, "cacheControlFunc.filePathAndName"));
-                                                                                                                        if (verbose) log.info(prettify(resource, "cacheControlFunc.resource"));
-                                                                                                                        if (verbose) log.info(prettify(mimeType, "cacheControlFunc.mimeType"));
+                                                                                                                        if (verbose) log.info("cacheControlFunc.filePathAndName: " + JSON.stringify(filePathAndName, null, 2));
+                                                                                                                        if (verbose) log.info("cacheControlFunc.resource: " + JSON.stringify(resource, null, 2));
+                                                                                                                        if (verbose) log.info("cacheControlFunc.mimeType: " + JSON.stringify(mimeType, null, 2));
                     if (filePathAndName.endsWith(".html")) {
                         return "htmlthmlhtml";
                     }
@@ -780,7 +707,7 @@ exports.testGetStatic_cacheControl = () => {
         rawPath: '/assets/asset-test-target.txt',
         contextPath: '/assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result1, "result1"));
+                                                                                                                        if (verbose) log.info("result1: " + JSON.stringify(result1, null, 2));
 
     t.assertEquals(200, result1.status, "result1.status");
 
@@ -793,7 +720,7 @@ exports.testGetStatic_cacheControl = () => {
         rawPath: '/assets/asset-test-target.html',
         contextPath: '/assets'
     });
-    if (verbose) log.info(prettify(result2, "result2"));
+    if (verbose) log.info("result2: " + JSON.stringify(result2, null, 2));
 
     t.assertEquals(200, result2.status, "result2.status");
 
@@ -807,7 +734,7 @@ exports.testGetStatic_cacheControl = () => {
         rawPath: '/assets/asset-test-target.json',
         contextPath: '/assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result3, "result3"));
+                                                                                                                        if (verbose) log.info("result3: " + JSON.stringify(result3, null, 2));
 
     t.assertEquals(200, result3.status, "result3.status");
 
@@ -833,8 +760,8 @@ exports.testGetStatic_getCleanPath = () => {
     const result1 = getStatic({
         targetPath: '/myprefix/subfolder/asset-target1.txt',
     });
-                                                                                                                        if (verbose) log.info(prettify(result1, "result1"));
-                                                                                                                        if (verbose) log.info(prettify(ioMock.readText(result1.body), "result1.body content"));
+                                                                                                                        if (verbose) log.info("result1: " + JSON.stringify(result1, null, 2));
+                                                                                                                        if (verbose) log.info("result1.body content: " + JSON.stringify(ioMock.readText(result1.body), null, 2));
 
     t.assertEquals(200, result1.status, "result1.status");
     t.assertTrue(ioMock.readText(result1.body).indexOf("/i/am/root/subfolder/asset-target1.txt") !== -1, "Expected result1 body containing content of '/i/am/root/subfolder/asset-target1.txt'");
@@ -844,8 +771,8 @@ exports.testGetStatic_getCleanPath = () => {
     const result2 = getStatic({
         targetPath: '/myprefix/asset-target2.txt',
     });
-                                                                                                                        if (verbose) log.info(prettify(result2, "result2"));
-                                                                                                                        if (verbose) log.info(prettify(ioMock.readText(result2.body), "result2.body content"));
+                                                                                                                        if (verbose) log.info("result2: " + JSON.stringify(result2, null, 2));
+                                                                                                                        if (verbose) log.info("result2.body content: " + JSON.stringify(ioMock.readText(result2.body), null, 2));
 
     t.assertEquals(200, result2.status, "result2.status");
     t.assertTrue(ioMock.readText(result2.body).indexOf("/i/am/root/asset-target2.txt") !== -1, "Expected result2 body containing content of '/i/am/root/asset-target2.txt'");
@@ -872,7 +799,7 @@ exports.testGetStatic_root_noExist_shouldOnly404 = () => {
         contextPath: '/assets'
     });
 
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
 
     t.assertEquals(404, result.status, "result.status");
 
@@ -897,7 +824,7 @@ exports.testGetStatic_DEV_root_noExist_should404withInfo = () => {
         rawPath: '/assets/asset-test-target.txt',
         contextPath: '/assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
 
     t.assertEquals(404, result.status, "result.status");
     t.assertEquals('string', typeof result.body, "Expected string body containing path in dev");
@@ -910,47 +837,208 @@ exports.testGetStatic_DEV_root_noExist_should404withInfo = () => {
 };
 
 
-exports.testGetStatic_relativePath_empty_shouldOnly400 = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_relativePath_empty_shouldOnly400:\n");
-    doMocks({}, verbose);
+exports.testGetStatic_relativePath_slash_indexfallbackExists_shouldFallbackWith200andMustRevalidate = () => {
+    //const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_relativePath_slash_indexfallbackExists_shouldFallbackWith200andMustRevalidate:\n");
+    doMocks({
+        io: {
+            getResource: (path) => {
+                const data = {
+                    path: path,
+                    exists: path.endsWith("/index.html") // Mocking: '/i/am/root' will not exist, but '/i/am/root/index.html' will, during the fallback detection
+                };
+                data.content = `Mocked content of '${path}'`;
+
+                const res = ioMock.getResource(data.path, data.exists, data.content);
+
+                if (verbose) log.info("Mocked io.getResource(" + JSON.stringify(path) + "): " + JSON.stringify(data, null, 2));
+                return res;
+            }
+        }
+    }, verbose);
 
     const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     const result = getStatic({
-        rawPath: '/assets/',
+        rawPath: '/assets/',        // Trailing slash, compared to contextPath it resolves relativePath to '/'
         contextPath: '/assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
 
-    t.assertEquals(400, result.status, "result.status");
+    t.assertEquals(200, result.status, "result.status");
+    t.assertEquals("Mocked content of '/i/am/root/index.html'", ioMock.readText(result.body), "result.body");
+
+    t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/html'");
+    t.assertTrue(result.contentType.indexOf("text/html") !== -1, "Expected string contentType containing 'text/html'");
+
+    t.assertTrue(!!result.headers, "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals('object', typeof result.headers, "result.headers should be an object with ETag and Cache-Control");
+    t.assertEquals( "MockedETagPlaceholder", result.headers.ETag, "result.headers should be an object with ETag and 'no-cache' Cache-Control");
+    t.assertTrue(result.headers.ETag.length > 0, "result.headers should be an object with ETag and 'no-cache' Cache-Control");
+    t.assertEquals(constants.INDEXFALLBACK_CACHE_CONTROL, result.headers["Cache-Control"], "result.headers should be an object with ETag and 'no-cache' Cache-Control");
+
+    t.assertEquals(undefined, result.redirect, "result.redirect");
+
+                                                                                                                        if (verbose) t.assertTrue(false, "OK");
+}
+
+exports.testGetStatic_relativePath_slash_fallbackNotExist_shouldOnly404 = () => {
+    //const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_relativePath_slash_fallbackNotExist_shouldOnly404:\n");
+    doMocks({
+        io: {
+            exists: false
+        }
+    }, verbose);
+
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
+
+    const result = getStatic({
+        rawPath: '/assets/',        // Trailing slash, compared to contextPath it resolves relativePath to '/'
+        contextPath: '/assets'
+    });
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
+
+    t.assertEquals(404, result.status, "result.status");
 
     t.assertEquals(undefined, result.body, "result.body");
     t.assertEquals(undefined, result.contentType, "result.contentType");
     t.assertEquals(undefined, result.headers, "result.headers");
+    t.assertEquals(undefined, result.redirect, "result.redirect");
+
+                                                                                                                        if (verbose) t.assertTrue(false, "OK");
 }
 
-
-exports.testGetStatic_DEV_relativePath_empty_should400WithInfo = () => {
-                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_DEV_relativePath_empty_should400WithInfo:\n");
-    doMocks({ isDev: true }, verbose);
+exports.testGetStatic_DEV_relativePath_slash_fallbackNotExist_should404withInfo = () => {
+    //const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_DEV_relativePath_slash_fallbackNotExist_should404withInfo:\n");
+    doMocks({
+        isDev: true,
+        io: {
+            exists: false
+        }
+    }, verbose);
 
     const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     const result = getStatic({
-        rawPath: '/assets/',
+        rawPath: '/assets/',        // Trailing slash, compared to contextPath it resolves relativePath to '/'
         contextPath: '/assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
 
-    t.assertEquals(400, result.status, "result.status");
+    t.assertEquals(404, result.status, "result.status");
 
-    t.assertEquals('string', typeof result.body, "Expected string body with error message in dev");
+    t.assertEquals('string', typeof result.body, "Expected string body containing path in dev");
+    t.assertTrue(result.body.indexOf('/i/am/root/') !== -1, "Expected string body containing path in dev");
 
     t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/plain' in dev");
     t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain' in dev");
 
     t.assertEquals(undefined, result.headers, "result.headers");
+    t.assertEquals(undefined, result.redirect, "result.redirect");
+
+                                                                                                                        if (verbose) t.assertTrue(false, "OK");
 }
+
+
+exports.testGetStatic_relativePath_empty_fallbackExists_shouldRedirectToSlash = () => {
+    //const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_relativePath_empty_fallbackExists_shouldRedirectToSlash:\n");
+    doMocks({
+        io: {
+            getResource: (path) => {
+                const data = {
+                    path: path,
+                    exists: path.endsWith("/index.html") // Mocking: '/i/am/root' will not exist, but '/i/am/root/index.html' will, during the fallback detection
+                };
+                data.content = `Mocked content of '${path}'`;
+
+                const res = ioMock.getResource(data.path, data.exists, data.content);
+
+                                                                                                                        if (verbose) log.info("Mocked io.getResource(" + JSON.stringify(path) + "): " + JSON.stringify(data, null, 2));
+                return res;
+            }
+        }
+    }, verbose);
+
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
+
+    const result = getStatic({
+        rawPath: '/assets',         // No trailing slash, compared with contextPath it will resolve relativePath to ''
+        contextPath: '/assets'
+    });
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
+
+    t.assertEquals('/assets/', result.redirect, "result.redirect");
+
+    t.assertEquals(undefined, result.status, "result.status");
+    t.assertEquals(undefined, result.body, "result.body");
+    t.assertEquals(undefined, result.contentType, "result.contentType");
+    t.assertEquals(undefined, result.headers, "result.headers");
+
+                                                                                                                        if (verbose) t.assertTrue(false, "OK");
+}
+
+exports.testGetStatic_relativePath_empty_fallbackNotExist_shouldOnly404 = () => {
+    //const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_relativePath_empty_fallbackNotExist_shouldOnly404:\n");
+    doMocks({
+        io: {
+            exists: false
+        }
+    }, verbose);
+
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
+
+    const result = getStatic({
+        rawPath: '/assets',         // No trailing slash
+        contextPath: '/assets'
+    });
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
+
+    t.assertEquals(404, result.status, "result.status");
+
+    t.assertEquals(undefined, result.body, "result.body");
+    t.assertEquals(undefined, result.contentType, "result.contentType");
+    t.assertEquals(undefined, result.headers, "result.headers");
+    t.assertEquals(undefined, result.redirect, "result.redirect");
+
+                                                                                                                        if (verbose) t.assertTrue(false, "OK");
+}
+
+exports.testGetStatic_DEV_relativePath_empty_fallbackNotExist_should404withInfo = () => {
+    //const verbose = true;
+                                                                                                                        if (verbose) log.info("\n\n\ntestGetStatic_DEV_relativePath_empty_fallbackNotExist_should404withInfo:\n");
+    doMocks({
+        isDev: true,
+        io: {
+            exists: false
+        }
+    }, verbose);
+
+    const getStatic = lib.buildGetter({root: '/i/am/root'});
+
+    const result = getStatic({
+        rawPath: '/assets',         // No trailing slash
+        contextPath: '/assets'
+    });
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
+
+    t.assertEquals(404, result.status, "result.status");
+
+    t.assertEquals('string', typeof result.body, "Expected string body containing path in dev");
+    t.assertTrue(result.body.indexOf('/i/am/root') !== -1, "Expected string body containing path in dev");
+
+    t.assertEquals('string', typeof result.contentType, "Expected string contentType containing 'text/plain' in dev");
+    t.assertTrue(result.contentType.indexOf("text/plain") !== -1, "Expected string contentType containing 'text/plain' in dev");
+
+    t.assertEquals(undefined, result.headers, "result.headers");
+    t.assertEquals(undefined, result.redirect, "result.redirect");
+
+                                                                                                                        if (verbose) t.assertTrue(false, "OK");
+}
+
 
 
 
@@ -964,7 +1052,7 @@ exports.testGetStatic_relativePath_illegalChars_shouldOnly400 = () => {
         rawPath: '/assets/../asset-test-target/.txt',
         contextPath: '/assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result1, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result1, null, 2));
 
     t.assertEquals(400, result1.status, "result1.status");
 
@@ -977,7 +1065,7 @@ exports.testGetStatic_relativePath_illegalChars_shouldOnly400 = () => {
         rawPath: '/assets/asset<test-target/.txt',
         contextPath: '/assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result2, "result2"));
+                                                                                                                        if (verbose) log.info("result2: " + JSON.stringify(result2, null, 2));
 
     t.assertEquals(400, result2.status, "result2.status");
 
@@ -990,7 +1078,7 @@ exports.testGetStatic_relativePath_illegalChars_shouldOnly400 = () => {
         rawPath: '/assets/asset:test-target/.txt',
         contextPath: '/assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result3, "result3"));
+                                                                                                                        if (verbose) log.info("result3: " + JSON.stringify(result3, null, 2));
 
     t.assertEquals(400, result3.status, "result3.status");
 
@@ -1010,7 +1098,7 @@ exports.testGetStatic_DEV_relativePath_illegalChars_should400WithInfo = () => {
         rawPath: '/assets/../asset-test-target/.txt',
         contextPath: '/assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result1, "result1"));
+                                                                                                                        if (verbose) log.info("result1: " + JSON.stringify(result1, null, 2));
 
     t.assertEquals(400, result1.status, "result1.status");
 
@@ -1027,7 +1115,7 @@ exports.testGetStatic_DEV_relativePath_illegalChars_should400WithInfo = () => {
         rawPath: '/assets/asset\\test-target/.txt',
         contextPath: '/assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result2, "result2"));
+                                                                                                                        if (verbose) log.info("result2: " + JSON.stringify(result2, null, 2));
 
     t.assertEquals(400, result2.status, "result2.status");
 
@@ -1044,7 +1132,7 @@ exports.testGetStatic_DEV_relativePath_illegalChars_should400WithInfo = () => {
         rawPath: '/assets/asset:test-target/.txt',
         contextPath: '/assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result3, "result3"));
+                                                                                                                        if (verbose) log.info("result3: " + JSON.stringify(result3, null, 2));
 
     t.assertEquals(400, result3.status, "result3.status");
 
@@ -1066,7 +1154,7 @@ exports.testGetStatic_noRawPath_should500 = () => {
     const result = getStatic({
         contextPath: '/assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
 
     t.assertEquals(500, result.status, "result.status");
 
@@ -1088,7 +1176,7 @@ exports.testGetStatic_noContextPath_should500 = () => {
     const result = getStatic({
         rawPath: '/assets/asset-test-target.txt',
     });
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
 
     t.assertEquals(500, result.status, "result.status");
 
@@ -1111,7 +1199,7 @@ exports.testGetStatic_outsideContextPath_should500 = () => {
         rawPath: 'assets/asset-test-target.txt',
         contextPath: 'my/endpoint'
     });
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
 
     t.assertEquals(500, result.status, "result.status");
 
@@ -1145,7 +1233,7 @@ exports.testGetStatic_throwErrors_shouldThrowErrorInsteadOf500 = () => {
             rawPath: '/assets/asset-test-target.txt',
         });
         failed = false;
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
     } catch (e) {
                                                                                                                         if (verbose) log.error(e);
     }
@@ -1172,7 +1260,7 @@ exports.testGetStatic_failingContentTypeFunc_should500 = () => {
         rawPath: '/assets/asset-test-target.txt',
         contextPath: '/assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
 
     t.assertEquals(500, result.status, "result.status");
 }
@@ -1199,7 +1287,7 @@ exports.testGetStatic_failingContentTypeFunc_throwErrors_shouldThrowErrorInstead
             contextPath: '/assets'
         });
         failed = false;
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
     } catch (e) {
                                                                                                                         if (verbose) log.error(e);
         t.assertTrue(e.message.indexOf("on purpose") > -1, "Thrown error should have been on purpose");
@@ -1229,7 +1317,7 @@ exports.testGetStatic_failingCacheControlFunc_should500 = () => {
         rawPath: '/assets/asset-test-target.txt',
         contextPath: '/assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
 
     t.assertEquals(500, result.status, "result.status");
 }
@@ -1256,7 +1344,7 @@ exports.testGetStatic_failingCacheControlFunc_throwErrors_shouldThrowErrorInstea
             contextPath: '/assets'
         });
         failed = false;
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
     } catch (e) {
                                                                                                                         if (verbose) log.error(e);
         t.assertTrue(e.message.indexOf("on purpose") > -1, "Thrown error should have been on purpose");
@@ -1286,7 +1374,7 @@ exports.testGetStatic_failingGetCleanPath_should500 = () => {
         rawPath: '/assets/asset-test-target.txt',
         contextPath: '/assets'
     });
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
 
     t.assertEquals(500, result.status, "result.status");
 }
@@ -1313,7 +1401,7 @@ exports.testGetStatic_failingGetCleanPath_throwErrors_shouldThrowErrorInsteadOf5
             contextPath: '/assets'
         });
         failed = false;
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
     } catch (e) {
                                                                                                                         if (verbose) log.error(e);
         t.assertTrue(e.message.indexOf("on purpose") > -1, "Thrown error should have been on purpose");
@@ -1349,7 +1437,7 @@ exports.testGetStatic_ifMatchingEtag_should304 = () => {
             'If-None-Match': 'test-etag-value'
         }
     });
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
 
     t.assertEquals(304, result.status, "result.status");
 
@@ -1380,7 +1468,7 @@ exports.testGetStatic_ifNotMatchingEtag_shouldProceedWithAssetRead = () => {
             'If-None-Match': 'OLD-etag-value'
         }
     });
-                                                                                                                        if (verbose) log.info(prettify(result, "result"));
+                                                                                                                        if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
 
     t.assertEquals(200, result.status, "result.status");
 
@@ -1392,12 +1480,12 @@ exports.testGetStatic_ifNotMatchingEtag_shouldProceedWithAssetRead = () => {
 
 // Verify that a even if the getStatic function fails once, it will keep working for new requests later
 exports.testGetStatic_fail_failuresShouldNotDestroyGetstaticFunction = () => {
-    // const verbose = true;
+    //const verbose = true;
                                                                                                                         if (verbose) log.info("\n\n\ntestGetStatic_fail_failuresShouldNotDestroyGetstaticFunction:\n");
 
     doMocks({}, verbose);
 
-    const getStatic = lib.buildGetter('static');
+    const getStatic = lib.buildGetter('i/am/root');
 
     let result;
 
@@ -1442,14 +1530,33 @@ exports.testGetStatic_fail_failuresShouldNotDestroyGetstaticFunction = () => {
     result = getStatic({rawPath: 'my/endpoint/w3c_home.gif', contextPath: 'my/endpoint'});
     t.assertEquals(200, result.status, "Expected 200 OK. Result: " + JSON.stringify(result));
 
+    doMocks({
+        io: {
+            getResource: (path) => {
+                const data = {
+                    path: path,
+                    exists: path.endsWith("/index.html") // Mocking: '/i/am/root' will not exist, but '/i/am/root/index.html' will, during the fallback detection
+                };
+                data.content = `Mocked content of '${path}'`;
+
+                const res = ioMock.getResource(data.path, data.exists, data.content);
+
+                                                                                                                        if (verbose) log.info("Mocked io.getResource(" + JSON.stringify(path) + "): " + JSON.stringify(data, null, 2));
+                return res;
+            }
+        }
+    }, verbose);
     result = getStatic({contextPath: 'my/endpoint'});
+    																													//if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
     t.assertTrue(result.status >= 400, "Expected a failing getStatic call: missing relative path. Result: " + JSON.stringify(result));
                                                                                                                         if (verbose) log.info(`OK: ${result.status} - ${result.body}`);
 
     result = getStatic({rawPath: 'my/endpoint/', contextPath: 'my/endpoint'});
-    t.assertTrue(result.status >= 400, "Expected a failing getStatic call: missing relative path. Result: " + JSON.stringify(result));
+                                                                                                                        // if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
+    t.assertEquals(200, result.status, "Expected an index fallback, so, 200 OK. Result: " + JSON.stringify(result));
                                                                                                                         if (verbose) log.info(`OK: ${result.status} - ${result.body}`);
 
+    doMocks({}, verbose);
     result = getStatic({rawPath: 'my/endpoint/w3c_home.jpg', contextPath: 'my/endpoint'});
     t.assertEquals(200, result.status, "Expected 200 OK. Result: " + JSON.stringify(result));
 
@@ -1524,7 +1631,9 @@ exports.testGetStatic_fail_failuresShouldNotDestroyGetstaticFunction = () => {
 
     result = getStatic3({rawPath: 'my/endpoint/w3c_home.gif', contextPath: 'my/endpoint'});
     t.assertEquals(200, result.status, "no runtime error status");
-                                                                                                                        if (verbose) log.info(`OK: ${result.status} - ${result.body}`);
+
+                                                                                                                        if (verbose) t.assertTrue(false, "OK");
+    log.info(`OK: ${result.status} - ${result.body}`);
 }
 
 

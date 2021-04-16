@@ -1,5 +1,4 @@
-const DEFAULT_CACHE_CONTROL = require('/lib/enonic/static/options').DEFAULT_CACHE_CONTROL;
-
+const constants = require('/lib/enonic/static/constants');
 const ioMock = require('/lib/enonic/static/ioMock');
 
 const t = require('/lib/xp/testing');
@@ -31,79 +30,6 @@ mockOptionsparser();
 const lib = require('./index');
 
 //////////////////////////////////////////////////////////////////  HELPERS
-
-                                                                                                                        const prettify = (obj, label, suppressCode= false, indent = 0) => {
-                                                                                                                            let str = " ".repeat(indent) + (
-                                                                                                                                label !== undefined
-                                                                                                                                    ? label + ": "
-                                                                                                                                    : ""
-                                                                                                                            );
-
-                                                                                                                            if (typeof obj === 'function') {
-                                                                                                                                if (!suppressCode) {
-                                                                                                                                    return `${str}···· (function)\n${" ".repeat(indent + 4)}` +
-                                                                                                                                        obj.toString()
-                                                                                                                                            .replace(
-                                                                                                                                                /\r?\n\r?/g,
-                                                                                                                                                `\n${" ".repeat(indent + 4)}`
-                                                                                                                                            ) +
-                                                                                                                                        "\n" + " ".repeat(indent) + "····"
-                                                                                                                                        ;
-                                                                                                                                } else {
-                                                                                                                                    return `${str}···· (function)`;
-                                                                                                                                }
-
-                                                                                                                            } else if (Array.isArray(obj)) {
-                                                                                                                                return obj.length === 0
-                                                                                                                                    ? `${str}[]`
-                                                                                                                                    : (
-                                                                                                                                        `${str}[\n` +
-                                                                                                                                        obj.map(
-                                                                                                                                            (item, i) =>
-                                                                                                                                                prettify(item, i, suppressCode, indent + 4)
-                                                                                                                                        )
-                                                                                                                                            .join(",\n") +
-                                                                                                                                        `\n${" ".repeat(indent)}]`
-                                                                                                                                    );
-
-                                                                                                                            } else if (obj && typeof obj === 'object') {
-                                                                                                                                try {
-                                                                                                                                    if (Object.keys(obj).length === 0) {
-                                                                                                                                        return `${str}{}`;
-                                                                                                                                    } else {
-                                                                                                                                        return `${str}{\n` +
-                                                                                                                                            Object.keys(obj).map(
-                                                                                                                                                key => prettify(obj[key], key, suppressCode, indent + 4)
-                                                                                                                                            ).join(",\n") +
-                                                                                                                                            `\n${" ".repeat(indent)}}`
-                                                                                                                                    }
-                                                                                                                                } catch (e) {
-                                                                                                                                    log.info(e);
-                                                                                                                                    return `${str}···· (${typeof obj})\n${" ".repeat(indent + 4)}` +
-                                                                                                                                        obj.toString()
-                                                                                                                                            .replace(
-                                                                                                                                                /\r?\n\r?/g,
-                                                                                                                                                `\n${" ".repeat(indent + 4)}`
-                                                                                                                                            ) +
-                                                                                                                                        "\n" + " ".repeat(indent) + `····`;
-                                                                                                                                }
-                                                                                                                            } else if (obj === undefined || obj === null) {
-                                                                                                                                return `${str}${obj}`;
-                                                                                                                            } else if (JSON.stringify(obj) !== undefined) {
-                                                                                                                                return `${str}` + JSON.stringify(obj, null, 2).replace(
-                                                                                                                                    /\r?\n\r?/g,
-                                                                                                                                    `\n${" ".repeat(indent + 2)}`
-                                                                                                                                );
-                                                                                                                            } else {
-                                                                                                                                return `${str}···· (${typeof obj})\n${" ".repeat(indent + 4)}` +
-                                                                                                                                    obj.toString()
-                                                                                                                                        .replace(
-                                                                                                                                            /\r?\n\r?/g,
-                                                                                                                                            `\n${" ".repeat(indent + 4)}`
-                                                                                                                                        ) +
-                                                                                                                                    "\n" + " ".repeat(indent) + `····`;
-                                                                                                                            }
-                                                                                                                        };
 
 /* Mocks runMode.js, io.js, etagReader.js and options.js.
   Optional params: {
@@ -142,7 +68,7 @@ const doMocks = (params={}, verbose= false) => {
 
     mockedRunmodeFuncs.isDev = (typeof params.isDev === 'boolean' )
         ? () => {
-                                                                                                                        if (verbose) log.info(prettify(params.isDev, "Mocked isDev"));
+                                                                                                                        if (verbose) log.info("Mocked isDev: " + JSON.stringify(params.isDev, null, 2));
             return params.isDev
         }
         : () => false;
@@ -161,21 +87,21 @@ const doMocks = (params={}, verbose= false) => {
 
             const res = ioMock.getResource(data.path, data.exists, data.content);
 
-                                                                                                                        if (verbose) log.info(prettify(data, "Mocked io.getResource(" + JSON.stringify(path) + ")"));
+                                                                                                                        if (verbose) log.info("Mocked io.getResource(" + JSON.stringify(path) + "): " + JSON.stringify(data, null, 2));
             return res;
         }
     );
     mockedIoFuncs.readText = io.readText || (
         (stream) => {
             const text = io.text || ioMock.readText(stream);
-                                                                                                                        if (verbose) log.info(prettify(text,"Mocked io.readText(stream)"));
+                                                                                                                        if (verbose) log.info("Mocked io.readText(stream): " + JSON.stringify(text, null, 2));
             return text;
         }
     );
     mockedIoFuncs.getMimeType = io.getMimeType || (
         (name) => {
             const mimeType = io.mimeType || ioMock.getMimeType(name);
-                                                                                                                        if (verbose) log.info(prettify(mimeType, "Mocked io.getMimeType(" + JSON.stringify(name) + ")"));
+                                                                                                                        if (verbose) log.info("Mocked io.getMimeType(" + JSON.stringify(name) + "): " + JSON.stringify(mimeType, null, 2));
             return mimeType;
         }
     );
@@ -187,7 +113,7 @@ const doMocks = (params={}, verbose= false) => {
     mockedEtagreaderFuncs.read = etagReader.read || (
         (path, etagOverride) => {
             const etag = etagReader.etag || "MockedETagPlaceholder";
-                                                                                                                        if (verbose) log.info(prettify(etag, "Mocked etagReader.read(" + JSON.stringify({path, etagOverride}) + ")"));
+                                                                                                                        if (verbose) log.info("Mocked etagReader.read(" + JSON.stringify({path, etagOverride}) + "): " + JSON.stringify(etag, null, 2));
             return etag;
         }
     );
@@ -202,14 +128,14 @@ const doMocks = (params={}, verbose= false) => {
             : ioMock.getMimeType,
         cacheControlFunc: (optionParams.cacheControl !== undefined)
             ? () => optionParams.cacheControl
-            : () => DEFAULT_CACHE_CONTROL
+            : () => constants.DEFAULT_CACHE_CONTROL
     };
     mockedOptionsparserFuncs.parsePathAndOptions = optionParams.parsePathAndOptions || (
         (pathOrOptions, options) => {
             const parsed = (typeof pathOrOptions === 'string')
                 ? { path: pathOrOptions, ...defaultOptions, ...options, ...optionParams }
                 : { ...defaultOptions, ...pathOrOptions, ...optionParams };
-                                                                                                                        if (verbose) log.info(prettify(parsed, "Mocked parseRootAndOptions(" + JSON.stringify({pathOrOptions, options}) + ")"));
+                                                                                                                        if (verbose) log.info("Mocked parseRootAndOptions(" + JSON.stringify({pathOrOptions, options}) + "): " + JSON.stringify(parsed, null, 2));
             return parsed;
         }
     );
@@ -218,7 +144,7 @@ const doMocks = (params={}, verbose= false) => {
             const parsed = (typeof rootOrOptions === 'string')
                 ? { root: rootOrOptions, ...defaultOptions, ...options, ...optionParams }
                 : { ...defaultOptions, ...rootOrOptions, ...optionParams };
-                                                                                                                        if (verbose) log.info(prettify(parsed, "Mocked parseRootAndOptions(" + JSON.stringify({rootOrOptions, options}) + ")"));
+                                                                                                                        if (verbose) log.info("Mocked parseRootAndOptions(" + JSON.stringify({rootOrOptions, options}) + "): " + JSON.stringify(parsed, null, 2));
             return parsed;
         }
     );

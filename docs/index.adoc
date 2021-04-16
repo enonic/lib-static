@@ -864,7 +864,7 @@ Mutable assets _can_ be handled by this library (since ETag support is in place 
 [source,javascript,options="nowrap"]
 ----
 {
-    'Cache-Control': 'must-revalidate',
+    'Cache-Control': 'no-cache',
 }
 ----
 +
@@ -900,7 +900,7 @@ If you have mutable assets in your project, there are several ways you could imp
 
         // ...because the options object overrides the Cache-Control header (and only that - etag is preserved, importantly):
         {
-            cacheControl: 'must-revalidate'
+            cacheControl: 'no-cache'
         }
     );
 ----
