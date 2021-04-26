@@ -710,6 +710,9 @@ If the folder-name URL does not end with a trailing slash, this slash is automat
 
 This is a feature in link:#api-buildgetter[.buildGetter], but not link:#api-get[.get] - if you use .get you must implement it yourself.
 
+[[osgi-bug]]
+NOTE: A workaround for a link:https://issues.apache.org/jira/browse/FELIX-6294[a bug in the underlying OSGi system] causes the following behaviour in current versions of lib-static: directories can be referenced to get an index fallback both with and without a trailing slash - but **empty files cannot be served and will cause a status `404` response instead**. When a fix for the underlying bug is available, lib-static will be updated to support both empty files and directories with index fallback.
+
 
 
 {zwsp} +
@@ -723,7 +726,7 @@ Standard link:https://en.wikipedia.org/wiki/List_of_HTTP_status_codes[HTTP error
 - `303` (Redirect): resource path hit a folder with an index fallback file in it, but the path doesnt end with a slash. It needs the slash, so make a redirect to add it. This is an automatic feature of link:#api-buildgetter[.buildGetter], but not link:#api-get[.get].
 - `304` (Not Modified): matching ETag - the requested resource hasn't changed since a previous download. So a response with this status only is a signal to browsers to reuse their locally cached resource instead of downloading it again. This is an automatic feature of link:#api-buildgetter[.buildGetter], but not link:#api-get[.get].
 - `400` (Bad Request): the resource path is illegal, that is, resolves to an empty path or contains illegal characters: `: | < > ' " ´ * ?` or backslash or backtick.
-- `404` (Not Found): a valid resource path, but it doesn't point to a readable file or a directory with an index fallback in it.
+- `404` (Not Found): a valid resource path, but it doesn't point to a readable file or a directory with an index fallback in it. Currently, it can also signify an link:#osgi-bug[empty file].
 - `500` (Error): a server-side error happened. Details will be found in the server log, but not returned to the user.
 
 {zwsp} +
