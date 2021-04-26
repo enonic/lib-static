@@ -1,6 +1,7 @@
 package lib.enonic.libStatic;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -120,6 +121,23 @@ public class IoService
                     return false;
                 }
             }
+
+            // Due to https://issues.apache.org/jira/browse/FELIX-6294 there is no easy way to identify directories.
+            // Simplest solution is to check if file is empty because directories in zip are empty.
+            // Filesystem directories may have non-empty data, but we handled them earlier.
+            // We sacrifice empty files, but for lib-static serving empty files is not a primary task, anyway.
+            try (InputStream stream = url.openStream())
+            {
+                if ( stream.read() == -1 )
+                {
+                    return false;
+                }
+            }
+            catch ( IOException e )
+            {
+                return false;
+            }
+
             return true;
         }
 
