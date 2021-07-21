@@ -76,7 +76,7 @@ const errorLogAndResponse500 = (e, throwErrors, stringOrOptions, options, method
 }
 
 
-const getResourceOr400 = (path, pathError) => {
+const getResourceOr400 = (path, pathError, hasTrailingSlash) => {
     if (pathError) {
         if (!runMode.isDev()) {
             log.warning(pathError);
@@ -94,7 +94,6 @@ const getResourceOr400 = (path, pathError) => {
         };
     }
 
-    const hasTrailingSlash = path.endsWith('/');
 
     if (!hasTrailingSlash) {
         const resource = ioLib.getResource(path);
@@ -103,7 +102,7 @@ const getResourceOr400 = (path, pathError) => {
         }
     }
 
-    return { hasTrailingSlash };
+    return {};
 };
 
 // TODO: if other options than index.html are preferrable or overridable by options later (Issue #57),
@@ -135,12 +134,12 @@ const getFallbackResourceOr303 = (path, request, hasTrailingSlash) => {
 
             } else {
                 if (runMode.isDev()) {
-                    log.info(`Not found: '${path}', but fallback found at '${request.rawPath}/' - redirecting.`);
+                    log.info(`Not found: '${path}'. However, a fallback exists: '${fallbackPath}'. Redirecting to fetch it from '${request.path}/'.`);
                 }
                 return {
                     response303: {
-                        // ASSUMES that this is always the correct redirect, whatever happened in a getCleanPath override
-                        redirect: request.rawPath + '/'
+                        // Assumes this is the correct redirect, whatever happened in a getCleanPath override
+                        redirect: request.path + '/'
                     }
                 };
             }
@@ -264,7 +263,7 @@ const getRelativeResourcePath = (request) => {
     return rawPath
         .trim()
         .substring(removePrefix.length)
-}
+};
 
 
 
@@ -321,9 +320,13 @@ exports.buildGetter = (rootOrOptions, options) => {
                 ? `Illegal absolute resource path '${absolutePath}' (resolved relative path: '${relativePath}'): ${error}`      // 400-type error
                 : error;
 
+            // NOTE: This DEPENDS on request having a rawPath where any trailing slashes will not be stripped away in the incoming URL. The behavior of stripping-away trailing slashes makes it impossible to determine whether the URL had one or not, and this messes up the index fallback where hasTrailingSlash is used. Before XP 7.7.1, this DOES NOT WORK,
+            // since earlier versions always strip away trailing slashes and
+            // ALSO: request is checked for .rawPath during getRelativeResourcePath, but that can be overridden with getCleanPath (where checking for rawPath is recommended anyway, but it's still up to the user).
+            // So if there's ever a usage where incoming request does not have a rawPath, and a getCleanPath is used that also bypasses rawPath, index fallback WILL BREAK.
+            const hasTrailingSlash = request.rawPath.endsWith('/');
 
-
-            let { resource, response400, hasTrailingSlash } = getResourceOr400(absolutePath, pathError);
+            let { resource, response400 } = getResourceOr400(absolutePath, pathError, hasTrailingSlash);
             if (response400) {
                 return response400;
             }
