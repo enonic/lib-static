@@ -245,10 +245,6 @@ const resolvePath = (path) => {
 const getRelativeResourcePath = (request) => {
     let {rawPath, contextPath} = (request || {});
 
-    if (!rawPath) {
-        throw Error(`Default functionality can't resolve relative asset path: the request doesn't have a .rawPath attribute. You may need to supply a getCleanPath(request) function parameter to extract a relative asset path from the request. Request: ${JSON.stringify(request)}`);
-    }
-
     let removePrefix = (contextPath || '').trim() || '** missing or falsy **';
 
     // Normalize: remove leading slashes from both
@@ -303,11 +299,20 @@ exports.buildGetter = (rootOrOptions, options) => {
 
     root = exports.__resolveRoot__(root, errorMessage);
 
+
     // Allow option override of the function that gets the relative resource path from the request
     const getRelativePathFunc = getCleanPath || getRelativeResourcePath;
 
     return function getStatic(request) {
         try {
+            if (typeof request.rawPath !== 'string') {
+                // request.rawPath is the only way to determine whether the incoming URL had a trailing slash or not
+                // - which is necessary for any index fallback functionality to work (and also depends on XP 7.7.1 and above
+                // - before this, trailing slashes were always stripped from rawPath as well).
+                // TODO: Since this "only" breaks index fallbacks, consider just logging a warning instead. Or adding some option flag to let users choose if this is warning-level or should cause an error?
+                throw Error(`Incoming request.rawPath is: ${JSON.stringify(request.rawPath)}. Even when using getCleanPath in such a way that .rawPath isn't used to resolve resource path, request.rawPath must still be a string for index fallback functionality to work.`);
+            }
+
             const relativePath = getRelativePathFunc(request);
 
             const absolutePath =
@@ -320,10 +325,6 @@ exports.buildGetter = (rootOrOptions, options) => {
                 ? `Illegal absolute resource path '${absolutePath}' (resolved relative path: '${relativePath}'): ${error}`      // 400-type error
                 : error;
 
-            // NOTE: This DEPENDS on request having a rawPath where any trailing slashes will not be stripped away in the incoming URL. The behavior of stripping-away trailing slashes makes it impossible to determine whether the URL had one or not, and this messes up the index fallback where hasTrailingSlash is used. Before XP 7.7.1, this DOES NOT WORK,
-            // since earlier versions always strip away trailing slashes and
-            // ALSO: request is checked for .rawPath during getRelativeResourcePath, but that can be overridden with getCleanPath (where checking for rawPath is recommended anyway, but it's still up to the user).
-            // So if there's ever a usage where incoming request does not have a rawPath, and a getCleanPath is used that also bypasses rawPath, index fallback WILL BREAK.
             const hasTrailingSlash = request.rawPath.endsWith('/');
 
             let { resource, response400 } = getResourceOr400(absolutePath, pathError, hasTrailingSlash);

@@ -745,6 +745,7 @@ exports.testGetStatic_cacheControl = () => {
 
 // Getcleanpath function can extract clean path from request in a custom manner, and be used repeatedly with getStatic:
 exports.testGetStatic_getCleanPath = () => {
+    // const verbose = true;
                                                                                                                         if (verbose) log.info("\n\n\ttestGetStatic_getCleanPath:\n");
     doMocks({
             options: {
@@ -758,6 +759,7 @@ exports.testGetStatic_getCleanPath = () => {
     // target1
 
     const result1 = getStatic({
+        rawPath: 'irrelevant but must be in the request',
         targetPath: '/myprefix/subfolder/asset-target1.txt',
     });
                                                                                                                         if (verbose) log.info("result1: " + JSON.stringify(result1, null, 2));
@@ -769,6 +771,7 @@ exports.testGetStatic_getCleanPath = () => {
     // target2
 
     const result2 = getStatic({
+        rawPath: 'irrelevant but must be in the request',
         targetPath: '/myprefix/asset-target2.txt',
     });
                                                                                                                         if (verbose) log.info("result2: " + JSON.stringify(result2, null, 2));
@@ -776,6 +779,8 @@ exports.testGetStatic_getCleanPath = () => {
 
     t.assertEquals(200, result2.status, "result2.status");
     t.assertTrue(ioMock.readText(result2.body).indexOf("/i/am/root/asset-target2.txt") !== -1, "Expected result2 body containing content of '/i/am/root/asset-target2.txt'");
+
+                                                                                                                        if (verbose) t.assertTrue(false, "OK");
 };
 
 
@@ -965,12 +970,13 @@ exports.testGetStatic_relativePath_empty_fallbackExists_shouldRedirectToSlash = 
     const getStatic = lib.buildGetter({root: '/i/am/root'});
 
     const result = getStatic({
+        path: '/targetRedirect/assets', // path, not rawPath, is the basis for the redirect.
         rawPath: '/assets',         // No trailing slash, compared with contextPath it will resolve relativePath to ''
         contextPath: '/assets'
     });
                                                                                                                         if (verbose) log.info("result: " + JSON.stringify(result, null, 2));
 
-    t.assertEquals('/assets/', result.redirect, "result.redirect");
+    t.assertEquals('/targetRedirect/assets/', result.redirect, "result.redirect");
 
     t.assertEquals(undefined, result.status, "result.status");
     t.assertEquals(undefined, result.body, "result.body");
