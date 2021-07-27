@@ -76,7 +76,7 @@ const errorLogAndResponse500 = (e, throwErrors, stringOrOptions, options, method
 }
 
 
-const getResourceOr400 = (path, pathError) => {
+const getResourceOr400 = (path, pathError, hasTrailingSlash) => {
     if (pathError) {
         if (!runMode.isDev()) {
             log.warning(pathError);
@@ -94,7 +94,6 @@ const getResourceOr400 = (path, pathError) => {
         };
     }
 
-    const hasTrailingSlash = path.endsWith('/');
 
     if (!hasTrailingSlash) {
         const resource = ioLib.getResource(path);
@@ -103,7 +102,7 @@ const getResourceOr400 = (path, pathError) => {
         }
     }
 
-    return { hasTrailingSlash };
+    return {};
 };
 
 // TODO: if other options than index.html are preferrable or overridable by options later (Issue #57),
@@ -135,12 +134,12 @@ const getFallbackResourceOr303 = (path, request, hasTrailingSlash) => {
 
             } else {
                 if (runMode.isDev()) {
-                    log.info(`Not found: '${path}', but fallback found at '${request.rawPath}/' - redirecting.`);
+                    log.info(`Not found: '${path}'. However, a fallback exists: '${fallbackPath}'. Redirecting to fetch it from '${request.path}/'.`);
                 }
                 return {
                     response303: {
-                        // ASSUMES that this is always the correct redirect, whatever happened in a getCleanPath override
-                        redirect: request.rawPath + '/'
+                        // Assumes this is the correct redirect, whatever happened in a getCleanPath override
+                        redirect: request.path + '/'
                     }
                 };
             }
@@ -246,10 +245,6 @@ const resolvePath = (path) => {
 const getRelativeResourcePath = (request) => {
     let {rawPath, contextPath} = (request || {});
 
-    if (!rawPath) {
-        throw Error(`Default functionality can't resolve relative asset path: the request doesn't have a .rawPath attribute. You may need to supply a getCleanPath(request) function parameter to extract a relative asset path from the request. Request: ${JSON.stringify(request)}`);
-    }
-
     let removePrefix = (contextPath || '').trim() || '** missing or falsy **';
 
     // Normalize: remove leading slashes from both
@@ -264,7 +259,7 @@ const getRelativeResourcePath = (request) => {
     return rawPath
         .trim()
         .substring(removePrefix.length)
-}
+};
 
 
 
@@ -304,11 +299,20 @@ exports.buildGetter = (rootOrOptions, options) => {
 
     root = exports.__resolveRoot__(root, errorMessage);
 
+
     // Allow option override of the function that gets the relative resource path from the request
     const getRelativePathFunc = getCleanPath || getRelativeResourcePath;
 
     return function getStatic(request) {
         try {
+            if (typeof request.rawPath !== 'string') {
+                // request.rawPath is the only way to determine whether the incoming URL had a trailing slash or not
+                // - which is necessary for any index fallback functionality to work (and also depends on XP 7.7.1 and above
+                // - before this, trailing slashes were always stripped from rawPath as well).
+                // TODO: Since this "only" breaks index fallbacks, consider just logging a warning instead. Or adding some option flag to let users choose if this is warning-level or should cause an error?
+                throw Error(`Incoming request.rawPath is: ${JSON.stringify(request.rawPath)}. Even when using getCleanPath in such a way that .rawPath isn't used to resolve resource path, request.rawPath must still be a string for index fallback functionality to work.`);
+            }
+
             const relativePath = getRelativePathFunc(request);
 
             const absolutePath =
@@ -321,9 +325,9 @@ exports.buildGetter = (rootOrOptions, options) => {
                 ? `Illegal absolute resource path '${absolutePath}' (resolved relative path: '${relativePath}'): ${error}`      // 400-type error
                 : error;
 
+            const hasTrailingSlash = request.rawPath.endsWith('/');
 
-
-            let { resource, response400, hasTrailingSlash } = getResourceOr400(absolutePath, pathError);
+            let { resource, response400 } = getResourceOr400(absolutePath, pathError, hasTrailingSlash);
             if (response400) {
                 return response400;
             }
