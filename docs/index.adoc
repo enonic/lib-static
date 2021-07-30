@@ -161,7 +161,7 @@ Once a service (or a link:#example-path[different endpoint]) has been set up lik
 ----
 const libPortal = require('/lib/xp/portal');
 
-exports.get = function(req) {
+exports.get = function(request) {
     const myFolderUrl = libPortal.serviceUrl({service: 'servemyfolder'});
 
     return {
@@ -218,139 +218,278 @@ libStatic.buildGetter('my/folder', {
 
 
 [[example-path]]
-=== 4. Path resolution on other endpoints
+=== 4. Path resolution and other endpoints
 
-Usually, the path to the resource file (relative to the root folder) is link:#example-service-urls[determined from the request]. But this depends on several things: the request object must contain a `rawPath` and `contextPath` attribute to compare, and there must be some routing involved: the controller must be able to accept requests from sub-URIs. In link:https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service[XP services] (and link:https://developer.enonic.com/docs/xp/stable/runtime/engines/webapp-engine[XP webapps], but with caveats) this is supported out of the box, making it easiest to use a service to implement an endpoint.
+Usually, the path to the resource file (relative to the root folder) is link:#example-service-urls[determined from the request]. Out of the box, this depends on a few things:
 
-Example from a request object:
+- The controller must be able to accept requests from sub-URI. For example, the controller handling requests to a root URI `/my/endpoint/` must also respond to `/my/endpoint/subpath`, `/my/endpoint/other/path`, etc.
+- The incoming `request` in the controller object must contain a `rawPath` and `contextPath` attribute to compare, and the contextPath value must be the prefix in the rawPath value. For example, from this request...
++
 [source,javascript,options="nowrap"]
 ----
 {
-  rawPath: "/_/service/my.xp.app/servemyfolder/some/subdir/some.file",
+  rawPath:     "/_/service/my.xp.app/servemyfolder/some/subdir/some.file",
   contextPath: "/_/service/my.xp.app/servemyfolder"
 }
 ----
-From this request, the relative resource path is resolved to _some/subdir/some.file_, expected to be found below the `root` folder set with `libStatic.buildGetter`.
-
-
-[[example-getcleanpath]]
-==== a) getCleanPath
-However, there can be cases where you need to customize the relative-asset-path resolution - for example, using an link:https://developer.enonic.com/docs/xp/stable/cms/mappings[XP controller mapping] for setting up an endpoint that uses lib-static.
-
-Send an link:#example-options[option] function `getCleanPath` to `.buildGetter`. `getCleanPath` takes the `request` argument and returns a relative asset path. The rest is up to you:
-
-[source,javascript,options="nowrap"]
-----
-exports.get = libStatic.buildGetter({
-    root: 'my/folder',
-    getCleanPath: function(request) {
-        // In a perfect imaginary example world, all requests handled here have a
-        // request.path (URL after the domain) that start with '/i/am/a/prefix`, so just
-        // remove it, hardcoded, to get the correct relative path.
-        // You should probably make more of an effort though:
-        return request.path.substring('/i/am/a/prefix'.length);
-    }
-
-    // Request path: **/i/am/a/prefix/subdir/myFile.txt
-    // --> Relative resource path: subdir/myFile.txt
-    // --> lib-static looks up my/folder/subdir/myFile.txt
-});
-----
-
-...or...
-
-[source,javascript,options="nowrap"]
-----
-exports.get = libStatic.buildGetter({
-    root: 'my/folder',
-    getCleanPath: function(request) {
-        return request.params.filename + ".txt";
-    }
-
-    // Request: **/this/is/an/endpoint?filename=myFile
-    // --> Relative resource path: myFile.txt
-    // --> lib-static looks up my/folder/myFile.txt
-});
-----
-
-...etc.
-
-👉 link:#options[Options API reference]
+...the relative resource path is resolved to `"/some/subdir/some.file"`. And to recap: lib-static will look for `<root>/some/subdir/some.file`, where `root` is the folder that was set in `libStatic.buildGetter`.
 
 {zwsp} +
 
+All the previous examples use lib-static in link:https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service[XP services], because services act exactly like this. The premises are fulfilled out of the box here, so the path resolution works without further setup.
 
-[[example-webapp]]
-=== 5. A webapp with lib-router
+However, lib-static can be used in other contexts than in services, where these premises may not be true and you may need to roll your own path resolution:
 
-Combining `.getCleanPath` with link:https://developer.enonic.com/docs/router-library/master[lib-router] can be an easy alternative to setting up separate services the way we did above. Just let the webapp itself use lib-router to detect sub-URI's and handle the resource serving too, all from the same controller:
+{zwsp} +
 
+[[example-getcleanpath]]
+==== a) Override: getCleanPath
+
+You can *override the default file path resolution* by implementing a `request => string` function, and add that as a `getCleanPath` option in `.buildGetter`.
+
+👉 link:#options[Options API reference]
+
+For example, a simplified version of the default could be implemented like this:
 
 [source,javascript,options="nowrap"]
 ----
-// src/main/resources/webapp/webapp.js:
+exports.get = libStatic.buildGetter({
+    root: 'my/folder',
+    getCleanPath: request => {
+        const prefix = request.contextPath;
+        return request.rawPath.substring(prefix.length);
+    }
+});
+----
 
+{zwsp} +
+
+[[example-gotchas]]
+==== b) Gotchas
+
+When writing a good `getCleanPath` function, here are some *rules of thumb*:
+
+1. `request => string` function, where the string is the final resolved relative path under `<root>`
+2. In order for index fallbacks to work properly:
+  - URIs with a trailing slash should also return the trailing slash in the string,
+  - And vice versa: URIs without a trailing slash should not return one,
+  - URIs to the endpoint itself should return an empty string (unless there's a trailing slash, in which case only a slash should be returned),
+  - For consistency, URIs to other content below the endpoint should return a path beginning with a slash.
+3. Use `request.rawPath` as the basis. Don't use `request.path`.
+  - The `.path` attribute has a less reliable behavior for lib-static's purpose: vhosting is kept, url entities may be escaped (which may evade some built-in security checks or fail to find files/folders with special characters in their names), and trailing slashes are stripped away (which makes index fallbacks impossible). The `.rawPath` attribute deals with these issues.
++
+NOTE: XP version *7.7.1* is the first version where these issues are handled well. On earlier versions, trailing slashes are stripped from `.rawPath` too, so index fallback can't be expected to work. Upgrade XP if necessary.
+
+The next examples show how to achieve this in contexts outside of services:
+
+{zwsp} +
+
+=== 5. XP controller mapping
+
+Using <<#example-getcleanpath, .getCleanPath>>, lib-static can be used to serve assets from link:https://developer.enonic.com/docs/xp/stable/cms/mappings[mapped controllers].
+
+This example uses regular expressions to support the `.getCleanPath` <<#example-gotchas, criteria>>, and will serve assets (including index fallbacks) from the root _my/folder_ on the endpoint `<siteUrl>/static`:
+
+.src/main/resources/site/site.xml:
+[source,xml,options="nowrap"]
+----
+<mapping controller="/controllers/static.js" order="50">
+    <pattern>/static(/.*)?$</pattern>
+</mapping>
+----
+
+.src/main/resources/controllers/static.js:
+[source,javascript,options="nowrap"]
+----
+const getStatic = libStatic.buildGetter({
+        root: `my/folder`,
+        getCleanPath: request => {
+            const basePath = `${libPortal.getSite()._path}/static`;
+            const pattern = new RegExp(`${basePath}(/.*)?$`);
+            const matched = (request.rawPath || '').match(pattern);
+
+            if (!matched) {
+                throw Error(`basePath ($basePath}) was not found in request.rawPath (${request.rawPath}`);
+            }
+
+            return matched[1] || '';
+        },
+    });
+
+exports.get = request => getStatic(request);
+----
+
+
+{zwsp} +
+
+[[example-webapp]]
+=== 6. Webapp with lib-router
+
+NOTE: This example depends on link:https://market.enonic.com/vendors/enonic/router-lib[lib-router] version 3.0.0 or higher.
+
+Lib-static can also be used to serve assets on URIs directly below an link:https://developer.enonic.com/docs/xp/stable/runtime/engines/webapp-engine#webapp_js[XP webapp]. For example, let's make a simple webapp accessible at URL `<webappRoot>` that serves its own frontend assets at `<webappRoot>/static/*`.
+
+link:https://market.enonic.com/vendors/enonic/router-lib[Lib-router] is used to *add sub-routes under the webapp's root URL*, for example the route `<webappUrl>/static`. Lib-router can extract deeper sub-URIs below that, for example `<webappUrl>/static/css/styles.css`. This sub-URI is then isolated (`"css/styles.css"`) and added to the `request` object, under `request.pathParams` - as `.libRouterPath` in the example below.
+
+*Bottom line:* Combined with lib-router like this, <<#example-getcleanpath, .getCleanPath>> can just fetch and return `request.pathParams.libRouterPath`, and the `.getCleanPath` <<#example-gotchas, gotchas>> are automatically handled (except for index fallback at the root - more on that <<#index-fallback-route, here>>).
+
+.src/main/resources/webapp/webapp.js:
+[source,javascript,options="nowrap"]
+----
 const libStatic = require('/lib/enonic/static');
 
 const libRouter = require('/lib/router')();
 
-exports.all = function(req) {
-    return libRouter.dispatch(req);
+// Asking lib-router to handle all requests from here on
+exports.all = function(request) {
+    return libRouter.dispatch(request);
 };
 
-// Handling <webappURL>/getResource/...
-libRouter.get( `/getResource/{resourcePath:.+}`,
-    libStatic.buildGetter({
-        root: `'my/folder`,
-        // Override relative path resolution (since request.contextPath is the root of the webapp,
-        // not <webappURL>/getResource/... which is what resource paths should be relative to).
-        // Lib-router provides what we're after - everything after getResource - as
-        // request.pathParams.resourcePath, since we defined that in `/getResource/{resourcePath:.+}`:
-        getCleanPath: request => request.pathParams.resourcePath
+// Set up a lib-static getter that fetches files below the 'static' folder...
+const getStatic = libStatic.buildGetter(
+    {
+        root: 'static',
+        getCleanPath: request => request.pathParams.libRouterPath
     }
-));
+);
 
-// <webappURL> and <webappURL>/
-libRouter.get( `/`, function (request) {
-    return {
-        body: `
-            <html>
-              <head>
-                <title>It still works</title>
-                <link   rel="stylesheet"
-                        type="text/css"
-                        href="${request.contextPath}/getResource/styles.css"
-                />
-              </head>
+// ...which will respond at the route <webappRoot>/static/.+
+// The .+ part is a mandatory sub-URI below static/,
+// and is inserted into request.pathParams.libRouterPath:
+libRouter.get(
+    '/static/{libRouterPath:.+}',
+    request => getStatic(request)
+);
 
-              <body>
-                  <h1>It still works!</h1>
-                  <img src="${request.contextPath}/getResource/logo.jpg" />
-                  <script src="${request.contextPath}/getResource/js/myscript.js"></script>
-              </body>
-            </html>
-            `
-    };
-});
+
+// The main webapp, at <webappRoot>:
+libRouter.get(
+
+    // lib-router 3.+ syntax for matching the webapp root,
+    // with an optional trailing slash:
+    '/?',
+
+    request => {
+
+        // In order to ensure that the relative urls below work,
+        // webapp root without a trailing slash is redirected to the same address WITH a slash:
+        if (!(req.rawPath || '').endsWith('/')) {
+            return {
+                redirect: req.path + '/'
+            }
+        }
+
+        return {
+            body: '
+                <html>
+                    <head>
+                        <title>Webapp</title>
+                        <link href="static/styles.css" rel="stylesheet" type="text/css" />
+                    </head>
+
+                    <body>
+                        <h1>My webapp</h1>
+                        <img src="static/images/my-logo.jpg" />
+                    </body>
+                </html>'
+        };
+    }
+);
 ----
 
 {zwsp} +
 
-[NOTE]
+[[index-fallback-route]]
+==== a) Special case - webapp route with root-index-fallback
+
+The way lib-router works, only defining `'/static/{libRouterPath:.+}'` will make it respond to sub-URIs after `static/` - that is, _both the slash and some sub-URI is required_. So in the example above, lib-static's <<#index-fallback, index fallback functionality>> is supported _below_ the actual route (for example, `<webappRoot>/static/subfolder` would serve a file _/static/subfolder/index.html_ if it existed), but the route will not match `<webappRoot>/static` or `<webappRoot>/static/` (so they will just return a 404).
+
+Let's say we for some reason wanted that route to use index fallback at the root of `/static`, not only handle the sub-URIs. More precisely, we want to expand the example above so that lib-static can make `<webappRoot>/static` redirect to `<webappRoot>/static/`, and `<webappRoot>/static/` respond with (the contents of) a file `static/index.html`.
+
+For this, we'll add a second route at the root (stay with me here), by *setting up lib-router with an array* instead of a string. The added item has an optional trailing slash `/?`, so it's activated at `/static` as well as `/static/`:
+
+.src/main/resources/webapp/webapp.js:
+[source,javascript,options="nowrap"]
+----
+
+// ...
+
+libRouter.get(
+    [
+        '/static/?',
+        '/static/{libRouterPath:.+}',
+    ]
+    request => getStatic(request)
+);
+
+// ...
+----
+
+Now, on `<webappRoot>/static` and `<webappRoot>/static/`, lib-router matches with the new item in the route array, `'/static/?'`. But since `libRouterPath` is not defined in that item, it means `request.pathParams.libRouterPath` will be `undefined` at the root. So according to the <<#example-gotchas, criteria>> for `getCleanPath`, *we must also update the `getCleanPath` function* in the lib-static getter.
+
+In order to return `""` for `<webappRoot>/static`, and `"/"` for `<webappRoot>/static/`, what `getCleanPath` needs to do is to return `request.pathParams.libRouterPath` if it a value, and if not, return an empty string at `<webappRoot>/static` and a slash at `<webappRoot>/static/`. The easiest is to just see if `request.rawPath` ends with a slash or not.
+
+The final adjustment to the webapp looks like this:
+
+.src/main/resources/webapp/webapp.js:
+[source,javascript,options="nowrap"]
+----
+// ...
+
+const getStatic = libStatic.buildGetter(
+    {
+        root: 'static',
+        getCleanPath: request => (
+            request.pathParams.libRouterPath ||
+            (request.rawPath.endsWith("/")
+                    ? "/"
+                    : ""
+            )
+        ),
+    }
+);
+
+libRouter.get(
+    [
+        '/static/?',
+        '/static/{libRouterPath:.+}',
+    ]
+    request => getStatic(request)
+);
+
+// ...
+----
+
+Now, a file static/index.html will be served at `<webappRoot>/static/`, with automatic redirect from `<webappRoot>/static`.
+
+{zwsp} +
+
+==== b) Special case - avoid overlapping with /assets/ files
+
+NOTE: The following applies to XP 7, and may be subject to change in XP 8 (but not before, since it's breaking behaviour).
+
+In the current versions of enonic XP, the webapp engine is set up so that if some path `<webappRoot>/my/path.ext` matches a file in the _assets_ folder, _src/main/resources/assets/my/path.ext_, then the engine will give that *priority over the webapp.js controller and directly serve that file instead*.
+
+In other words, if a file called _assets/subpath_ exists, and you use the examples and patterns above to define your own route `libRouter.get('subpath'), ...` then at `<webappRoot>/subpath` your route will be ignored and you will get the file from the asset service instead. Confusion may ensue.
+
+So *avoid defining routes that may overlap with sub-paths to existing files under _src/main/resources/assets/$$*$$_*.
+
+[TIP]
 ====
-It might seem tempting to just let the links in the HTML (`${request.contextPath}/getResource/...`) start with `getResource/`. That looks neater and simpler and could just let the browser append them as relative links, and resolve its requests to `<webappURL>/getResource/...` etc.
+The same thing goes for the pattern `$$_/asset$$/*` (which is link:https://developer.enonic.com/docs/xp/stable/runtime/engines/asset-service#asset_files[better documented]).
 
-However, in XP, the webapp will respond to both `<webappURL>` and `<webappURL>/` - note the trailing slash, which makes the relative link behave in two different ways, only one of which is right. And adding a `/` at the beginning, `/getResource/...`, is of course no solution either, just an absolute path from the domain root.
+For example, `<webappRoot>/$$_$$/asset/my/path.ext` will serve _/assets/my/path.ext_ and ignore your `libRouter.get('/$$_$$/asset/{subUri: .+}'), ...`.
 
-Prefixing with `request.contextPath` solves it in this case. Your mileage may vary.
+But starting with an underscore, this is far easier to handle - just avoid defining routes starting with `$$_$$/asset/`, or with an underscore in the first place.
 ====
-
 
 {zwsp} +
 
 
+
+
 [[example-content]]
-=== 6. Custom content type handling
+=== 7. Custom content type handling
 
 By default, lib-static detects link:https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types[MIME-type] automatically. But you can use the `contentType` link:#example-options[option] to override it. Either way, the result is a string returned with link:#behaviour[the response object].
 
@@ -406,7 +545,7 @@ const getStatic = libStatic.buildGetter({
 
 
 [[example-cache]]
-=== 7. Custom Cache-Control headers
+=== 8. Custom Cache-Control headers
 
 The `cacheControl` link:#example-options[option] controls the link:https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control['Cache-Control'] string that's returned in the header with a successful resource fetch. The string value, if any, directs the intraction between a browser and the server on subsequent requests for the same resource. By link:#behaviour[default] the string `"public, max-age=31536000, immutable"` is returned, the `cacheControl` option overrides this to return a different string, or switch it off:
 
@@ -455,7 +594,7 @@ const getStatic = libStatic.buildGetter({
 
 
 [[example-etag]]
-=== 8. ETag switch
+=== 9. ETag switch
 
 By link:#behaviour[default], an ETag is generated from the asset and sent along with the response as a header, in XP prod run mode. In link:https://developer.enonic.com/docs/enonic-cli/master/dev#start[XP dev mode], no ETag is generated.
 
@@ -475,7 +614,7 @@ const getStatic = libStatic.buildGetter({
 
 
 [[example-errors]]
-=== 9. Errors: throw instead of return
+=== 10. Errors: throw instead of return
 
 By link:#behaviour[default], runtime errors during `.get` or during the returned getter function from `.buildGetter` will log the error message and return a 500-status response to the client.
 
@@ -488,9 +627,9 @@ const getStatic = libStatic.buildGetter({
     throwErrors: true
 });
 
-exports.get = function(req) {
+exports.get = function(request) {
     try {
-        return getStatic(req);
+        return getStatic(request);
 
     } catch (e) {
         // handle the error...
@@ -504,7 +643,7 @@ exports.get = function(req) {
 
 
 [[example-multi]]
-=== 10. Multiple instances
+=== 11. Multiple instances
 
 Lib-static can be set up to respond with several instances in parallel, thereby defining different rules for different files/folders/scenarios.
 
@@ -515,7 +654,7 @@ Lib-static can be set up to respond with several instances in parallel, thereby 
 
 
 [[example-get]]
-=== 11. Low-level: .get
+=== 12. Low-level: .get
 
 Lib-static exposes a second function `.get` (in addition to `.buildGetter`), for doing a direct resource fetch when the resource path is already known/resolved. The idea is to allow closer control with each call: implement your own logic and handling around it.
 
