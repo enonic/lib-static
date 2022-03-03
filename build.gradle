@@ -34,9 +34,18 @@ dependencies {
     testImplementation "org.mockito:mockito-inline:4.3.1"
 }
 
+processResources {
+  exclude '**/.gitkeep'
+  exclude '**/*.es6'
+}
+
 repositories {
     jcenter()
     xp.enonicRepo('dev')
+}
+
+tasks.withType(Copy) {
+  includeEmptyDirs = false
 }
 
 // Compiles es6 to js under src/main/resources
