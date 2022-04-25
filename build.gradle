@@ -31,7 +31,7 @@ dependencies {
 
     testCompile "com.enonic.xp:testing:${xpVersion}"
 
-    testImplementation "org.mockito:mockito-inline:4.4.0"
+    testImplementation "org.mockito:mockito-inline:4.5.1"
 }
 
 processResources {
