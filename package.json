@@ -22,7 +22,7 @@
     "@babel/core": "^7.17.12",
     "@babel/plugin-proposal-object-rest-spread": "^7.17.12",
     "@babel/plugin-transform-arrow-functions": "^7.17.12",
-    "@babel/plugin-transform-destructuring": "^7.17.12",
+    "@babel/plugin-transform-destructuring": "^7.18.0",
     "@babel/plugin-transform-parameters": "^7.17.12",
     "@babel/plugin-transform-spread": "^7.17.12"
   }
