@@ -1,35 +1,18 @@
-// Build library: gradlew build
-// Install library locally for development with: gradlew install
-buildscript {
-    repositories {
-        jcenter()
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-
-    dependencies {
-        classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.6.1'
-        classpath 'gradle.plugin.org.aim42:htmlSanityCheck:1.1.3'
-    }
-}
-
 plugins {
     id 'java'
     id 'maven-publish'
     id 'com.enonic.defaults' version '2.0.1'
     id 'com.enonic.xp.base' version '3.2.0'
-    id "com.moowork.node" version "1.3.1"
+    id 'com.github.node-gradle.node' version '3.4.0'
+    id 'org.asciidoctor.jvm.convert' version '3.3.2'
+    id "org.aim42.htmlSanityCheck" version '1.1.6'
 }
-
-apply plugin: 'org.asciidoctor.convert'
-apply plugin: 'org.aim42.htmlSanityCheck'
 
 dependencies {
     compileOnly "com.enonic.xp:core-api:${xpVersion}"
     compileOnly "com.enonic.xp:script-api:${xpVersion}"
 
-    testCompile "com.enonic.xp:testing:${xpVersion}"
+    testImplementation "com.enonic.xp:testing:${xpVersion}"
 
     testImplementation "org.mockito:mockito-inline:4.6.1"
 }
@@ -40,7 +23,7 @@ processResources {
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
     xp.enonicRepo('dev')
 }
 
@@ -90,12 +73,9 @@ compileTest.dependsOn += compileXP
 test.dependsOn += 'compileTest'
 
 
-
 asciidoctor {
     sourceDir = file('docs')
     outputDir = file('build/docs')
-
-    // requires project.file('verbose-mode.rb')
 
     attributes 'source-highlighter': 'coderay'
 
@@ -107,18 +87,7 @@ asciidoctor {
 }
 
 htmlSanityCheck {
-
     dependsOn asciidoctor
 
-    sourceDir = new File( "$buildDir/docs/html5" )
-
-    // files to check - in Set-notation
-    sourceDocuments = files("index.html")
-
-    // where to put results of sanityChecks...
-    checkingResultsDir = new File( "$buildDir/report/htmlchecks" )
-    //checkExternalLinks = false
-
-    // fail build on errors?
-    failOnErrors = true
+    sourceDir = docsDir
 }
