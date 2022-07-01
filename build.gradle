@@ -81,6 +81,7 @@ asciidoctor {
 
     resources {
         from(sourceDir) {
+            include '**/images/**'
             include '**/media/**'
         }
     }
@@ -89,5 +90,5 @@ asciidoctor {
 htmlSanityCheck {
     dependsOn asciidoctor
 
-    sourceDir = docsDir
+    sourceDir = tasks.asciidoctor.outputDir
 }
