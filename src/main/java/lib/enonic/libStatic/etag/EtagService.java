@@ -38,10 +38,10 @@ public class EtagService
      * @param path (string) Absolute (i.e. JAR-root-relative) path, name and extension to the file. Must be already checked and verified.
      * @param etagOverrideMode (int) if 0 (or null), default handling: in XP prod mode do cached processing without lastModified-checking, and in dev mode skip all etag processing
      *                     Setting to -1 or 1 overrides this:
-     *                     * If 1 (actually > 0) : process and cache etags, even in dev mode.
+     *                     * If 1 (actually, &gt; 0) : process and cache etags, even in dev mode.
      *                       - In prod mode: cache the etag by file path only.
      *                       - In dev mode, check file's last-modified date. If newer than cached version, re-hash the etag and replace it in the cache.
-     *                     * If -1 (actually < 0) : skips all etag processing and returns no etag string, even in prod.
+     *                     * If -1 (actually, &lt; 0) : skips all etag processing and returns no etag string, even in prod.
      * @return (String array) [statusCode, contentOrErrorMessage, etag]
      */
     public Map<String, String> getEtag( String path, Integer etagOverrideMode )
