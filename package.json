@@ -18,7 +18,7 @@
   "homepage": "https://github.com/enonic/lib-static#readme",
   "dependencies": {},
   "devDependencies": {
-    "@babel/cli": "^7.20.7",
+    "@babel/cli": "^7.21.0",
     "@babel/core": "^7.20.12",
     "@babel/plugin-proposal-object-rest-spread": "^7.20.7",
     "@babel/plugin-transform-arrow-functions": "^7.20.7",
