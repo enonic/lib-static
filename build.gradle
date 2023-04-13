@@ -49,6 +49,8 @@ task compileXP(type: NodeTask) {
     outputs.dir("build/resources/main")
 }
 compileXP.dependsOn += npmInstall
+compileXP.dependsOn += 'javadoc'
+compileXP.dependsOn += 'compileTestJava'
 jar.dependsOn += 'compileXP'
 
 
