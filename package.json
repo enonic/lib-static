@@ -23,7 +23,7 @@
     "@babel/plugin-proposal-object-rest-spread": "^7.20.7",
     "@babel/plugin-transform-arrow-functions": "^7.22.5",
     "@babel/plugin-transform-destructuring": "^7.22.15",
-    "@babel/plugin-transform-parameters": "^7.22.5",
+    "@babel/plugin-transform-parameters": "^7.22.15",
     "@babel/plugin-transform-spread": "^7.22.5"
   }
 }
