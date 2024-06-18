@@ -1,22 +1,29 @@
 {
   "name": "lib-static",
-  "version": "0.0.1-SNAPSHOT",
   "description": "Enonic XP library for serving static assets (primarily immutable ones) from a folder in the application resource structure",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "concurrently -c auto -g --timings npm:build:*",
+    "build:server": "npx tsup -d build/resources/main",
+    "check": "concurrently -c auto -g --timings npm:check:types npm:lint",
+    "check:types": "concurrently -g -r --timings npm:check:types:*",
+    "check:types:server": "npx tsc --noEmit -p src/main/resources/tsconfig.json",
+    "cov": "jest --no-cache --coverage",
+    "lint": "eslint --cache",
+    "test": "jest --no-cache"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/enonic/lib-static.git"
   },
   "author": "Espen Norderud",
+  "contributors": [
+    "Christian Andreas Westgaard <cwe@enonic.com>"
+  ],
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/enonic/lib-static/issues"
   },
   "homepage": "https://github.com/enonic/lib-static#readme",
-  "dependencies": {},
   "devDependencies": {
     "@babel/cli": "^7.24.8",
     "@babel/core": "^7.25.2",
@@ -24,6 +31,22 @@
     "@babel/plugin-transform-arrow-functions": "^7.24.7",
     "@babel/plugin-transform-destructuring": "^7.24.8",
     "@babel/plugin-transform-parameters": "^7.24.7",
-    "@babel/plugin-transform-spread": "^7.24.7"
-  }
+    "@babel/plugin-transform-spread": "^7.24.7",
+    "@enonic-types/core": "^7.14.2",
+    "@enonic-types/global": "^7.14.2",
+    "@enonic-types/lib-io": "^7.14.2",
+    "@eslint/js": "^9.5.0",
+    "@swc/core": "^1.6.1",
+    "@types/node": "^20.14.5",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.57.0",
+    "glob": "^10.4.1",
+    "jest-environment-jsdom": "^29.7.0",
+    "ts-jest": "^29.1.5",
+    "ts-node": "^10.9.2",
+    "tsup": "^8.1.0",
+    "typescript": "^5.4.5",
+    "typescript-eslint": "^7.13.1"
+  },
+  "private": true
 }

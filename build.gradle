@@ -19,7 +19,7 @@ dependencies {
 
 processResources {
   exclude '**/.gitkeep'
-  exclude '**/*.es6'
+  exclude '**/*.ts'
 }
 
 repositories {
@@ -27,31 +27,62 @@ repositories {
     xp.enonicRepo('dev')
 }
 
+node {
+  // Whether to download and install a specific Node.js version or not
+  // If false, it will use the globally installed Node.js
+  // If true, it will download node using above parameters
+  // Note that npm is bundled with Node.js
+  download = true
+
+  // Version of node to download and install (only used if download is true)
+  // It will be unpacked in the workDir
+  version = '20.14.0'
+}
+
 tasks.withType(Copy) {
   includeEmptyDirs = false
 }
 
-// Compiles es6 to js under src/main/resources
-task compileXP(type: NodeTask) {
-    group 'enonic xp'
-    description 'Babel-compile Enonic XP ES6 source files'
-
-    script = file('node_modules/@babel/cli/bin/babel.js')
-    args = ["src/main/resources",
-            "--plugins", "@babel/plugin-transform-parameters",
-            "--plugins", "@babel/plugin-transform-destructuring",
-            "--plugins", "@babel/plugin-transform-spread",
-            "--plugins", "@babel/plugin-transform-arrow-functions",
-            "--plugins", "@babel/plugin-proposal-object-rest-spread",
-            "--out-dir", "build/resources/main"]
-
-    inputs.dir 'src/main/resources'
-    outputs.dir("build/resources/main")
+tasks.register('npmBuild', NpmTask) {
+  args = [
+    'run',
+    '--silent',
+    'build'
+  ]
+  dependsOn npmInstall
+  dependsOn 'javadoc'
+  dependsOn 'compileTestJava'
+  environment = [
+    'FORCE_COLOR': 'true',
+    'LOG_LEVEL_FROM_GRADLE': gradle.startParameter.logLevel.toString(),
+    'NODE_ENV': project.hasProperty('dev') || project.hasProperty('development') ? 'development' : 'production'
+  ]
+  inputs.dir 'src/main/resources'
+  outputs.dir 'build/resources/main'
 }
-compileXP.dependsOn += npmInstall
-compileXP.dependsOn += 'javadoc'
-compileXP.dependsOn += 'compileTestJava'
-jar.dependsOn += 'compileXP'
+jar.dependsOn npmBuild
+
+// Compiles es6 to js under src/main/resources
+// task compileXP(type: NodeTask) {
+//     group 'enonic xp'
+//     description 'Babel-compile Enonic XP ES6 source files'
+
+//     script = file('node_modules/@babel/cli/bin/babel.js')
+//     args = ["src/main/resources",
+//             "--plugins", "@babel/plugin-transform-parameters",
+//             "--plugins", "@babel/plugin-transform-destructuring",
+//             "--plugins", "@babel/plugin-transform-spread",
+//             "--plugins", "@babel/plugin-transform-arrow-functions",
+//             "--plugins", "@babel/plugin-proposal-object-rest-spread",
+//             "--out-dir", "build/resources/main"]
+
+//     inputs.dir 'src/main/resources'
+//     outputs.dir("build/resources/main")
+// }
+// compileXP.dependsOn += npmInstall
+// compileXP.dependsOn += 'javadoc'
+// compileXP.dependsOn += 'compileTestJava'
+// jar.dependsOn += 'compileXP'
 
 
 task compileTest(type: NodeTask) {
@@ -71,7 +102,8 @@ task compileTest(type: NodeTask) {
     outputs.dir("build/resources/test")
 }
 
-compileTest.dependsOn += compileXP
+// compileTest.dependsOn += compileXP
+compileTest.dependsOn += npmBuild
 test.dependsOn += 'compileTest'
 
 
@@ -94,3 +126,31 @@ htmlSanityCheck {
 
     sourceDir = tasks.asciidoctor.outputDir
 }
+
+tasks.register('npmCheck', NpmTask) {
+	dependsOn npmInstall
+	args = [
+		'run',
+		'check'
+	]
+	environment = [
+		'FORCE_COLOR': 'true',
+	]
+}
+
+check.dependsOn npmCheck
+
+tasks.register('npmTest', NpmTask) {
+	args = [
+		'run',
+		'test'
+	]
+	dependsOn npmInstall
+	environment = [
+		'FORCE_COLOR': 'true',
+	]
+  inputs.dir 'src/jest'
+  outputs.dir 'coverage'
+}
+
+test.dependsOn npmTest

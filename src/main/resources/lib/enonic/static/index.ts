@@ -1,37 +1,57 @@
-const etagReader = require('/lib/enonic/static/etagReader');
-const optionsParser = require('/lib/enonic/static/options');
-const ioLib = require('/lib/enonic/static/io');
-const runMode = require('/lib/enonic/static/runMode');
-const constants = require('/lib/enonic/static/constants');
+import type {
+  Request,
+  Response
+} from './types';
+import type {
+  BuildGetterParams,
+  BuildGetterParamsWithRoot
+} from '/lib/enonic/static/options';
+
+import {read} from '/lib/enonic/static/etagReader';
+import {
+  parsePathAndOptions,
+  parseRootAndOptions,
+} from '/lib/enonic/static/options';
+import {getResource} from '/lib/enonic/static/io';
+import {isDev} from '/lib/enonic/static/runMode';
+import {INDEXFALLBACK_CACHE_CONTROL} from '/lib/enonic/static/constants';
+
 
 /////////////////////////////////////////////////////////////////////////////  Response builder functions
 
-const getResponse200 = (path, resource, contentTypeFunc, cacheControlFunc, etag, fallbackPath) => {
-    const contentType = contentTypeFunc(fallbackPath || path, resource);
-    const cacheControlHeader = fallbackPath
-        ? constants.INDEXFALLBACK_CACHE_CONTROL
-        : cacheControlFunc(path, resource, contentType);
+const getResponse200 = (
+  path: string,
+  resource,
+  contentTypeFunc,
+  cacheControlFunc,
+  etag: string|number,
+  fallbackPath?: string
+) => {
+  const contentType = contentTypeFunc(fallbackPath || path, resource);
+  const cacheControlHeader = fallbackPath
+    ? INDEXFALLBACK_CACHE_CONTROL
+    : cacheControlFunc(path, resource, contentType);
 
-    // Preventing any keys under 'header' with null/undefined values (since those cause NPE):
-    const headers = {};
-    if (cacheControlHeader) {
-        headers['Cache-Control'] = cacheControlHeader;
-    }
-    if (etag) {
-        headers.ETag = etag;
-    }
+  // Preventing any keys under 'header' with null/undefined values (since those cause NPE):
+  const headers: Response['headers'] = {};
+  if (cacheControlHeader) {
+    headers['cache-control'] = cacheControlHeader;
+  }
+  if (etag) {
+    headers.etag = etag;
+  }
 
-    return {
-        status: 200,
-        body: resource.getStream(),
-        contentType,
-        headers
-    };
+  return {
+    body: resource.getStream(),
+    contentType,
+    headers,
+    status: 200,
+  };
 };
 
 
-const getEtagOr304 = (path, request, etagOverride) => {
-    let etag = etagReader.read(path, etagOverride);
+const getEtagOr304 = (path: string, request, etagOverride?: boolean) => {
+    let etag = read(path, etagOverride);
 
     let ifNoneMatch = (request.headers || {})['If-None-Match'];
     if (ifNoneMatch && ifNoneMatch === etag) {
@@ -76,13 +96,17 @@ const errorLogAndResponse500 = (e, throwErrors, stringOrOptions, options, method
 }
 
 
-const getResourceOr400 = (path, pathError, hasTrailingSlash) => {
+const getResourceOr400 = (
+  path: string,
+  pathError: string,
+  hasTrailingSlash?: boolean
+) => {
     if (pathError) {
-        if (!runMode.isDev()) {
+        if (!isDev()) {
             log.warning(pathError);
         }
         return {
-            response400: (runMode.isDev())
+            response400: (isDev())
                 ? {
                     status: 400,
                     body: pathError,
@@ -96,7 +120,7 @@ const getResourceOr400 = (path, pathError, hasTrailingSlash) => {
 
 
     if (!hasTrailingSlash) {
-        const resource = ioLib.getResource(path);
+        const resource = getResource(path);
         if (resource.exists()) {
             return { resource };
         }
@@ -108,9 +132,9 @@ const getResourceOr400 = (path, pathError, hasTrailingSlash) => {
 // TODO: if other options than index.html are preferrable or overridable by options later (Issue #57),
 //  replace this function at runtime with indexFallbackFunc.
 //  Implemented as array in preparation for that.
-const getIndexFallbacks = () => ['index.html'];
+const getIndexFallbacks = (_path: string) => ['index.html'];
 
-const getFallbackResourceOr303 = (path, request, hasTrailingSlash) => {
+const getFallbackResourceOr303 = (path: string, request, hasTrailingSlash) => {
     const indexFallbacks = getIndexFallbacks(path).map( indexFile =>
         path +
         (!hasTrailingSlash ? '/' : '') +
@@ -120,11 +144,11 @@ const getFallbackResourceOr303 = (path, request, hasTrailingSlash) => {
     for (let i=0; i<indexFallbacks.length; i++) {
 
         const fallbackPath = indexFallbacks[i];
-        const resource = ioLib.getResource(fallbackPath);
+        const resource = getResource(fallbackPath);
 
         if (resource.exists()) {
             if (hasTrailingSlash) {
-                if (runMode.isDev()) {
+                if (isDev()) {
                     log.info(`Resource fallback for '${path}': returning '${fallbackPath}'`);
                 }
                 return {
@@ -133,7 +157,7 @@ const getFallbackResourceOr303 = (path, request, hasTrailingSlash) => {
                 };
 
             } else {
-                if (runMode.isDev()) {
+                if (isDev()) {
                     log.info(`Not found: '${path}'. However, a fallback exists: '${fallbackPath}'. Redirecting to fetch it from '${request.path}/'.`);
                 }
                 return {
@@ -150,11 +174,11 @@ const getFallbackResourceOr303 = (path, request, hasTrailingSlash) => {
 }
 
 
-const getResponse404 = (path) => {
-    if (!runMode.isDev()) {
+const getResponse404 = (path: string) => {
+    if (!isDev()) {
         log.warning(`Not found: ${JSON.stringify(path)}`);
     }
-    return (runMode.isDev())
+    return (isDev())
         ? {
             status: 404,
             body: `Not found: ${path}`,
@@ -171,7 +195,7 @@ const getResponse404 = (path) => {
 const doubleDotRx = /\.\./;
 const illegalCharsRx = /[<>:"'`´\\|?*]/;
 // Exported for testing only
-exports.__getPathError__ = (trimmedPathString) => {
+export const __getPathError__ = (trimmedPathString: string): string => {
     if (trimmedPathString.match(doubleDotRx) || trimmedPathString.match(illegalCharsRx)) {
         return "can't contain '..' or any of these characters: \\ | ? * < > ' \" ` ´";
     }
@@ -182,7 +206,7 @@ exports.__getPathError__ = (trimmedPathString) => {
 
 /////////////////////////////////////////////////////////////////////////////  .get
 
-exports.get = (pathOrOptions, options) => {
+export const get = (pathOrOptions, options) => {
 
     let {
         path,
@@ -191,7 +215,7 @@ exports.get = (pathOrOptions, options) => {
         etagOverride,
         throwErrors,
         errorMessage
-    } = optionsParser.parsePathAndOptions(pathOrOptions, options);
+    } = parsePathAndOptions(pathOrOptions, options);
 
 
     try {
@@ -201,7 +225,7 @@ exports.get = (pathOrOptions, options) => {
 
         path = path.replace(/^\/+/, '');
 
-        let pathError = exports.__getPathError__(path);
+        let pathError = __getPathError__(path);
         pathError = pathError
             ? `Resource path '${path}' ${pathError}`
             : undefined;
@@ -217,7 +241,7 @@ exports.get = (pathOrOptions, options) => {
         }
 
 
-        const etag = etagReader.read(path, etagOverride);
+        const etag = read(path, etagOverride);
 
         return getResponse200(path, resource, contentTypeFunc, cacheControlFunc, etag);
 
@@ -264,10 +288,10 @@ const getRelativeResourcePath = (request) => {
 
 
 // Exported for testing only
-exports.__resolveRoot__ = (root) => {
+export const __resolveRoot__ = (root: string) => {
     let resolvedRoot = resolvePath(root.replace(/^\/+/, '').replace(/\/+$/, ''));
 
-    let errorMessage = exports.__getPathError__(resolvedRoot);
+    let errorMessage = __getPathError__(resolvedRoot);
     if (!errorMessage) {
         // TODO: verify that root exists and is a directory?
         if (!resolvedRoot) {
@@ -281,81 +305,84 @@ exports.__resolveRoot__ = (root) => {
     return "/" + resolvedRoot;
 };
 
+/**
+ * Sets up and returns a reusable resource-getter function.
+ */
+export function buildGetter(root: string, params?: BuildGetterParams): (req: Request) => Response;
+export function buildGetter(params: BuildGetterParamsWithRoot): (req: Request) => Response;
+export function buildGetter(rootOrOptions: string|BuildGetterParamsWithRoot, options?: BuildGetterParams) {
+  let {
+    root,
+    cacheControlFunc,
+    contentTypeFunc,
+    etagOverride,
+    getCleanPath,
+    throwErrors,
+    errorMessage
+  } = parseRootAndOptions(rootOrOptions, options);
 
-exports.buildGetter = (rootOrOptions, options) => {
-    let {
-        root,
-        cacheControlFunc,
-        contentTypeFunc,
-        etagOverride,
-        getCleanPath,
-        throwErrors,
-        errorMessage
-    } = optionsParser.parseRootAndOptions(rootOrOptions, options);
+  if (errorMessage) {
+    throw Error(errorMessage);
+  }
 
-    if (errorMessage) {
-        throw Error(errorMessage);
-    }
+  root = __resolveRoot__(root);
 
-    root = exports.__resolveRoot__(root, errorMessage);
+  // Allow option override of the function that gets the relative resource path from the request
+  const getRelativePathFunc = getCleanPath || getRelativeResourcePath;
 
+  return function getStatic(request: Request): Response {
+      try {
+          if (typeof request.rawPath !== 'string') {
+              // request.rawPath is the only way to determine whether the incoming URL had a trailing slash or not
+              // - which is necessary for any index fallback functionality to work (and also depends on XP 7.7.1 and above
+              // - before this, trailing slashes were always stripped from rawPath as well).
+              // TODO: Since this "only" breaks index fallbacks, consider just logging a warning instead. Or adding some option flag to let users choose if this is warning-level or should cause an error?
+              throw Error(`Incoming request.rawPath is: ${JSON.stringify(request.rawPath)}. Even when using getCleanPath in such a way that .rawPath isn't used to resolve resource path, request.rawPath must still be a string for index fallback functionality to work.`);
+          }
 
-    // Allow option override of the function that gets the relative resource path from the request
-    const getRelativePathFunc = getCleanPath || getRelativeResourcePath;
+          const relativePath = getRelativePathFunc(request);
 
-    return function getStatic(request) {
-        try {
-            if (typeof request.rawPath !== 'string') {
-                // request.rawPath is the only way to determine whether the incoming URL had a trailing slash or not
-                // - which is necessary for any index fallback functionality to work (and also depends on XP 7.7.1 and above
-                // - before this, trailing slashes were always stripped from rawPath as well).
-                // TODO: Since this "only" breaks index fallbacks, consider just logging a warning instead. Or adding some option flag to let users choose if this is warning-level or should cause an error?
-                throw Error(`Incoming request.rawPath is: ${JSON.stringify(request.rawPath)}. Even when using getCleanPath in such a way that .rawPath isn't used to resolve resource path, request.rawPath must still be a string for index fallback functionality to work.`);
-            }
+          const absolutePath =
+              root +
+              ( (relativePath && !relativePath.startsWith('/')) ? '/' : '' ) +
+              relativePath;
 
-            const relativePath = getRelativePathFunc(request);
+          const error = __getPathError__(absolutePath);
+          const pathError = (error)
+              ? `Illegal absolute resource path '${absolutePath}' (resolved relative path: '${relativePath}'): ${error}`      // 400-type error
+              : error;
 
-            const absolutePath =
-                root +
-                ( (relativePath && !relativePath.startsWith('/')) ? '/' : '' ) +
-                relativePath;
+          const hasTrailingSlash = request.rawPath.endsWith('/');
 
-            const error = exports.__getPathError__(absolutePath);
-            const pathError = (error)
-                ? `Illegal absolute resource path '${absolutePath}' (resolved relative path: '${relativePath}'): ${error}`      // 400-type error
-                : error;
+          let { resource, response400 } = getResourceOr400(absolutePath, pathError, hasTrailingSlash);
+          if (response400) {
+              return response400;
+          }
 
-            const hasTrailingSlash = request.rawPath.endsWith('/');
+          let fallbackPath: string;
+          if (!resource) {
+              const { res, fallback, response303 } = getFallbackResourceOr303(absolutePath, request, hasTrailingSlash);
+              if (response303) {
+                  return response303;
+              }
 
-            let { resource, response400 } = getResourceOr400(absolutePath, pathError, hasTrailingSlash);
-            if (response400) {
-                return response400;
-            }
+              resource = res;
+              if (!resource) {
+                  return getResponse404(absolutePath);
+              }
 
-            let fallbackPath;
-            if (!resource) {
-                const { res, fallback, response303 } = getFallbackResourceOr303(absolutePath, request, hasTrailingSlash);
-                if (response303) {
-                    return response303;
-                }
+              fallbackPath = fallback;
+          }
 
-                resource = res;
-                if (!resource) {
-                    return getResponse404(absolutePath);
-                }
+          const { etag, response304 } = getEtagOr304(fallbackPath || absolutePath, request, etagOverride);
+          if (response304) {
+              return response304
+          }
 
-                fallbackPath = fallback;
-            }
+          return getResponse200(absolutePath, resource, contentTypeFunc, cacheControlFunc, etag, fallbackPath);
 
-            const { etag, response304 } = getEtagOr304(fallbackPath || absolutePath, request, etagOverride);
-            if (response304) {
-                return response304
-            }
-
-            return getResponse200(absolutePath, resource, contentTypeFunc, cacheControlFunc, etag, fallbackPath);
-
-        } catch (e) {
-            return errorLogAndResponse500(e, throwErrors, rootOrOptions, options, "buildGetter#getStatic", "Root");
-        }
-    }
-};
+      } catch (e) {
+          return errorLogAndResponse500(e, throwErrors, rootOrOptions, options, "buildGetter#getStatic", "Root");
+      }
+  }
+}
