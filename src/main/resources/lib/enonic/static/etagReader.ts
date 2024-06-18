@@ -1,4 +1,6 @@
-const etagService = __.newBean('lib.enonic.libStatic.etag.EtagService');
+const etagService = __.newBean<{
+  getEtag: (path: string, etagOverride?: number) => Record<string,string>
+}>('lib.enonic.libStatic.etag.EtagService');
 
 /** Gets a content string and MD5-contenthash etag string.
  *  In XP prod mode, cache the etag by file path only.
@@ -14,7 +16,7 @@ const etagService = __.newBean('lib.enonic.libStatic.etag.EtagService');
  * @return (object) etag value, if anything was processed, undefined if not.
  * @throws (error) if any error occurred during java processing. Java error message.
  */
-exports.read = (path, etagOverrideOption) => {
+export const read = (path: string, etagOverrideOption: boolean) => {
     // true: 1, false: -1, other: 0
     const etagOverride = (etagOverrideOption)
         ? 1
