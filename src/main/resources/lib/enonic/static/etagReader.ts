@@ -23,8 +23,11 @@ export const read = (path: string, etagOverrideOption: boolean) => {
         : etagOverrideOption === false
             ? -1
             : 0;
+    log.debug('read: etagOverride: %s', etagOverride);
 
     let { error, etag } = __.toNativeObject(etagService.getEtag(`${app.name}:${path}`, etagOverride));
+    log.debug('read: error: %s', error);
+    log.debug('read: etag: %s', etag);
 
     if (error) {
         throw Error(error);

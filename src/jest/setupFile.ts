@@ -7,6 +7,9 @@ import {
 import type {App, DoubleUnderscore, Log} from './global.d';
 
 
+import {isObject} from './isObject';
+
+
 // Avoid type errors
 declare module globalThis {
     var app: App
@@ -19,7 +22,8 @@ declare module globalThis {
 // testEnvironment: 'node' the @types/node package must be installed and
 // potentially listed under types in tsconfig.json.
 globalThis.log = {
-    debug: console.debug,
+    debug: () => {},
+    // debug: console.debug,
     info: console.info,
     error: console.error,
     warning: console.warn
@@ -55,6 +59,8 @@ export const INDEX_HTML = `
   </body>
 </html>`;
 
+export const STATIC_ASSETS_304_CSS = `body { color: red; }`;
+
 globalThis.__ = {
   // disposer
   // @ts-ignore
@@ -63,10 +69,16 @@ globalThis.__ = {
       return {
         getEtag: (path: string, etagOverride?: number) => {
           if (path === 'com.example.myproject:/myrootindex.html') {
-            return '1234567890abcdef';
-            }
-            throw new Error(`getEtag: Unmocked path:${path} etagOverride:${etagOverride}!`);
-            // console.debug(`getEtag path:${path} etagOverride:${etagOverride}`);
+            return {
+              etag: '1234567890abcdef'
+            };
+          }
+          if (path === 'com.example.myproject:/static/assets/304.css') {
+            return {
+              etag: '1234567890abcdef'
+            };
+          }
+          throw new Error(`getEtag: Unmocked path:${path} etagOverride:${etagOverride}!`);
         }
       }
     }
@@ -75,11 +87,15 @@ globalThis.__ = {
         getMimeType: (name: string|ResourceKey) => {
           if (name === '/myrootindex.html') {
             return 'text/html';
-            }
-            throw new Error(`getMimeType: Unmocked name:${name}!`);
-            // console.debug(`getMimeType name:${JSON.stringify(name, null, 4)}`);
+          }
+          if (name === '/static/assets/304.css') {
+            // TODO why is this called even though if-none-match matched etag???
+            return 'text/css';
+          }
+          throw new Error(`getMimeType: Unmocked name:${name}!`);
         },
         getResource: (key: string|ResourceKey) => {
+
           if (key === '/myrootindex.html') {
             return {
               getBytes: () => {
@@ -95,9 +111,45 @@ globalThis.__ = {
               },
               exists: () => true,
             }; // ResourceInterface
-            }
-            // console.debug(`getResource key:${JSON.stringify(key, null, 4)}`);
-            throw new Error(`getResource: Unmocked key:${JSON.stringify(key, null, 4)}!`);
+          }
+
+          if (key === '/static/assets/400.css' || key === '/static/assets/400.css/index.html') {
+            return {
+              exists: () => false,
+            };
+          }
+
+          if (key === '/static/assets/303.css') {
+            return {
+              exists: () => false,
+            };
+          }
+          if (key === '/static/assets/303.css/index.html') { // Fallback
+            return {
+              getBytes: () => INDEX_HTML,
+              getSize: () => 1,
+              getTimestamp: () => 2,
+              getStream: () => {
+                throw new Error(`getStream called key:${JSON.stringify(key, null, 4)}`);
+              },
+              exists: () => true,
+            };
+          }
+
+          if (key === '/static/assets/304.css') {
+            return {
+              // TODO why are these called even though if-none-match matched etag???
+              getBytes: () => STATIC_ASSETS_304_CSS,
+              getSize: () => 1,
+              getTimestamp: () => 2,
+              getStream: () => {
+                throw new Error(`getStream called key:${JSON.stringify(key, null, 4)}`);
+              },
+              exists: () => true,
+            };
+          }
+
+          throw new Error(`getResource: Unmocked key:${JSON.stringify(key, null, 4)}!`);
         },
         readText: (_stream: ByteSource) => {
           console.debug('readText');
@@ -118,8 +170,8 @@ globalThis.__ = {
   },
   // registerMock
   toNativeObject: (v: any) => {
-    if (v === '1234567890abcdef') {
-      return v;
+    if (isObject(v) && v['etag'] === '1234567890abcdef') {
+      return v as any;
     }
     throw new Error(`toNativeObject: Unmocked value:${JSON.stringify(v, null, 4)}!`);
     // console.debug(`toNativeObject value:${JSON.stringify(v, null, 4)}`);
