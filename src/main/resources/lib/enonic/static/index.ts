@@ -1,4 +1,7 @@
 import type {
+  Resource,
+} from '/lib/xp/io';
+import type {
   Request,
   Response
 } from './types';
@@ -13,6 +16,7 @@ import {
   parseRootAndOptions,
 } from '/lib/enonic/static/options';
 import {getResource} from '/lib/enonic/static/io';
+import {lcKeys} from '/lib/enonic/static/lcKeys';
 import {isDev} from '/lib/enonic/static/runMode';
 import {INDEXFALLBACK_CACHE_CONTROL} from '/lib/enonic/static/constants';
 
@@ -50,49 +54,66 @@ const getResponse200 = (
 };
 
 
-const getEtagOr304 = (path: string, request, etagOverride?: boolean) => {
-    let etag = read(path, etagOverride);
+const getEtagOr304 = (
+  path: string,
+  request: Request,
+  etagOverride?: boolean
+): {
+  etag?: string
+  response304?: Response
+} => {
+  let etag = read(path, etagOverride);
+  log.debug('getEtagOr304: etag: %s', etag);
 
-    let ifNoneMatch = (request.headers || {})['If-None-Match'];
-    if (ifNoneMatch && ifNoneMatch === etag) {
-        return {
-            response304: {
-                status: 304
-            }
-        };
-    }
-    return { etag };
+  let ifNoneMatch = lcKeys(request.headers || {})['if-none-match'];
+  log.debug('getEtagOr304: ifNoneMatch: %s', ifNoneMatch);
+
+  if (ifNoneMatch && ifNoneMatch === etag) {
+    return {
+      response304: {
+        status: 304
+      }
+    };
+  }
+  return { etag };
 }
 
 /** Creates an easy-readable and trackable error message in the log,
  *  and returns a generic error message with a tracking ID in the response */
-const errorLogAndResponse500 = (e, throwErrors, stringOrOptions, options, methodLabel, rootOrPathLabel) => {
-    if (!throwErrors) {
-        const errorID = Math.floor(Math.random() * 1000000000000000).toString(36);
+const errorLogAndResponse500 = (
+  e: Error,
+  throwErrors: boolean,
+  stringOrOptions: string | BuildGetterParamsWithRoot,
+  options: BuildGetterParams | undefined,
+  methodLabel: 'buildGetter#getStatic' | 'get',
+  rootOrPathLabel: 'Root' | 'Path'
+) => {
+  if (!throwErrors) {
+    const errorID = Math.floor(Math.random() * 1000000000000000).toString(36);
 
-        let serverErrorMessage = `lib-static.${methodLabel}, error ID: ${errorID}   |   ${e.message}`;
+    let serverErrorMessage = `lib-static.${methodLabel}, error ID: ${errorID}   |   ${e.message}`;
 
-        if (typeof stringOrOptions === 'string') {
-            serverErrorMessage += `  |   ${rootOrPathLabel.toLowerCase()} = ${JSON.stringify(stringOrOptions)}`;
-            if (options !== undefined) {
-                serverErrorMessage += '   |   options = ' + JSON.stringify(options);
-            }
-
-        } else {
-            serverErrorMessage += `  |   optionsWith${rootOrPathLabel} = ${JSON.stringify(stringOrOptions)}`;
-        }
-
-        log.error(serverErrorMessage, e);
-
-        return {
-            status: 500,
-            contentType: "text/plain; charset=utf-8",
-            body: `Server error (logged with error ID: ${errorID})`
-        }
+    if (typeof stringOrOptions === 'string') {
+      serverErrorMessage += `  |   ${rootOrPathLabel.toLowerCase()} = ${JSON.stringify(stringOrOptions)}`;
+      if (options !== undefined) {
+        serverErrorMessage += '   |   options = ' + JSON.stringify(options);
+      }
 
     } else {
-        throw e;
+      serverErrorMessage += `  |   optionsWith${rootOrPathLabel} = ${JSON.stringify(stringOrOptions)}`;
     }
+
+    log.error(serverErrorMessage, e);
+
+    return {
+      status: 500,
+      contentType: "text/plain; charset=utf-8",
+      body: `Server error (logged with error ID: ${errorID})`
+    }
+
+  } else {
+    throw e;
+  }
 }
 
 
@@ -100,33 +121,36 @@ const getResourceOr400 = (
   path: string,
   pathError: string,
   hasTrailingSlash?: boolean
-) => {
-    if (pathError) {
-        if (!isDev()) {
-            log.warning(pathError);
-        }
-        return {
-            response400: (isDev())
-                ? {
-                    status: 400,
-                    body: pathError,
-                    contentType: 'text/plain; charset=utf-8'
-                }
-                : {
-                    status: 400,
-                }
-        };
+): {
+  resource?: Resource
+  response400?: Response
+} => {
+  if (pathError) {
+    if (!isDev()) {
+      log.warning(pathError);
     }
-
-
-    if (!hasTrailingSlash) {
-        const resource = getResource(path);
-        if (resource.exists()) {
-            return { resource };
+    return {
+      response400: (isDev())
+        ? {
+          status: 400,
+          body: pathError,
+          contentType: 'text/plain; charset=utf-8'
         }
-    }
+        : {
+          status: 400,
+        }
+    };
+  }
 
-    return {};
+
+  if (!hasTrailingSlash) {
+    const resource = getResource(path);
+    if (resource.exists()) {
+      return { resource };
+    }
+  }
+
+  return {};
 };
 
 // TODO: if other options than index.html are preferrable or overridable by options later (Issue #57),
@@ -134,59 +158,68 @@ const getResourceOr400 = (
 //  Implemented as array in preparation for that.
 const getIndexFallbacks = (_path: string) => ['index.html'];
 
-const getFallbackResourceOr303 = (path: string, request, hasTrailingSlash) => {
-    const indexFallbacks = getIndexFallbacks(path).map( indexFile =>
-        path +
-        (!hasTrailingSlash ? '/' : '') +
-        indexFile
-    );
+const getFallbackResourceOr303 = (
+  path: string,
+  request: Request,
+  hasTrailingSlash: boolean
+): {
+  res?: Resource
+  fallback?: string
+  response303?: Response
+} => {
+  const indexFallbacks = getIndexFallbacks(path).map( indexFile =>
+      path +
+      (!hasTrailingSlash ? '/' : '') +
+      indexFile
+  );
+  log.debug('getFallbackResourceOr303: indexFallbacks: %s', JSON.stringify(indexFallbacks, null, 4));
 
-    for (let i=0; i<indexFallbacks.length; i++) {
+  for (let i=0; i<indexFallbacks.length; i++) {
 
-        const fallbackPath = indexFallbacks[i];
-        const resource = getResource(fallbackPath);
+    const fallbackPath = indexFallbacks[i];
+    const resource = getResource(fallbackPath);
 
-        if (resource.exists()) {
-            if (hasTrailingSlash) {
-                if (isDev()) {
-                    log.info(`Resource fallback for '${path}': returning '${fallbackPath}'`);
-                }
-                return {
-                    res: resource,
-                    fallback: fallbackPath
-                };
-
-            } else {
-                if (isDev()) {
-                    log.info(`Not found: '${path}'. However, a fallback exists: '${fallbackPath}'. Redirecting to fetch it from '${request.path}/'.`);
-                }
-                return {
-                    response303: {
-                        // Assumes this is the correct redirect, whatever happened in a getCleanPath override
-                        redirect: request.path + '/'
-                    }
-                };
-            }
+    if (resource.exists()) {
+      if (hasTrailingSlash) {
+        if (isDev()) {
+            log.info(`Resource fallback for '${path}': returning '${fallbackPath}'`);
         }
-    }
+        return {
+          res: resource,
+          fallback: fallbackPath
+        };
 
-    return {};
+      } else {
+        if (isDev()) {
+          log.info(`Not found: '${path}'. However, a fallback exists: '${fallbackPath}'. Redirecting to fetch it from '${request.path}/'.`);
+        }
+        return {
+          response303: {
+            // Assumes this is the correct redirect, whatever happened in a getCleanPath override
+            redirect: request.path + '/'
+          }
+        };
+      }
+    }
+  } // for indexFallbacks
+
+  return {};
 }
 
 
 const getResponse404 = (path: string) => {
-    if (!isDev()) {
-        log.warning(`Not found: ${JSON.stringify(path)}`);
+  if (!isDev()) {
+    log.warning(`Not found: ${JSON.stringify(path)}`);
+  }
+  return (isDev())
+    ? {
+      status: 404,
+      body: `Not found: ${path}`,
+      contentType: 'text/plain; charset=utf-8'
     }
-    return (isDev())
-        ? {
-            status: 404,
-            body: `Not found: ${path}`,
-            contentType: 'text/plain; charset=utf-8'
-        }
-        : {
-            status: 404
-        }
+    : {
+      status: 404
+    }
 }
 
 // Very conservative filename verification:
@@ -195,114 +228,114 @@ const getResponse404 = (path: string) => {
 const doubleDotRx = /\.\./;
 const illegalCharsRx = /[<>:"'`´\\|?*]/;
 // Exported for testing only
-export const __getPathError__ = (trimmedPathString: string): string => {
-    if (trimmedPathString.match(doubleDotRx) || trimmedPathString.match(illegalCharsRx)) {
-        return "can't contain '..' or any of these characters: \\ | ? * < > ' \" ` ´";
-    }
-    if (!trimmedPathString) {
-        return "resolves to the JAR root / empty or all-spaces";
-    }
+export const __getPathError__ = (trimmedPathString: string): string|undefined => {
+  if (trimmedPathString.match(doubleDotRx) || trimmedPathString.match(illegalCharsRx)) {
+    return "can't contain '..' or any of these characters: \\ | ? * < > ' \" ` ´";
+  }
+  if (!trimmedPathString) {
+    return "resolves to the JAR root / empty or all-spaces";
+  }
 };
 
 /////////////////////////////////////////////////////////////////////////////  .get
 
 export const get = (pathOrOptions, options) => {
 
-    let {
-        path,
-        cacheControlFunc,
-        contentTypeFunc,
-        etagOverride,
-        throwErrors,
-        errorMessage
-    } = parsePathAndOptions(pathOrOptions, options);
+  let {
+    path,
+    cacheControlFunc,
+    contentTypeFunc,
+    etagOverride,
+    throwErrors,
+    errorMessage
+  } = parsePathAndOptions(pathOrOptions, options);
 
 
-    try {
-        if (errorMessage) {
-            throw Error(errorMessage);
-        }
-
-        path = path.replace(/^\/+/, '');
-
-        let pathError = __getPathError__(path);
-        pathError = pathError
-            ? `Resource path '${path}' ${pathError}`
-            : undefined;
-
-        path = `/${path}`;
-
-        const { resource, response400 } = getResourceOr400(path, pathError);
-        if (response400) {
-            return response400;
-        }
-        if (!resource) {
-            return getResponse404(path);
-        }
-
-
-        const etag = read(path, etagOverride);
-
-        return getResponse200(path, resource, contentTypeFunc, cacheControlFunc, etag);
-
-    } catch (e) {
-        return errorLogAndResponse500(e, throwErrors, pathOrOptions, options, "get", "Path");
+  try {
+    if (errorMessage) {
+      throw Error(errorMessage);
     }
+
+    path = path.replace(/^\/+/, '');
+
+    let pathError = __getPathError__(path);
+    pathError = pathError
+      ? `Resource path '${path}' ${pathError}`
+      : undefined;
+
+    path = `/${path}`;
+
+    const { resource, response400 } = getResourceOr400(path, pathError);
+    if (response400) {
+      return response400;
+    }
+    if (!resource) {
+      return getResponse404(path);
+    }
+
+
+    const etag = read(path, etagOverride);
+
+    return getResponse200(path, resource, contentTypeFunc, cacheControlFunc, etag);
+
+  } catch (e) {
+    return errorLogAndResponse500(e, throwErrors, pathOrOptions, options, "get", "Path");
+  }
 };
 
 
 /////////////////////////////////////////////////////////////////////////////  .buildGetter
 
 const resolvePath = (path) => {
-    const rootArr = path.split(/\/+/).filter(i => !!i);
-    for (let i=1; i<rootArr.length; i++) {
-        if (rootArr[i].endsWith('..')) {
-            rootArr.splice(i - 1, 2);
-            i -= 2;
-        }
+  const rootArr = path.split(/\/+/).filter(i => !!i);
+  for (let i=1; i<rootArr.length; i++) {
+    if (rootArr[i].endsWith('..')) {
+      rootArr.splice(i - 1, 2);
+      i -= 2;
     }
-    return rootArr.join('/').trim();
+  }
+  return rootArr.join('/').trim();
 }
 
 /* .buildGetter helper: creates a resource path from the request, relative to the root folder (which will be prefixed later).
 *  Overridable with the getCleanPath option param. */
 const getRelativeResourcePath = (request) => {
-    let {rawPath, contextPath} = (request || {});
+  let {rawPath, contextPath} = (request || {});
 
-    let removePrefix = (contextPath || '').trim() || '** missing or falsy **';
+  let removePrefix = (contextPath || '').trim() || '** missing or falsy **';
 
-    // Normalize: remove leading slashes from both
-    rawPath = rawPath.replace(/^\/+/, '');
-    removePrefix = removePrefix.replace(/^\/+/, '');
+  // Normalize: remove leading slashes from both
+  rawPath = rawPath.replace(/^\/+/, '');
+  removePrefix = removePrefix.replace(/^\/+/, '');
 
-    if (!rawPath.startsWith(removePrefix)) {
-        // Gives 500-type error
-        throw Error(`Default functionality can't resolve relative asset path: the request was expected to contain a .contextPath string attribute that is a prefix in a .rawPath string attribute. You may need to supply a getCleanPath(request) function parameter to extract a relative asset path from the request. Request: ${JSON.stringify(request)}`);
-    }
+  if (!rawPath.startsWith(removePrefix)) {
+    // Gives 500-type error
+    throw Error(`Default functionality can't resolve relative asset path: the request was expected to contain a .contextPath string attribute that is a prefix in a .rawPath string attribute. You may need to supply a getCleanPath(request) function parameter to extract a relative asset path from the request. Request: ${JSON.stringify(request)}`);
+  }
 
-    return rawPath
-        .trim()
-        .substring(removePrefix.length)
+  return rawPath
+    .trim()
+    .substring(removePrefix.length)
 };
 
 
 
 // Exported for testing only
 export const __resolveRoot__ = (root: string) => {
-    let resolvedRoot = resolvePath(root.replace(/^\/+/, '').replace(/\/+$/, ''));
+  let resolvedRoot = resolvePath(root.replace(/^\/+/, '').replace(/\/+$/, ''));
 
-    let errorMessage = __getPathError__(resolvedRoot);
-    if (!errorMessage) {
-        // TODO: verify that root exists and is a directory?
-        if (!resolvedRoot) {
-            errorMessage = "resolves to the JAR root / empty or all-spaces";
-        }
+  let errorMessage = __getPathError__(resolvedRoot);
+  if (!errorMessage) {
+    // TODO: verify that root exists and is a directory?
+    if (!resolvedRoot) {
+      errorMessage = "resolves to the JAR root / empty or all-spaces";
     }
-    if (errorMessage) {
-        throw Error(`Illegal root argument (or .root option attribute) ${JSON.stringify(root)}: ${errorMessage}`);
-    }
+  }
+  if (errorMessage) {
+    throw Error(`Illegal root argument (or .root option attribute) ${JSON.stringify(root)}: ${errorMessage}`);
+  }
 
-    return "/" + resolvedRoot;
+  return "/" + resolvedRoot;
 };
 
 /**
@@ -331,58 +364,66 @@ export function buildGetter(rootOrOptions: string|BuildGetterParamsWithRoot, opt
   const getRelativePathFunc = getCleanPath || getRelativeResourcePath;
 
   return function getStatic(request: Request): Response {
-      try {
-          if (typeof request.rawPath !== 'string') {
-              // request.rawPath is the only way to determine whether the incoming URL had a trailing slash or not
-              // - which is necessary for any index fallback functionality to work (and also depends on XP 7.7.1 and above
-              // - before this, trailing slashes were always stripped from rawPath as well).
-              // TODO: Since this "only" breaks index fallbacks, consider just logging a warning instead. Or adding some option flag to let users choose if this is warning-level or should cause an error?
-              throw Error(`Incoming request.rawPath is: ${JSON.stringify(request.rawPath)}. Even when using getCleanPath in such a way that .rawPath isn't used to resolve resource path, request.rawPath must still be a string for index fallback functionality to work.`);
-          }
-
-          const relativePath = getRelativePathFunc(request);
-
-          const absolutePath =
-              root +
-              ( (relativePath && !relativePath.startsWith('/')) ? '/' : '' ) +
-              relativePath;
-
-          const error = __getPathError__(absolutePath);
-          const pathError = (error)
-              ? `Illegal absolute resource path '${absolutePath}' (resolved relative path: '${relativePath}'): ${error}`      // 400-type error
-              : error;
-
-          const hasTrailingSlash = request.rawPath.endsWith('/');
-
-          let { resource, response400 } = getResourceOr400(absolutePath, pathError, hasTrailingSlash);
-          if (response400) {
-              return response400;
-          }
-
-          let fallbackPath: string;
-          if (!resource) {
-              const { res, fallback, response303 } = getFallbackResourceOr303(absolutePath, request, hasTrailingSlash);
-              if (response303) {
-                  return response303;
-              }
-
-              resource = res;
-              if (!resource) {
-                  return getResponse404(absolutePath);
-              }
-
-              fallbackPath = fallback;
-          }
-
-          const { etag, response304 } = getEtagOr304(fallbackPath || absolutePath, request, etagOverride);
-          if (response304) {
-              return response304
-          }
-
-          return getResponse200(absolutePath, resource, contentTypeFunc, cacheControlFunc, etag, fallbackPath);
-
-      } catch (e) {
-          return errorLogAndResponse500(e, throwErrors, rootOrOptions, options, "buildGetter#getStatic", "Root");
+    try {
+      if (typeof request.rawPath !== 'string') {
+          // request.rawPath is the only way to determine whether the incoming URL had a trailing slash or not
+          // - which is necessary for any index fallback functionality to work (and also depends on XP 7.7.1 and above
+          // - before this, trailing slashes were always stripped from rawPath as well).
+          // TODO: Since this "only" breaks index fallbacks, consider just logging a warning instead.
+          // Or adding some option flag to let users choose if this is warning-level or should cause an error?
+          throw Error(`Incoming request.rawPath is: ${JSON.stringify(request.rawPath)}. Even when using getCleanPath in such a way that .rawPath isn't used to resolve resource path, request.rawPath must still be a string for index fallback functionality to work.`);
       }
+
+      const relativePath = getRelativePathFunc(request);
+      log.debug('getStatic: relativePath: %s', relativePath);
+
+      const absolutePath =
+        root +
+        ( (relativePath && !relativePath.startsWith('/')) ? '/' : '' ) +
+        relativePath;
+      log.debug('getStatic: absolutePath: %s', absolutePath);
+
+      const error = __getPathError__(absolutePath);
+      log.debug('getStatic: error: %s', error);
+
+      const pathError = (error)
+        ? `Illegal absolute resource path '${absolutePath}' (resolved relative path: '${relativePath}'): ${error}` // 400-type error
+        : error;
+      log.debug('getStatic: pathError: %s', pathError);
+
+      const hasTrailingSlash = request.rawPath.endsWith('/');
+      log.debug('getStatic: hasTrailingSlash: %s', hasTrailingSlash);
+
+      let { resource, response400 } = getResourceOr400(absolutePath, pathError, hasTrailingSlash);
+      if (response400) {
+        return response400;
+      }
+
+      let fallbackPath: string;
+      if (!resource) {
+        const { res, fallback, response303 } = getFallbackResourceOr303(absolutePath, request, hasTrailingSlash);
+        if (response303) {
+          return response303;
+        }
+
+        resource = res;
+        if (!resource) {
+          return getResponse404(absolutePath);
+        }
+
+        fallbackPath = fallback;
+      }
+      log.debug('getStatic: fallbackPath: %s', fallbackPath);
+
+      const { etag, response304 } = getEtagOr304(fallbackPath || absolutePath, request, etagOverride);
+      if (response304) {
+        return response304
+      }
+
+      return getResponse200(absolutePath, resource, contentTypeFunc, cacheControlFunc, etag, fallbackPath);
+
+    } catch (e) {
+      return errorLogAndResponse500(e, throwErrors, rootOrOptions, options, "buildGetter#getStatic", "Root");
+    }
   }
 }
