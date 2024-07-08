@@ -4,11 +4,13 @@ import {
   // jest,
   test as it
 } from '@jest/globals';
-import { ERROR_MESSAGE_PATH_SLASH_OR_EMPTY } from '../main/resources/lib/enonic/static/__getPathError__';
+import {
+  ERROR_MESSAGE_PATH_SLASH_OR_EMPTY
+} from '../main/resources/lib/enonic/static/__getPathError__';
 import { get } from '../main/resources/lib/enonic/static';
 import {
   errorMessageTemplateFirstArgumentMissing
-} from '../main/resources/lib/enonic/static/options';
+} from '../main/resources/lib/enonic/static/options/verifyAndTrimPathOrRoot';
 import { INDEX_HTML } from './setupFile';
 import {
   badRequestResponse,
