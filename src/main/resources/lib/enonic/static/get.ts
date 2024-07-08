@@ -1,7 +1,7 @@
 import type {
   BuildGetterParams,
   BuildGetterParamsWithPath,
-} from '/lib/enonic/static/options';
+} from './types';
 
 import { read } from '/lib/enonic/static/etagReader';
 import { parsePathAndOptions } from '/lib/enonic/static/options';
