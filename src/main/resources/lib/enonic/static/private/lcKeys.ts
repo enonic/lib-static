@@ -1,4 +1,4 @@
-import { mapKeys } from '/lib/enonic/static/mapKeys';
+import { mapKeys } from '/lib/enonic/static/private/mapKeys';
 
 
 export function lcKeys(obj: object) {
