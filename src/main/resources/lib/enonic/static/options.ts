@@ -1,7 +1,7 @@
 import type {
   BuildGetterParams,
   BuildGetterParamsWithRoot
-} from './types';
+} from '/lib/enonic/static/types';
 
 import {parseStringAndOptions} from '/lib/enonic/static/options/parseStringAndOptions';
 

@@ -2,7 +2,7 @@ import type { Resource } from '/lib/xp/io';
 import type {
   Request,
   Response
-} from '../types';
+} from '/lib/enonic/static/types';
 
 import { getResource } from '/lib/enonic/static/io';
 import { isDev } from '/lib/enonic/static/runMode';

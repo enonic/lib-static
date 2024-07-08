@@ -1,9 +1,9 @@
 import type {Resource} from '@enonic-types/lib-io';
-import type {ContentTypeResolver} from '../types';
+import type {ContentTypeResolver} from '/lib/enonic/static/types';
 
 import {getMimeType} from '/lib/enonic/static/io';
-import {isFunction} from '/lib/enonic/static/private/isFunction';
-import {isStringLiteral} from '/lib/enonic/static/private/isStringLiteral';
+import {isFunction} from '/lib/enonic/static/util/isFunction';
+import {isStringLiteral} from '/lib/enonic/static/util/isStringLiteral';
 
 
 /**

@@ -1,5 +1,5 @@
 import type { Resource } from '/lib/xp/io';
-import type { Response } from '../types';
+import type { Response } from '/lib/enonic/static/types';
 
 import { getResource } from '/lib/enonic/static/io';
 import { isDev } from '/lib/enonic/static/runMode';

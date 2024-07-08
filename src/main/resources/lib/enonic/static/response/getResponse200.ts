@@ -1,4 +1,4 @@
-import type { Response } from '../types';
+import type { Response } from '/lib/enonic/static/types';
 
 import { INDEXFALLBACK_CACHE_CONTROL } from '/lib/enonic/static/constants';
 
