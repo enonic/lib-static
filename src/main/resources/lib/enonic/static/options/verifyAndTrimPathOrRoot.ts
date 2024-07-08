@@ -1,4 +1,4 @@
-import type { BuildGetterParamsWithRoot } from '../types';
+import type { BuildGetterParamsWithRoot } from '/lib/enonic/static/types';
 
 
 export const errorMessageTemplateFirstArgumentMissing = (label: 'path'|'root') =>

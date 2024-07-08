@@ -1,8 +1,8 @@
 import type {Resource} from '@enonic-types/lib-io';
-import type {CacheControlResolver} from '../types';
+import type {CacheControlResolver} from '/lib/enonic/static/types';
 
 import {DEFAULT_CACHE_CONTROL} from '/lib/enonic/static/constants';
-import {isStringLiteral} from '/lib/enonic/static/private/isStringLiteral';
+import {isStringLiteral} from '/lib/enonic/static/util/isStringLiteral';
 
 
 /**
