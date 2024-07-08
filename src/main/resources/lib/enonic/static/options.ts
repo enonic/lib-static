@@ -3,8 +3,8 @@ import type {Request} from './types';
 
 import {getMimeType} from '/lib/enonic/static/io';
 import {DEFAULT_CACHE_CONTROL} from '/lib/enonic/static/constants';
-import {isFunction} from '/lib/enonic/static/isFunction';
-import {isStringLiteral} from '/lib/enonic/static/isStringLiteral';
+import {isFunction} from '/lib/enonic/static/private/isFunction';
+import {isStringLiteral} from '/lib/enonic/static/private/isStringLiteral';
 
 
 export type CacheControlResolver = (filePathAndName?: string, resource?: Resource, mimeType?: string) => string | null;
