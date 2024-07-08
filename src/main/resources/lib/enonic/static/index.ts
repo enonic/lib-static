@@ -7,6 +7,7 @@ import type {
 } from './types';
 import type {
   BuildGetterParams,
+  BuildGetterParamsWithPath,
   BuildGetterParamsWithRoot
 } from '/lib/enonic/static/options';
 
@@ -83,7 +84,7 @@ const getEtagOr304 = (
 const errorLogAndResponse500 = (
   e: Error,
   throwErrors: boolean,
-  stringOrOptions: string | BuildGetterParamsWithRoot,
+  stringOrOptions: string | BuildGetterParamsWithPath | BuildGetterParamsWithRoot,
   options: BuildGetterParams | undefined,
   methodLabel: 'buildGetter#getStatic' | 'get',
   rootOrPathLabel: 'Root' | 'Path'
@@ -228,18 +229,20 @@ const getResponse404 = (path: string) => {
 const doubleDotRx = /\.\./;
 const illegalCharsRx = /[<>:"'`´\\|?*]/;
 // Exported for testing only
+export const ERROR_MESSAGE_PATH_SLASH_OR_EMPTY = 'resolves to the JAR root / empty or all-spaces';
 export const __getPathError__ = (trimmedPathString: string): string|undefined => {
   if (trimmedPathString.match(doubleDotRx) || trimmedPathString.match(illegalCharsRx)) {
     return "can't contain '..' or any of these characters: \\ | ? * < > ' \" ` ´";
   }
   if (!trimmedPathString) {
-    return "resolves to the JAR root / empty or all-spaces";
+    return ERROR_MESSAGE_PATH_SLASH_OR_EMPTY;
   }
 };
 
 /////////////////////////////////////////////////////////////////////////////  .get
-
-export const get = (pathOrOptions, options) => {
+// export function get(path: string, options?: BuildGetterParams): (req: Request) => Response;
+// export function get(optionsWithPath: BuildGetterParamsWithPath): (req: Request) => Response;
+export function get(pathOrOptions: string|BuildGetterParamsWithPath, options?: BuildGetterParams) {
 
   let {
     path,
@@ -262,8 +265,10 @@ export const get = (pathOrOptions, options) => {
     pathError = pathError
       ? `Resource path '${path}' ${pathError}`
       : undefined;
+    log.debug('get: pathError: %s', pathError);
 
     path = `/${path}`;
+    log.debug('get: path: %s', path);
 
     const { resource, response400 } = getResourceOr400(path, pathError);
     if (response400) {
@@ -275,13 +280,14 @@ export const get = (pathOrOptions, options) => {
 
 
     const etag = read(path, etagOverride);
+    log.debug('get: etag: %s', etag);
 
     return getResponse200(path, resource, contentTypeFunc, cacheControlFunc, etag);
 
   } catch (e) {
-    return errorLogAndResponse500(e, throwErrors, pathOrOptions, options, "get", "Path");
+    return errorLogAndResponse500(e, throwErrors, pathOrOptions, options, 'get', 'Path');
   }
-};
+}
 
 
 /////////////////////////////////////////////////////////////////////////////  .buildGetter

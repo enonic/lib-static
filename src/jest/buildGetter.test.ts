@@ -7,7 +7,6 @@ import type {
 import {
   describe,
   expect,
-  jest,
   test as it
 } from '@jest/globals';
 import {buildGetter} from '../main/resources/lib/enonic/static';
@@ -16,31 +15,12 @@ import {
   INDEX_HTML,
   // STATIC_ASSETS_304_CSS
 } from './setupFile';
+import {
+  internalServerErrorResponse,
+  notFoundResponse,
+  silenceLogError
+} from './testdata';
 
-// Avoid type errors
-declare module globalThis {
-  var log: Log
-}
-
-const errorResponse = {
-  body: expect.stringMatching(/^Server error \(logged with error ID: .+\)$/),
-  contentType: "text/plain; charset=utf-8",
-  status: 500
-} as unknown as Response;
-
-const notFoundResponse = {
-  body: expect.stringMatching(/^Not found: .+$/),
-  contentType: "text/plain; charset=utf-8",
-  status: 404
-} as unknown as Response;
-
-function silenceLogError(fn) {
-  const temp = globalThis.log.error;
-    globalThis.log.error = jest.fn();
-    const res = fn();
-    globalThis.log.error = temp;
-    return res;
-}
 
 
 describe('buildGetter', () => {
@@ -55,7 +35,7 @@ describe('buildGetter', () => {
     expect(getter).toBeInstanceOf(Function);
 
     // @ts-expect-error missing param
-    silenceLogError(() => expect(getter()).toEqual(errorResponse));
+    silenceLogError(() => expect(getter()).toEqual(internalServerErrorResponse));
 
     const request: Request<{
       contextPath: string
@@ -87,7 +67,7 @@ describe('buildGetter', () => {
     const request = {} as Request;
 
     const getterWithoutThrowErrors = buildGetter('myroot');
-    silenceLogError(() => expect(getterWithoutThrowErrors(request)).toEqual(errorResponse));
+    silenceLogError(() => expect(getterWithoutThrowErrors(request)).toEqual(internalServerErrorResponse));
 
     const getterWithTrowErrors = buildGetter('myroot', {
       throwErrors: true

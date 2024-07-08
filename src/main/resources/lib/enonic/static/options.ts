@@ -55,6 +55,8 @@ export declare interface BuildGetterParams extends GetParams {
 
 export declare type BuildGetterParamsWithRoot = BuildGetterParams & { root: string }
 
+export declare type BuildGetterParamsWithPath = BuildGetterParams & { path: string }
+
 const verifyEtagOption = (etag) => {
     if (etag !== true && etag !== false && etag !== undefined) {
         throw Error("Unexpected 'etag' option: only true, false or undefined are allowed.");
@@ -63,6 +65,9 @@ const verifyEtagOption = (etag) => {
 
 
 
+
+export const errorMessageTemplateFirstArgumentMissing = (label: 'path'|'root') =>
+  `First argument (${label}OrOptions), or the ${label} attribute in it, is missing (or falsy)`;
 
 // Verify that path or root is a string, and not empty (label is 'path' or 'root')
 const verifyAndTrimPathOrRoot = (
@@ -73,7 +78,7 @@ const verifyAndTrimPathOrRoot = (
         if (pathOrRoot) {
             throw Error(`First argument (${label}OrOptions), or the ${label} attribute in it, is of unexpected type '${Array.isArray(pathOrRoot) ? "array" : typeof pathOrRoot}'. Expected: string or object.`);
         } else {
-            throw Error(`First argument (${label}OrOptions), or the ${label} attribute in it, is missing (or falsy)`);
+            throw Error(errorMessageTemplateFirstArgumentMissing(label));
         }
     }
     return pathOrRoot.trim();
