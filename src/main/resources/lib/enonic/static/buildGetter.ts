@@ -1,11 +1,9 @@
 import type {
+  BuildGetterParams,
+  BuildGetterParamsWithRoot,
   Request,
   Response
 } from './types';
-import type {
-  BuildGetterParams,
-  BuildGetterParamsWithRoot
-} from '/lib/enonic/static/options';
 
 import { parseRootAndOptions } from '/lib/enonic/static/options';
 import { __getPathError__ } from '/lib/enonic/static/__getPathError__';
