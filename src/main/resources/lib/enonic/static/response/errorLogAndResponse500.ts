@@ -2,7 +2,7 @@ import type {
   BuildGetterParams,
   BuildGetterParamsWithPath,
   BuildGetterParamsWithRoot
-} from '../types';
+} from '/lib/enonic/static/types';
 
 
 /** Creates an easy-readable and trackable error message in the log,

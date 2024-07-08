@@ -1,10 +1,10 @@
 import type {
   Request,
   Response
-} from '../types';
+} from '/lib/enonic/static/types';
 
 import { read } from '/lib/enonic/static/etagReader';
-import { lcKeys } from '/lib/enonic/static/private/lcKeys';
+import { lcKeys } from '/lib/enonic/static/util/lcKeys';
 
 
 export const getEtagOr304 = (

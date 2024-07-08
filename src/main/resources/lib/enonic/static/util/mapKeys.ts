@@ -1,4 +1,4 @@
-import { isObject } from '/lib/enonic/static/private/isObject';
+import { isObject } from '/lib/enonic/static/util/isObject';
 
 export function mapKeys(
 	obj: object,

@@ -1,15 +1,15 @@
 import type {
   BuildGetterParams,
   BuildGetterParamsWithPath,
-} from './types';
+} from '/lib/enonic/static/types';
 
 import { read } from '/lib/enonic/static/etagReader';
 import { parsePathAndOptions } from '/lib/enonic/static/options';
 import { __getPathError__ } from '/lib/enonic/static/__getPathError__';
-import { getResourceOr400 } from '/lib/enonic/static/private/getResourceOr400';
-import { getResponse404 } from '/lib/enonic/static/private/getResponse404';
-import { getResponse200 } from '/lib/enonic/static/private/getResponse200';
-import { errorLogAndResponse500 } from '/lib/enonic/static/private/errorLogAndResponse500';
+import { getResourceOr400 } from '/lib/enonic/static/response/getResourceOr400';
+import { getResponse404 } from '/lib/enonic/static/response/getResponse404';
+import { getResponse200 } from '/lib/enonic/static/response/getResponse200';
+import { errorLogAndResponse500 } from '/lib/enonic/static/response/errorLogAndResponse500';
 
 
 // export function get(path: string, options?: BuildGetterParams): (req: Request) => Response;

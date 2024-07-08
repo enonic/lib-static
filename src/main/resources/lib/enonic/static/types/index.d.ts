@@ -5,6 +5,6 @@ export type {
   BuildGetterParamsWithRoot,
   BuildGetterParamsWithPath,
   ParseStringAndOptionsCommonReturnValues
-} from './Options';
-export type {Request} from './Request';
-export type {Response} from './Response';
+} from '/lib/enonic/static/types/Options';
+export type {Request} from '/lib/enonic/static/types/Request';
+export type {Response} from '/lib/enonic/static/types/Response';

@@ -2,7 +2,7 @@ import type {
   BuildGetterParams,
   BuildGetterParamsWithRoot,
   ParseStringAndOptionsCommonReturnValues
-} from '../types';
+} from '/lib/enonic/static/types';
 
 import {getCacheControlFunc} from '/lib/enonic/static/options/getCacheControlFunc';
 import {getContentTypeFunc} from '/lib/enonic/static/options/getContentTypeFunc';
