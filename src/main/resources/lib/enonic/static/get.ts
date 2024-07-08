@@ -5,7 +5,7 @@ import type {
 
 import { read } from '/lib/enonic/static/etagReader';
 import { parsePathAndOptions } from '/lib/enonic/static/options';
-import { __getPathError__ } from '/lib/enonic/static/__getPathError__';
+import { getPathError } from '/lib/enonic/static/path/getPathError';
 import { getResourceOr400 } from '/lib/enonic/static/response/getResourceOr400';
 import { getResponse404 } from '/lib/enonic/static/response/getResponse404';
 import { getResponse200 } from '/lib/enonic/static/response/getResponse200';
@@ -33,7 +33,7 @@ export function get(pathOrOptions: string|BuildGetterParamsWithPath, options?: B
 
     path = path.replace(/^\/+/, '');
 
-    let pathError = __getPathError__(path);
+    let pathError = getPathError(path);
     pathError = pathError
       ? `Resource path '${path}' ${pathError}`
       : undefined;
