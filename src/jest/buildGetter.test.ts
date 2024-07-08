@@ -1,4 +1,3 @@
-import type {Log} from './global.d';
 import type {
   Request,
   Response

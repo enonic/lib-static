@@ -6,7 +6,7 @@ import {
 } from '@jest/globals';
 import {
   ERROR_MESSAGE_PATH_SLASH_OR_EMPTY
-} from '../main/resources/lib/enonic/static/__getPathError__';
+} from '../main/resources/lib/enonic/static/path/getPathError';
 import { get } from '../main/resources/lib/enonic/static';
 import {
   errorMessageTemplateFirstArgumentMissing
