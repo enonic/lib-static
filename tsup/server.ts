@@ -17,14 +17,22 @@ export default function buildServerConfig(): Options {
       ignore: globSync(`${DIR_SRC}/${AND_BELOW}/*.d.ts`)
     }
   ).map(s => s.replaceAll('\\', '/'));
+  // console.log('FILES_SERVER', FILES_SERVER);
+
+  const entryObject = {};
+  FILES_SERVER.forEach(file => {
+    const key = file.replace(`${DIR_SRC}/`, '').replace(/\.ts$/, '');
+    entryObject[key] = file;
+  });
+  // console.log('entryObject', entryObject);
 
   return {
     bundle: true,
     dts: false, // d.ts files are use useless at runtime
-    entry: FILES_SERVER,
-    env: {
-      BROWSER_SYNC_PORT: '3100',
-    },
+    entry: entryObject,
+    // env: {
+    //   BROWSER_SYNC_PORT: '3100',
+    // },
     esbuildOptions(options, context) {
       // If you have libs with chunks, use this to avoid collisions
       options.chunkNames = '_chunks/[name]-[hash]';
@@ -57,7 +65,7 @@ export default function buildServerConfig(): Options {
       .includes(process.env.LOG_LEVEL_FROM_GRADLE || ''),
 
     shims: false,
-    splitting: true,
+    splitting: false,
     sourcemap: false,
     target: 'es5'
   };
