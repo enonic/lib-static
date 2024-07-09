@@ -82,7 +82,7 @@ export function buildGetter(rootOrOptions: string|BuildGetterParamsWithRoot, opt
       let fallbackPath: string;
       if (!resource) {
         const { res, fallback, response303 } = getFallbackResourceOr303(absolutePath, request, hasTrailingSlash);
-        // NOTE: Logging binaries is a bad idea
+        // WARNING: Logging binaries is a bad idea
         // log.debug('getStatic: res:%s fallback:%s response303:%s', JSON.stringify(res, null, 4), fallback, JSON.stringify(response303, null, 4));
 
         if (response303) {
