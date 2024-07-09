@@ -23,8 +23,8 @@ declare module globalThis {
 // testEnvironment: 'node' the @types/node package must be installed and
 // potentially listed under types in tsconfig.json.
 globalThis.log = {
-    // debug: () => {},
-    debug: console.debug,
+    debug: () => {},
+    // debug: console.debug,
     info: console.info,
     error: console.error,
     warning: console.warn
