@@ -33,6 +33,7 @@ export const getFallbackResourceOr303 = (
 
     const fallbackPath = indexFallbacks[i];
     const resource = getResource(fallbackPath);
+    log.debug('getFallbackResourceOr303: i:%s fallbackPath:%s resource:%s', i, fallbackPath, JSON.stringify(resource, null, 4));
 
     if (resource.exists()) {
       if (hasTrailingSlash) {
