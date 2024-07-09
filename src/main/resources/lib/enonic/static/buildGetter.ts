@@ -58,6 +58,7 @@ export function buildGetter(rootOrOptions: string|BuildGetterParamsWithRoot, opt
 
       const absolutePath =
         root +
+        /* c8 ignore next */ // Probably not possible to create such a path in Enonic XP
         ( (relativePath && !relativePath.startsWith('/')) ? '/' : '' ) +
         relativePath;
       log.debug('getStatic: absolutePath: %s', absolutePath);
@@ -81,6 +82,9 @@ export function buildGetter(rootOrOptions: string|BuildGetterParamsWithRoot, opt
       let fallbackPath: string;
       if (!resource) {
         const { res, fallback, response303 } = getFallbackResourceOr303(absolutePath, request, hasTrailingSlash);
+        // NOTE: Logging binaries is a bad idea
+        // log.debug('getStatic: res:%s fallback:%s response303:%s', JSON.stringify(res, null, 4), fallback, JSON.stringify(response303, null, 4));
+
         if (response303) {
           return response303;
         }

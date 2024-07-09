@@ -1,5 +1,8 @@
 import type { Log } from './global.d';
-import type { Response } from '../main/resources/lib/enonic/static/types';
+import type {
+  Request,
+  Response
+} from '../main/resources/lib/enonic/static/types';
 
 import {
   expect,
@@ -41,6 +44,31 @@ export function okResponse(overrides: Partial<Response> = {}) {
     ...overrides,
     status: 200,
   } as unknown as Response;
+}
+
+export function buildRequest({
+  branch = 'master',
+  contextPath,
+  host = 'localhost',
+  method = 'GET',
+  mode = 'live',
+  path,
+  port = 8080,
+  rawPath,
+  scheme = 'http',
+}: Partial<Request> = {}) {
+  return {
+    branch,
+    contextPath,
+    host,
+    method,
+    mode,
+    path,
+    port,
+    rawPath,
+    scheme,
+    url: `${scheme}://${host}:${port}${path}`
+  } as Request;
 }
 
 export function silenceLogError(fn) {

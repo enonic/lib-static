@@ -11,7 +11,7 @@ import { get } from '../main/resources/lib/enonic/static';
 import {
   errorMessageTemplateFirstArgumentMissing
 } from '../main/resources/lib/enonic/static/options/verifyAndTrimPathOrRoot';
-import { INDEX_HTML } from './setupFile';
+import { STATIC_ASSETS_200_CSS } from './setupFile';
 import {
   badRequestResponse,
   internalServerErrorResponse,
@@ -26,8 +26,9 @@ describe('get', () => {
 
   describe('Successful responses', () => {
     it('returns 200 OK when resource is found', () => {
-      expect(get('/myrootindex.html')).toEqual(okResponse({
-        body: INDEX_HTML,
+      expect(get('/static/assets/200.css')).toEqual(okResponse({
+        body: STATIC_ASSETS_200_CSS,
+        contentType: 'text/css',
         headers: {
           'cache-control': 'public, max-age=31536000, immutable',
           etag: '1234567890abcdef'
