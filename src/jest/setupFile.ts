@@ -8,6 +8,7 @@ import type {App, DoubleUnderscore, Log} from './global.d';
 
 
 import {isObject} from './isObject';
+import {Resource} from './Resource';
 
 
 // Avoid type errors
@@ -22,8 +23,8 @@ declare module globalThis {
 // testEnvironment: 'node' the @types/node package must be installed and
 // potentially listed under types in tsconfig.json.
 globalThis.log = {
-    debug: () => {},
-    // debug: console.debug,
+    // debug: () => {},
+    debug: console.debug,
     info: console.info,
     error: console.error,
     warning: console.warn
@@ -59,7 +60,8 @@ export const INDEX_HTML = `
   </body>
 </html>`;
 
-export const STATIC_ASSETS_304_CSS = `body { color: red; }`;
+export const STATIC_ASSETS_200_CSS = `body { color: green; }`;
+export const STATIC_ASSETS_304_CSS = `body { color: yellow; }`;
 
 globalThis.__ = {
   // disposer
@@ -68,12 +70,11 @@ globalThis.__ = {
     if (bean === 'lib.enonic.libStatic.etag.EtagService') {
       return {
         getEtag: (path: string, etagOverride?: number) => {
-          if (path === 'com.example.myproject:/myrootindex.html') {
-            return {
-              etag: '1234567890abcdef'
-            };
-          }
-          if (path === 'com.example.myproject:/static/assets/304.css') {
+          if (
+            path === 'com.example.myproject:/static/assets/200.css'
+            || path === 'com.example.myproject:/static/assets/304.css'
+            || path === 'com.example.myproject:/static/assets/trailingSlash.css/index.html'
+          ) {
             return {
               etag: '1234567890abcdef'
             };
@@ -85,33 +86,16 @@ globalThis.__ = {
     if (bean === 'lib.enonic.libStatic.IoService') {
       return {
         getMimeType: (name: string|ResourceKey) => {
-          if (name === '/myrootindex.html') {
-            return 'text/html';
-          }
-          if (name === '/static/assets/304.css') {
+          if (name === '/static/assets/200.css' || name === '/static/assets/304.css') {
             // TODO why is this called even though if-none-match matched etag???
             return 'text/css';
+          }
+          if (name === '/static/assets/trailingSlash.css/index.html') {
+            return 'text/html';
           }
           throw new Error(`getMimeType: Unmocked name:${name}!`);
         },
         getResource: (key: string|ResourceKey) => {
-
-          if (key === '/myrootindex.html') {
-            return {
-              getBytes: () => {
-                if (key === '/myrootindex.html') {
-                  return INDEX_HTML;
-                }
-                throw new Error(`getBytes: Unmocked key:${JSON.stringify(key, null, 4)}!`);
-              },
-              getSize: () => 1,
-              getTimestamp: () => 2,
-              getStream: () => {
-                throw new Error(`getStream called key:${JSON.stringify(key, null, 4)}`);
-              },
-              exists: () => true,
-            }; // ResourceInterface
-          }
 
           if (key === '/static/assets/400.css' || key === '/static/assets/400.css/index.html') {
             return {
@@ -119,15 +103,32 @@ globalThis.__ = {
             };
           }
 
-          if (key === '/static/assets/303.css') {
+          if (
+            key === '/static/assets/303.css'
+            || key === '/static/assets/trailingSlash.css/'
+          ) {
             return {
               exists: () => false,
             };
           }
-          if (key === '/static/assets/303.css/index.html') { // Fallback
+          if (
+            key === '/static/assets/303.css/index.html'
+            || key === '/static/assets/trailingSlash.css/index.html'
+          ) { // Fallback
+            return new Resource({
+              bytes: INDEX_HTML,
+              exists: true,
+              key,
+              size: INDEX_HTML.length,
+              timestamp: 2
+            });
+          }
+
+          if (key === '/static/assets/200.css') {
             return {
-              getBytes: () => INDEX_HTML,
-              getSize: () => 1,
+              // TODO why are these called even though if-none-match matched etag???
+              getBytes: () => STATIC_ASSETS_200_CSS,
+              getSize: () => STATIC_ASSETS_200_CSS.length,
               getTimestamp: () => 2,
               getStream: () => {
                 throw new Error(`getStream called key:${JSON.stringify(key, null, 4)}`);
@@ -140,7 +141,7 @@ globalThis.__ = {
             return {
               // TODO why are these called even though if-none-match matched etag???
               getBytes: () => STATIC_ASSETS_304_CSS,
-              getSize: () => 1,
+              getSize: () => STATIC_ASSETS_304_CSS.length,
               getTimestamp: () => 2,
               getStream: () => {
                 throw new Error(`getStream called key:${JSON.stringify(key, null, 4)}`);

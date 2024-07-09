@@ -1,5 +1,5 @@
-import type {Resource} from '@enonic-types/lib-io';
-
+import type { Resource } from '@enonic-types/lib-io';
+import type { Request } from '/lib/enonic/static/types';
 
 export declare type CacheControlResolver = (filePathAndName?: string, resource?: Resource, mimeType?: string) => string | null;
 
