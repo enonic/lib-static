@@ -32,6 +32,7 @@
     // to the baseUrl if set, or to the tsconfig file itself otherwise.
     "paths": {
       // "/lib/enonic/static/*": ["./lib/enonic/static/*"],
+      "/lib/router": ["../../../node_modules/@item-enonic-types/lib-router"],
       "/lib/xp/*": ["../../../node_modules/@enonic-types/lib-*"],
       // "/types": ["lib/enonic/static/types/index.d.ts"],
       "/*": ["./*"],

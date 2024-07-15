@@ -7,7 +7,7 @@ import {isStringLiteral} from '/lib/enonic/static/util/isStringLiteral';
 
 /**
  * Override-able cache-control-string function creator:
- * Returns a function that takes (path, content, mimeType) arguments and returns a cache-control string.
+ * Returns a function that takes (path, resource, mimeType) arguments and returns a cache-control string.
  *
  * @param cacheControl (string, boolean or function). See README for how the cacheControl option works.
  * */

@@ -23,7 +23,7 @@ describe('getRelativeResourcePath', () => {
     expect(() => getRelativeResourcePath({})).toThrow(ERROR_MESSAGE_REQUEST_WITHOUT_RAWPATH);
   });
 
-  it("throws when rawPath doesn't start with removePrefix", () => {
+  it("throws when rawPath doesn't start with contextPath", () => {
     // @ts-expect-error missing param
     expect(() => getRelativeResourcePath({
       rawPath: '/path',

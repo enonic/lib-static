@@ -36,6 +36,7 @@
     "@enonic-types/global": "^7.14.2",
     "@enonic-types/lib-io": "^7.14.2",
     "@eslint/js": "^9.5.0",
+    "@item-enonic-types/lib-router": "^3.0.0",
     "@swc/core": "^1.6.1",
     "@types/node": "^20.14.5",
     "concurrently": "^8.2.2",
