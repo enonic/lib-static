@@ -16,7 +16,7 @@ const etagService = __.newBean<{
  * @return (object) etag value, if anything was processed, undefined if not.
  * @throws (error) if any error occurred during java processing. Java error message.
  */
-export const read = (path: string, etagOverrideOption: boolean) => {
+export const read = (path: string, etagOverrideOption?: boolean): string|undefined => {
     // true: 1, false: -1, other: 0
     const etagOverride = (etagOverrideOption)
         ? 1
@@ -25,7 +25,7 @@ export const read = (path: string, etagOverrideOption: boolean) => {
             : 0;
     log.debug('read: etagOverride: %s', etagOverride);
 
-    let { error, etag } = __.toNativeObject(etagService.getEtag(`${app.name}:${path}`, etagOverride));
+    const { error, etag } = __.toNativeObject(etagService.getEtag(`${app.name}:${path}`, etagOverride));
     log.debug('read: error: %s', error);
     log.debug('read: etag: %s', etag);
 

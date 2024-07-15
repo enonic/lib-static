@@ -1,3 +1,4 @@
+import { ByteSource } from '@enonic-types/core';
 import type {PageContributions} from '/lib/enonic/static/PageContributions';
 
 // https://developer.enonic.com/docs/xp/stable/framework/http#http-response
@@ -13,7 +14,7 @@ export interface ComplexCookie {
 }
 
 export interface Response<
-	Body = string,
+	Body = string|ByteSource,
 	Headers extends Record<string,string|number|(string|number)[]> = {
 		'content-type'?: string
 		'cache-control'?: string
