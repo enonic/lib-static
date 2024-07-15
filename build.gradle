@@ -17,12 +17,22 @@ java {
 sourceCompatibility = JavaVersion.VERSION_11
 
 dependencies {
-    compileOnly "com.enonic.xp:core-api:${xpVersion}"
-    compileOnly "com.enonic.xp:script-api:${xpVersion}"
+   // compileOnly: This is used for dependencies that are only needed during
+   // compilation. The library itself is not included in the final application
+   // build.
+  compileOnly "com.enonic.xp:core-api:${xpVersion}"
+  compileOnly "com.enonic.xp:script-api:${xpVersion}"
 
-    testImplementation "com.enonic.xp:testing:${xpVersion}"
+  // implementation: This is the most common way to specify a dependency.
+  // Libraries included with implementation are available during both compile
+  // time and runtime. This means your code can use the functionality of the
+  // dependency while compiling and when the final application runs.
+  implementation "com.enonic.xp:lib-io:${xpVersion}"
+  implementation 'com.enonic.lib:lib-router:3.1.0'
 
-    testImplementation "org.mockito:mockito-inline:5.2.0"
+  testImplementation "com.enonic.xp:testing:${xpVersion}"
+
+  testImplementation "org.mockito:mockito-inline:5.2.0"
 }
 
 processResources {
