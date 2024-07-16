@@ -16,6 +16,6 @@ export function prefixWithRoot({
     throw new Error(errorMessage);
   }
   return `/${root}/${path}`
-    .replace(/\/+/g, '/') // Replace multiple slashes with a single slash
+    .replace(/\/\/+/g, '/') // Replace multiple slashes with a single slash
     .replace(/\/$/, ''); // Remove trailing slash
 }

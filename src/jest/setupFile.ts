@@ -9,7 +9,7 @@ import type {App, DoubleUnderscore, Log} from './global.d';
 
 import {isObject} from './isObject';
 import {Resource} from './Resource';
-
+// import {mockJava} from './mockJava'; // TODO
 
 // Avoid type errors
 declare module globalThis {
@@ -160,7 +160,7 @@ globalThis.__ = {
     }
     if (bean === 'lib.enonic.libStatic.AppHelper') {
       return {
-        isDevMode: () => true // NOTE we might want to override this per test
+        isDevMode: () => false // NOTE we might want to override this per test
       };
     }
     throw new Error(`Unmocked bean:${bean}!`);
