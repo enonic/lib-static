@@ -1,14 +1,8 @@
-import {
-  getSize, // not type?
-  type ByteSource,
-  type Resource as ResourceInterface,
-  type ResourceKey
-} from '@enonic-types/lib-io';
-import type {App, DoubleUnderscore, Log} from './global.d';
+import type { ByteSource, ResourceKey } from '@enonic-types/lib-io';
+import type { App, DoubleUnderscore, Log } from './global.d';
 
-
-import {isObject} from './isObject';
-import {Resource} from './Resource';
+import { isObject } from './isObject';
+import { Resource } from './Resource';
 
 
 // Avoid type errors
