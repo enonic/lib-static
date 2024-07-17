@@ -4,6 +4,8 @@ import type {
   BuildGetterParamsWithRoot
 } from '/lib/enonic/static/types';
 
+import { internalServerErrorResponse } from '/lib/enonic/static/response/responses';
+
 
 /** Creates an easy-readable and trackable error message in the log,
  *  and returns a generic error message with a tracking ID in the response */
@@ -32,11 +34,10 @@ export const errorLogAndResponse500 = (
 
     log.error(serverErrorMessage, e);
 
-    return {
-      status: 500,
-      contentType: "text/plain; charset=utf-8",
+    return internalServerErrorResponse({
+      contentType: 'text/plain; charset=utf-8',
       body: `Server error (logged with error ID: ${errorID})`
-    }
+    });
 
   } else {
     throw e;

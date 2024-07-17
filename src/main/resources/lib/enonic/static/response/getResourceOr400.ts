@@ -2,7 +2,9 @@ import type { Resource } from '/lib/xp/io';
 import type { Response } from '/lib/enonic/static/types';
 
 import { getResource } from '/lib/enonic/static/io';
+import { badRequestResponse } from '/lib/enonic/static/response/responses';
 import { isDev } from '/lib/enonic/static/runMode';
+
 
 
 export const getResourceOr400 = (
@@ -19,14 +21,11 @@ export const getResourceOr400 = (
     }
     return {
       response400: (isDev())
-        ? {
-          status: 400,
+        ? badRequestResponse({
           body: pathError,
           contentType: 'text/plain; charset=utf-8'
-        }
-        : {
-          status: 400,
-        }
+        })
+        : badRequestResponse()
     };
   }
 

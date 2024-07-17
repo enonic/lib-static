@@ -3,6 +3,7 @@ import type {
   Response
 } from '/lib/enonic/static/types';
 
+import { RESPONSE_NOT_MODIFIED } from '/lib/enonic/static/constants';
 import { read } from '/lib/enonic/static/etagReader';
 import { lcKeys } from '/lib/enonic/static/util/lcKeys';
 
@@ -23,9 +24,7 @@ export const getEtagOr304 = (
 
   if (ifNoneMatch && ifNoneMatch === etag) {
     return {
-      response304: {
-        status: 304
-      }
+      response304: RESPONSE_NOT_MODIFIED
     };
   }
   return { etag };

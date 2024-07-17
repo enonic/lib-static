@@ -8,6 +8,7 @@ import {
   RESPONSE_NOT_MODIFIED
 } from '/lib/enonic/static/constants';
 import { read } from '/lib/enonic/static/etagReader';
+import { okResponse } from '/lib/enonic/static/response/responses';
 import { getMimeType } from '/lib/enonic/static/io';
 
 
@@ -50,10 +51,9 @@ export function getResponseWhenResourceMatchesUrl({
     headers[HTTP2_RESPONSE_HEADER_NAME_ETAG] = etagWithDblFnutts;
   }
 
-  return {
+  return okResponse({
     body: resourceMatchingUrl.getStream(),
     contentType,
     headers,
-    status: 200
-  }
+  });
 }
