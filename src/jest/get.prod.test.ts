@@ -7,12 +7,12 @@ import {
   errorMessageTemplateFirstArgumentMissing
 } from '../main/resources/lib/enonic/static/options/verifyAndTrimPathOrRoot';
 import { get } from '../main/resources/lib/enonic/static'
-import { STATIC_ASSETS_200_CSS } from './setupFile';
 import {
   internalServerErrorResponse,
   okResponse,
   silenceLogError
-} from './testdata';
+} from './expectations';
+import { STATIC_ASSETS_200_CSS } from './testdata';
 
 
 describe('get', () => {
@@ -25,7 +25,7 @@ describe('get', () => {
         headers: {
           'cache-control': 'public, max-age=31536000, immutable',
           // TODO: Seems weird to return both etag and immuteable!!!
-          etag: '1234567890abcdef'
+          etag: '"1234567890abcdef"'
         },
       }));
     });
@@ -51,7 +51,7 @@ describe('get', () => {
 
     it('returns not found response when resource is not found', () => {
       const root = 'static';
-      const path = `${root}/assets/400.css`;
+      const path = `${root}/assets/404.css`;
       // NOTE: No body or contentType in prod mode
       expect(get(path)).toEqual({ status: 404 });
     });

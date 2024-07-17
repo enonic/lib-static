@@ -34,6 +34,8 @@ export function getResponseWhenResourceMatchesUrlWithContentHashRemoved({
   getContentType?: ContentTypeResolver
   resourceWithContentHashRemoved: Resource
 }) {
+  log.debug('%s: contentHashFromFilename: %s', DEBUG_PREFIX, contentHashFromFilename);
+
   const etagWithDblFnutts = read(absoluteResourcePathWithoutContentHash);
   log.debug('%s: etagWithDblFnutts: %s', DEBUG_PREFIX, etagWithDblFnutts);
 
@@ -51,11 +53,13 @@ export function getResponseWhenResourceMatchesUrlWithContentHashRemoved({
 
   const contentHashMatchesEtag = etagWithDblFnutts // No etag's in dev mode
     && etagWithDblFnutts === `"${contentHashFromFilename}"`;
+  log.debug('%s: contentHashMatchesEtag: %s', DEBUG_PREFIX, contentHashMatchesEtag);
+  log.debug('%s: isDev: %s', DEBUG_PREFIX, isDev());
 
   if (
     !contentHashMatchesEtag
     // Since Etag is not computed in dev mode, this would log on every request!
-    && !isDev
+    && !isDev()
   ) {
     log.debug(
       '%s: Etag mismatch: In url: "%s" From resource: %s. Falling back to etag response.',

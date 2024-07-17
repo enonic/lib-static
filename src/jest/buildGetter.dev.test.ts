@@ -9,30 +9,26 @@ import {
   expect,
   test as it
 } from '@jest/globals';
-// import {buildGetter} from '../main/resources/lib/enonic/static';
-// import libStatic from '../main/resources/lib/enonic/static';
-import {
-  INDEX_HTML,
-  STATIC_ASSETS_200_CSS,
-  STATIC_ASSETS_304_CSS
-} from './setupFile';
 import { mockJava } from './mockJava';
 import {
   buildRequest,
   internalServerErrorResponse,
   notFoundResponse,
   silenceLogError
+} from './expectations';
+import {
+  STATIC_ASSETS_INDEX_HTML,
+  STATIC_ASSETS_200_CSS,
+  STATIC_ASSETS_304_CSS,
 } from './testdata';
 
 beforeAll((done) => {
   mockJava({
     devMode: true,
-    // devMode: false,
     resources: {
       '/static/assets/200.css': {
         bytes: STATIC_ASSETS_200_CSS,
         etag: null,
-        // etag: '1234567890abcdef',
         exists: true,
         mimeType: 'text/css',
       },
@@ -41,8 +37,7 @@ beforeAll((done) => {
         mimeType: 'text/css',
       },
       '/static/assets/303.css/index.html': {
-        bytes: INDEX_HTML,
-        // etag: '1234567890abcdef',
+        bytes: STATIC_ASSETS_INDEX_HTML,
         etag: null,
         exists: true,
         mimeType: 'text/html',
@@ -50,15 +45,14 @@ beforeAll((done) => {
       '/static/assets/304.css': {
         bytes: STATIC_ASSETS_304_CSS,
         etag: null,
-         // etag: '1234567890abcdef',
         exists: true,
         mimeType: 'text/css',
       },
-      '/static/assets/400.css': {
+      '/static/assets/404.css': {
         exists: false,
         mimeType: 'text/css',
       },
-      '/static/assets/400.css/index.html': {
+      '/static/assets/404.css/index.html': {
         exists: false,
         mimeType: 'text/html',
       },
@@ -67,9 +61,8 @@ beforeAll((done) => {
         mimeType: 'text/css',
       },
       '/static/assets/trailingSlash.css/index.html': {
-        bytes: INDEX_HTML,
+        bytes: STATIC_ASSETS_INDEX_HTML,
         exists: true,
-        // etag: '1234567890abcdef',
         etag: null,
         mimeType: 'text/html',
       }
@@ -107,7 +100,7 @@ describe('buildGetter', () => {
           contentType: 'text/css',
           headers: {
             'cache-control': 'public, max-age=31536000, immutable',
-            // etag: '1234567890abcdef' // No etag in dev mode
+            // NOTE: No etag in dev mode
           },
           status: 200
         });
@@ -176,14 +169,14 @@ describe('buildGetter', () => {
       });
     });
 
-    it('handles 400 Bad Request', () => {
+    it('returns 404 Not found when resource not found', () => {
       const scheme = 'http';
       const host = 'localhost';
       const port = 8080;
       const appName = 'com.example.myproject'; // globalThis.app.name
       const root = 'static';
       const contextPath = `/webapp/${appName}`
-      const path = `${contextPath}/assets/400.css`;
+      const path = `${contextPath}/assets/404.css`;
       const request: Request<{
         contextPath: string
         rawPath: string
@@ -252,11 +245,11 @@ describe('buildGetter', () => {
           rawPath: `${contextPath}/assets/trailingSlash.css/`
         });
         expect(getterWithoutThrowErrors(request)).toEqual({
-          body: INDEX_HTML,
+          body: STATIC_ASSETS_INDEX_HTML,
           contentType: 'text/html',
           headers: {
             'cache-control': 'no-cache',
-            // etag: '1234567890abcdef' // No etag in dev mode
+            // NOTE: No etag in dev mode
           },
           status: 200
         });
@@ -281,7 +274,7 @@ describe('buildGetter', () => {
         branch: 'master',
         contextPath,
         headers: {
-          'if-none-match': '1234567890abcdef'
+          'if-none-match': '"1234567890abcdef"'
         },
         host,
         method: 'GET',
@@ -299,10 +292,9 @@ describe('buildGetter', () => {
           contentType: 'text/css',
           headers: {
             'cache-control': 'public, max-age=31536000, immutable',
-            // No etag in dev mode
-            // etag: '1234567890abcdef'
+            // NOTE: No etag in dev mode
           },
-          // status: 304 // No etag in dev mode, thus no Not modified
+          // NOTE: No etag in dev mode, thus no 304 Not modified
           status: 200
         } as unknown as Response);
       });
