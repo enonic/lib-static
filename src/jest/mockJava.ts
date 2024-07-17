@@ -67,7 +67,8 @@ export function mockJava({
             if (mimeType) {
               return mimeType;
             }
-            throw new Error(`getMimeType: Unmocked name:${name}!`);
+            log.debug(`getMimeType: Unmocked name:${name}!`);
+            return 'application/octet-stream';
           },
           getResource: (key: string|ResourceKey) => {
             const resource = resources[key as string];
