@@ -29,11 +29,11 @@ export function mockJava({
   // potentially listed under types in tsconfig.json.
   globalThis.log = {
     debug: () => {},
-    // debug: console.debug,
     info: () => {},
-    // info: console.info,
-    error: console.error,
     warning: () => {},
+    error: console.error,
+    // debug: console.debug,
+    // info: console.info,
     // warning: console.warn,
   }
   globalThis.__ = {
@@ -53,7 +53,7 @@ export function mockJava({
             const resource = resources[name];
             if (resource) {
               return {
-                etag: resource.etag // can be undefined
+                etag: resource.etag ? `"${resource.etag}"` : undefined
               };
             }
             throw new Error(`getEtag: Unmocked path:${path} etagOverride:${etagOverride}!`);
@@ -102,14 +102,14 @@ export function mockJava({
       return v;
     },
     toNativeObject: (v: any) => {
+      // console.debug(`toNativeObject value:${JSON.stringify(v, null, 4)}`);
       if (
         isObject(v)
-        // && v['etag'] === '1234567890abcdef'
+        // && v['etag'] === '"1234567890abcdef"'
       ) {
         return v as any;
       }
       throw new Error(`toNativeObject: Unmocked value:${JSON.stringify(v, null, 4)}!`);
-      // console.debug(`toNativeObject value:${JSON.stringify(v, null, 4)}`);
     },
     toScriptValue: (v: any) => {
       console.debug(`toScriptValue value:${JSON.stringify(v, null, 4)}`);

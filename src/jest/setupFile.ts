@@ -1,14 +1,10 @@
 import {mockJava} from './mockJava';
+import {
+  STATIC_ASSETS_INDEX_HTML,
+  STATIC_ASSETS_200_CSS,
+  STATIC_ASSETS_304_CSS
+} from './testdata'
 
-export const INDEX_HTML = `
-<html>
-  <body>
-    <h1>Hello, World!</h1>
-  </body>
-</html>`;
-
-export const STATIC_ASSETS_200_CSS = `body { color: green; }`;
-export const STATIC_ASSETS_304_CSS = `body { color: yellow; }`;
 
 mockJava({
   // Testing production mode is the most importent, override per test if needed
@@ -26,7 +22,7 @@ mockJava({
       mimeType: 'text/css',
     },
     '/static/assets/303.css/index.html': {
-      bytes: INDEX_HTML,
+      bytes: STATIC_ASSETS_INDEX_HTML,
       etag: '1234567890abcdef',
       exists: true,
       mimeType: 'text/html',
@@ -37,11 +33,11 @@ mockJava({
       exists: true,
       mimeType: 'text/css',
     },
-    '/static/assets/400.css': {
+    '/static/assets/404.css': {
       exists: false,
       mimeType: 'text/css',
     },
-    '/static/assets/400.css/index.html': {
+    '/static/assets/404.css/index.html': {
       exists: false,
       mimeType: 'text/html',
     },
@@ -50,7 +46,7 @@ mockJava({
       mimeType: 'text/css',
     },
     '/static/assets/trailingSlash.css/index.html': {
-      bytes: INDEX_HTML,
+      bytes: STATIC_ASSETS_INDEX_HTML,
       exists: true,
       etag: '1234567890abcdef',
       mimeType: 'text/html',
