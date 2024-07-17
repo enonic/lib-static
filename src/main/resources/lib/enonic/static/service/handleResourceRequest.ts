@@ -3,6 +3,7 @@ import type {
   Request,
 } from '/lib/enonic/static/types';
 
+import { getPathError } from '/lib/enonic/static/path/getPathError';
 import { getRelativeResourcePath } from '/lib/enonic/static/path/getRelativeResourcePath';
 import { getResource } from '/lib/xp/io';
 import { getResourceRemovingContentHash } from '/lib/enonic/static/resource/getResourceRemovingContentHash';
@@ -10,6 +11,13 @@ import { getResponseWhenResourceMatchesUrl } from './getResponseWhenResourceMatc
 import { getResponseWhenResourceMatchesUrlWithContentHashRemoved } from './getResponseWhenResourceMatchesUrlWithContentHashRemoved'
 import { getIfNoneMatchHeader } from '/lib/enonic/static/request/getIfNoneMatchHeader';
 import { prefixWithRoot } from '/lib/enonic/static/resource/path/prefixWithRoot';
+import {
+  badRequestResponse,
+  notFoundResponse
+} from '/lib/enonic/static/response/responses';
+import { isDev } from '/lib/enonic/static/runMode';
+
+const DEBUG_PREFIX = 'handleResourceRequest';
 
 // Pseudo code:
 // if request.path matches a static resource path
@@ -26,13 +34,27 @@ export function handleResourceRequest({
   request: Request
   getContentType?: ContentTypeResolver
 }) {
-  log.debug('handleResourceRequest: request: %s', JSON.stringify(request, null, 4));
+  log.debug('%s: request: %s', DEBUG_PREFIX, JSON.stringify(request, null, 4));
 
   const relResourcePath = getRelativeResourcePath(request);
   log.debug('handleResourceRequest: relFilePath: %s', relResourcePath);
 
   const absResourcePathWithoutTrailingSlash = prefixWithRoot({ path: relResourcePath });
   log.debug('handleResourceRequest: absoluteResourcePathWithoutTrailingSlash: %s', absResourcePathWithoutTrailingSlash);
+
+  const pathError = getPathError(absResourcePathWithoutTrailingSlash.replace(/^\/+/, ''));
+  log.debug('%s: pathError: %s', DEBUG_PREFIX, pathError);
+
+  if (pathError) {
+    if (isDev()) {
+      return badRequestResponse({
+        body: pathError,
+        contentType: 'text/plain; charset=utf-8',
+      });
+    }
+    log.warning(pathError);
+    return badRequestResponse();
+  }
 
   const resourceMatchingUrl = getResource(absResourcePathWithoutTrailingSlash);
   // log.NOPE('resource: %s', JSON.stringify(resource, null, 4)); // Only logs {}
@@ -66,7 +88,5 @@ export function handleResourceRequest({
     });
   }
 
-  return {
-    status: 404
-  }
+  return notFoundResponse();
 }

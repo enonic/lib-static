@@ -1,6 +1,7 @@
 import type { Response } from '/lib/enonic/static/types';
 
 import { INDEXFALLBACK_CACHE_CONTROL } from '/lib/enonic/static/constants';
+import { okResponse } from '/lib/enonic/static/response/responses';
 
 
 export const getResponse200 = (
@@ -25,10 +26,9 @@ export const getResponse200 = (
     headers.etag = etag;
   }
 
-  return {
+  return okResponse({
     body: resource.getStream(),
     contentType,
     headers,
-    status: 200,
-  };
+  });
 };
