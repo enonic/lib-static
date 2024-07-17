@@ -6,6 +6,7 @@ import { read } from '/lib/enonic/static/etagReader';
 import { getMimeType } from '/lib/enonic/static/io';
 import { getEtagHeaders } from '/lib/enonic/static/response/headers/getEtagHeaders';
 import { getImmuteableHeaders } from '/lib/enonic/static/response/headers/getImmuteableHeaders';
+import { okResponse } from '/lib/enonic/static/response/responses';
 import { isDev } from '/lib/enonic/static/runMode';
 
 
@@ -69,12 +70,11 @@ export function getResponseWhenResourceMatchesUrlWithContentHashRemoved({
     );
   }
 
-  return {
+  return okResponse({
     body: resourceWithContentHashRemoved.getStream(),
     contentType,
     headers: contentHashMatchesEtag
       ? getImmuteableHeaders()
       : getEtagHeaders({ etagWithDblFnutts }),
-    status: 200
-  }
+  });
 }

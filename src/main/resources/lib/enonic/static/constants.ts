@@ -23,3 +23,6 @@ export const GETTER_ROOT = 'static';
 export const RESPONSE_NOT_MODIFIED = {
     status: 304
 } as const;
+
+export const REGEX_PATH_DOUBLE_DOT = /\.\./;
+export const REGEX_PATH_ILLEGAL_CHARS = /[<>:"'`´\\|?*]/;
