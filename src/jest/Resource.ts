@@ -44,8 +44,8 @@ export class Resource implements ResourceInterface {
   }
 
   public getStream(): ByteSource {
-    throw new Error(`getStream called key:${JSON.stringify(this._key, null, 4)}`);
-    // return this._bytes as unknown as ByteSource;
+    // throw new Error(`getStream called key:${JSON.stringify(this._key, null, 4)}`);
+    return this._bytes as unknown as ByteSource;
   }
 
   public getTimestamp(): number {

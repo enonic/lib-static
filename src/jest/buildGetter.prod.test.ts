@@ -10,15 +10,14 @@ import {
 } from '@jest/globals';
 import { buildGetter } from '../main/resources/lib/enonic/static';
 import {
-  INDEX_HTML,
-  STATIC_ASSETS_200_CSS,
-} from './setupFile';
-import {
   buildRequest,
   internalServerErrorResponse,
   silenceLogError
+} from './expectations';
+import {
+  STATIC_ASSETS_INDEX_HTML,
+  STATIC_ASSETS_200_CSS,
 } from './testdata';
-
 
 describe('buildGetter', () => {
 
@@ -49,7 +48,7 @@ describe('buildGetter', () => {
         headers: {
           'cache-control': 'public, max-age=31536000, immutable',
           // TODO Seems weird to return both etag and immuteable!!!
-          etag: '1234567890abcdef'
+          etag: '"1234567890abcdef"'
         },
         status: 200
       });
@@ -112,14 +111,14 @@ describe('buildGetter', () => {
       } as unknown as Response)
     });
 
-    it('handles 400 Bad Request', () => {
+    it('returns 404 Not found when resource not found', () => {
       const scheme = 'http';
       const host = 'localhost';
       const port = 8080;
       const appName = 'com.example.myproject'; // globalThis.app.name
       const root = 'static';
       const contextPath = `/webapp/${appName}`
-      const path = `${contextPath}/assets/400.css`;
+      const path = `${contextPath}/assets/404.css`;
       const request: Request<{
         contextPath: string
         rawPath: string
@@ -184,12 +183,12 @@ describe('buildGetter', () => {
         rawPath: `${contextPath}/assets/trailingSlash.css/`
       });
       expect(getterWithoutThrowErrors(request)).toEqual({
-        body: INDEX_HTML,
+        body: STATIC_ASSETS_INDEX_HTML,
         contentType: 'text/html',
         headers: {
           'cache-control': 'no-cache',
           // TODO Seems weird to return both etag and immuteable!!!
-          etag: '1234567890abcdef'
+          etag: '"1234567890abcdef"'
         },
         status: 200
       });
@@ -213,7 +212,7 @@ describe('buildGetter', () => {
         branch: 'master',
         contextPath,
         headers: {
-          'if-none-match': '1234567890abcdef'
+          'if-none-match': '"1234567890abcdef"'
         },
         host,
         method: 'GET',

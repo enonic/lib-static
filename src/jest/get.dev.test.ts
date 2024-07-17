@@ -2,7 +2,6 @@ import {
   beforeAll,
   describe,
   expect,
-  // jest,
   test as it
 } from '@jest/globals';
 import {
@@ -12,14 +11,14 @@ import {
   errorMessageTemplateFirstArgumentMissing
 } from '../main/resources/lib/enonic/static/options/verifyAndTrimPathOrRoot';
 import { mockJava } from './mockJava';
-import { STATIC_ASSETS_200_CSS } from './setupFile';
 import {
   badRequestResponse,
   internalServerErrorResponse,
   notFoundResponse,
   okResponse,
   silenceLogError
-} from './testdata';
+} from './expectations';
+import { STATIC_ASSETS_200_CSS } from './testdata';
 
 
 beforeAll((done) => {
@@ -32,7 +31,7 @@ beforeAll((done) => {
         exists: true,
         mimeType: 'text/css',
       },
-      '/static/assets/400.css': {
+      '/static/assets/404.css': {
         exists: false,
         mimeType: 'text/css',
       }
@@ -84,7 +83,7 @@ describe('get', () => {
 
     it('returns not found response when resource is not found', () => {
       const root = 'static';
-      const path = `${root}/assets/400.css`;
+      const path = `${root}/assets/404.css`;
       import('../main/resources/lib/enonic/static').then(({ get }) => {
         expect(get(path)).toEqual(notFoundResponse);
       });
