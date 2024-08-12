@@ -1,5 +1,8 @@
 import type { Resource } from '/lib/xp/io';
-import type { ContentTypeResolver } from '/lib/enonic/static/types';
+import type {
+  CacheControlResolver,
+  ContentTypeResolver,
+} from '/lib/enonic/static/types';
 
 import { RESPONSE_NOT_MODIFIED } from '/lib/enonic/static/constants';
 import { read } from '/lib/enonic/static/etagReader';
@@ -26,12 +29,14 @@ export function getResponseWhenResourceMatchesUrlWithContentHashRemoved({
   absoluteResourcePathWithoutContentHash,
   contentHashFromFilename,
   ifNoneMatchRequestHeader,
+  getCacheControl,
   getContentType = (path, _ignoredResource) => getMimeType(path),
   resourceWithContentHashRemoved,
 } :{
   absoluteResourcePathWithoutContentHash: string
   contentHashFromFilename: string
   ifNoneMatchRequestHeader?: string
+  getCacheControl?: CacheControlResolver
   getContentType?: ContentTypeResolver
   resourceWithContentHashRemoved: Resource
 }) {
@@ -74,7 +79,12 @@ export function getResponseWhenResourceMatchesUrlWithContentHashRemoved({
     body: resourceWithContentHashRemoved.getStream(),
     contentType,
     headers: contentHashMatchesEtag
-      ? getImmuteableHeaders()
+      ? getImmuteableHeaders({
+        getCacheControl,
+        contentType,
+        resource: resourceWithContentHashRemoved,
+        path: absoluteResourcePathWithoutContentHash,
+      })
       : getEtagHeaders({ etagWithDblFnutts }),
   });
 }
