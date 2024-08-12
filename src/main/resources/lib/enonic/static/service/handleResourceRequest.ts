@@ -1,4 +1,5 @@
 import type {
+  CacheControlResolver,
   ContentTypeResolver,
   Request,
 } from '/lib/enonic/static/types';
@@ -28,10 +29,12 @@ const DEBUG_PREFIX = 'handleResourceRequest';
 // else
 //   return 404
 export function handleResourceRequest({
+  getCacheControl,
   getContentType,
   request,
 }: {
   request: Request
+  getCacheControl?: CacheControlResolver
   getContentType?: ContentTypeResolver
 }) {
   log.debug('%s: request: %s', DEBUG_PREFIX, JSON.stringify(request, null, 4));
@@ -83,6 +86,7 @@ export function handleResourceRequest({
       absoluteResourcePathWithoutContentHash,
       contentHashFromFilename,
       ifNoneMatchRequestHeader,
+      getCacheControl,
       getContentType,
       resourceWithContentHashRemoved,
     });
