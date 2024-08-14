@@ -39,7 +39,6 @@ dependencies {
 
 processResources {
   exclude '**/.gitkeep'
-  exclude '**/*.es6' // The tests are not yet converted to TypeScript
   exclude '**/*.ts'
   exclude '**/tsconfig.json'
 }
@@ -73,7 +72,6 @@ tasks.register('npmBuild', NpmTask) {
   ]
   dependsOn npmInstall
   dependsOn 'javadoc'
-  dependsOn 'compileTestJava'
   environment = [
     'FORCE_COLOR': 'true',
     'LOG_LEVEL_FROM_GRADLE': gradle.startParameter.logLevel.toString(),
@@ -83,51 +81,6 @@ tasks.register('npmBuild', NpmTask) {
   outputs.dir 'build/resources/main'
 }
 jar.dependsOn npmBuild
-
-// Compiles es6 to js under src/main/resources
-// task compileXP(type: NodeTask) {
-//     group 'enonic xp'
-//     description 'Babel-compile Enonic XP ES6 source files'
-
-//     script = file('node_modules/@babel/cli/bin/babel.js')
-//     args = ["src/main/resources",
-//             "--plugins", "@babel/plugin-transform-parameters",
-//             "--plugins", "@babel/plugin-transform-destructuring",
-//             "--plugins", "@babel/plugin-transform-spread",
-//             "--plugins", "@babel/plugin-transform-arrow-functions",
-//             "--plugins", "@babel/plugin-proposal-object-rest-spread",
-//             "--out-dir", "build/resources/main"]
-
-//     inputs.dir 'src/main/resources'
-//     outputs.dir("build/resources/main")
-// }
-// compileXP.dependsOn += npmInstall
-// compileXP.dependsOn += 'javadoc'
-// compileXP.dependsOn += 'compileTestJava'
-// jar.dependsOn += 'compileXP'
-
-
-task compileTest(type: NodeTask) {
-    group 'enonic xp'
-    description 'Babel-compile Enonic XP ES6 test files'
-
-    script = file('node_modules/@babel/cli/bin/babel.js')
-    args = ["src/test/resources",
-            "--plugins", "@babel/plugin-transform-parameters",
-            "--plugins", "@babel/plugin-transform-destructuring",
-            "--plugins", "@babel/plugin-transform-spread",
-            "--plugins", "@babel/plugin-transform-arrow-functions",
-            "--plugins", "@babel/plugin-proposal-object-rest-spread",
-            "--out-dir", "build/resources/test"]
-
-    inputs.dir 'src/test/resources'
-    outputs.dir("build/resources/test")
-}
-
-// compileTest.dependsOn += compileXP
-compileTest.dependsOn += npmBuild
-test.dependsOn += 'compileTest'
-
 
 asciidoctor {
     sourceDir = file('docs')
