@@ -1,7 +1,9 @@
 import type { ByteSource, ResourceKey } from '@enonic-types/lib-io';
 import type { App, DoubleUnderscore, Log } from './global.d';
 
+import { jest } from '@jest/globals';
 import { isObject } from './isObject';
+// import { mockLibXpVhost } from './mockLibXpVhost';
 import { Resource } from './Resource';
 
 
@@ -117,4 +119,7 @@ export function mockJava({
       return v;
     },
   }
+  jest.mock('/lib/xp/portal', () => ({
+  }), { virtual: true });
+  // mockLibXpVhost();
 } // mockJava

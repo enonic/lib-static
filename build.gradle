@@ -28,6 +28,8 @@ dependencies {
   // time and runtime. This means your code can use the functionality of the
   // dependency while compiling and when the final application runs.
   implementation "com.enonic.xp:lib-io:${xpVersion}"
+  implementation "com.enonic.xp:lib-portal:${xpVersion}"
+  // implementation "com.enonic.xp:lib-vhost:${xpVersion}"
   implementation 'com.enonic.lib:lib-router:3.1.0'
 
   testImplementation "com.enonic.xp:testing:${xpVersion}"
