@@ -14,8 +14,10 @@ import { getIfNoneMatchHeader } from '/lib/enonic/static/request/getIfNoneMatchH
 import { prefixWithRoot } from '/lib/enonic/static/resource/path/prefixWithRoot';
 import {
   badRequestResponse,
+  internalServerErrorResponse,
   notFoundResponse
 } from '/lib/enonic/static/response/responses';
+import { generateErrorId } from '/lib/enonic/static/response/generateErrorId';
 import { isDev } from '/lib/enonic/static/runMode';
 
 const DEBUG_PREFIX = 'handleResourceRequest';
@@ -32,65 +34,82 @@ export function handleResourceRequest({
   getCacheControl,
   getContentType,
   request,
+  throwErrors = false,
 }: {
   request: Request
   getCacheControl?: CacheControlResolver
   getContentType?: ContentTypeResolver
+  throwErrors?: boolean
 }) {
-  log.debug('%s: request: %s', DEBUG_PREFIX, JSON.stringify(request, null, 4));
+  try {
+    log.debug('%s: request: %s', DEBUG_PREFIX, JSON.stringify(request, null, 4));
 
-  const relResourcePath = getRelativeResourcePath(request);
-  log.debug('handleResourceRequest: relFilePath: %s', relResourcePath);
+    const relResourcePath = getRelativeResourcePath(request);
+    log.debug('handleResourceRequest: relFilePath: %s', relResourcePath);
 
-  const absResourcePathWithoutTrailingSlash = prefixWithRoot({ path: relResourcePath });
-  log.debug('handleResourceRequest: absoluteResourcePathWithoutTrailingSlash: %s', absResourcePathWithoutTrailingSlash);
+    const absResourcePathWithoutTrailingSlash = prefixWithRoot({ path: relResourcePath });
+    log.debug('handleResourceRequest: absoluteResourcePathWithoutTrailingSlash: %s', absResourcePathWithoutTrailingSlash);
 
-  const pathError = getPathError(absResourcePathWithoutTrailingSlash.replace(/^\/+/, ''));
-  log.debug('%s: pathError: %s', DEBUG_PREFIX, pathError);
+    const pathError = getPathError(absResourcePathWithoutTrailingSlash.replace(/^\/+/, ''));
+    log.debug('%s: pathError: %s', DEBUG_PREFIX, pathError);
 
-  if (pathError) {
-    if (isDev()) {
-      return badRequestResponse({
-        body: pathError,
-        contentType: 'text/plain; charset=utf-8',
-      });
+    if (pathError) {
+      if (isDev()) {
+        return badRequestResponse({
+          body: pathError,
+          contentType: 'text/plain; charset=utf-8',
+        });
+      }
+      log.warning(pathError);
+      return badRequestResponse();
     }
-    log.warning(pathError);
-    return badRequestResponse();
-  }
 
-  const resourceMatchingUrl = getResource(absResourcePathWithoutTrailingSlash);
-  // log.NOPE('resource: %s', JSON.stringify(resource, null, 4)); // Only logs {}
-  log.debug('handleResourceRequest: resourceMatchingUrl exists: %s', resourceMatchingUrl.exists());
+    const resourceMatchingUrl = getResource(absResourcePathWithoutTrailingSlash);
+    // log.NOPE('resource: %s', JSON.stringify(resource, null, 4)); // Only logs {}
+    log.debug('handleResourceRequest: resourceMatchingUrl exists: %s', resourceMatchingUrl.exists());
 
-  const ifNoneMatchRequestHeader = getIfNoneMatchHeader({ request })
-  if (resourceMatchingUrl.exists()) {
-    return getResponseWhenResourceMatchesUrl({
-      absResourcePathWithoutTrailingSlash,
-      ifNoneMatchRequestHeader,
-      getContentType,
-      resourceMatchingUrl
-    });
-  } // if resource exists
+    const ifNoneMatchRequestHeader = getIfNoneMatchHeader({ request })
+    if (resourceMatchingUrl.exists()) {
+      return getResponseWhenResourceMatchesUrl({
+        absResourcePathWithoutTrailingSlash,
+        ifNoneMatchRequestHeader,
+        getContentType,
+        resourceMatchingUrl
+      });
+    } // if resource exists
 
-  const {
-    absoluteResourcePathWithoutContentHash,
-    contentHashFromFilename,
-    resourceWithContentHashRemoved
-  } = getResourceRemovingContentHash({
-    absResourcePathWithoutTrailingSlash
-  });
-
-  if (resourceWithContentHashRemoved.exists()) {
-    return getResponseWhenResourceMatchesUrlWithContentHashRemoved({
+    const {
       absoluteResourcePathWithoutContentHash,
       contentHashFromFilename,
-      ifNoneMatchRequestHeader,
-      getCacheControl,
-      getContentType,
-      resourceWithContentHashRemoved,
+      resourceWithContentHashRemoved
+    } = getResourceRemovingContentHash({
+      absResourcePathWithoutTrailingSlash
     });
-  }
 
-  return notFoundResponse();
-}
+    if (resourceWithContentHashRemoved.exists()) {
+      return getResponseWhenResourceMatchesUrlWithContentHashRemoved({
+        absoluteResourcePathWithoutContentHash,
+        contentHashFromFilename,
+        ifNoneMatchRequestHeader,
+        getCacheControl,
+        getContentType,
+        resourceWithContentHashRemoved,
+      });
+    }
+
+    return notFoundResponse();
+
+  } catch (e) {
+    if (throwErrors) {
+      throw e;
+    } else {
+      const errorId = generateErrorId();
+      log.error(`lib-static.handleResourceRequest, error ID: ${errorId}   |   ${e.message}`, e);
+      return internalServerErrorResponse({
+        contentType: 'text/plain; charset=utf-8',
+        body: `Server error (logged with error ID: ${errorId})`
+      });
+    }
+  } // try ... catch
+
+} // handleResourceRequest
