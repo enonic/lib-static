@@ -5,6 +5,7 @@ import type {
 } from '/lib/enonic/static/types';
 
 import { internalServerErrorResponse } from '/lib/enonic/static/response/responses';
+import { generateErrorId } from '/lib/enonic/static/response/generateErrorId';
 
 
 /** Creates an easy-readable and trackable error message in the log,
@@ -18,7 +19,7 @@ export const errorLogAndResponse500 = (
   rootOrPathLabel: 'Root' | 'Path'
 ) => {
   if (!throwErrors) {
-    const errorID = Math.floor(Math.random() * 1000000000000000).toString(36);
+    const errorID = generateErrorId();
 
     let serverErrorMessage = `lib-static.${methodLabel}, error ID: ${errorID}   |   ${e.message}`;
 
