@@ -115,7 +115,7 @@ describe('static service', () => {
     }); // import
   }); // it
 
-  it("falls back to etag response when the request path contenthash doesn't match resource etag", () => {
+  it("by default responds with 404 Not found when the request path contenthash doesn't match resource etag", () => {
     const appName = 'com.example.myproject'; // globalThis.app.name
     const routingUnderWebapp = 'assets';
     const contextPath = `/webapp/${appName}`
@@ -129,13 +129,7 @@ describe('static service', () => {
     });
     import('../../../main/resources/services/static/static').then(({ all }) => {
       expect(all(request)).toEqual({
-        body: STATIC_ASSETS_200_CSS,
-        contentType: 'text/css',
-        headers: {
-          'cache-control': 'no-cache',
-          etag: '"1234567890abcdef"'
-        },
-        status: 200
+        status: 404
       }); // expect
     }); // import
   }); // it

@@ -11,6 +11,12 @@ mockJava({
   devMode: false,
   // NOTE: Prod mode has etags, dev mode does not
   resources: {
+    '/static/filenameWithoutExt': {
+      bytes: 'Hello, world!',
+      etag: '1234567890abcdef',
+      exists: true,
+      mimeType: 'text/plain',
+    },
     '/static/assets/200.css': {
       bytes: STATIC_ASSETS_200_CSS,
       etag: '1234567890abcdef',

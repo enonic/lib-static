@@ -13,4 +13,7 @@ describe('getStaticPath in prod mode', () => {
     expect(getStaticPath({ relResourcePath: '/assets/200.css' })).toEqual('/assets/200-1234567890abcdef.css');
     expect(getStaticPath({ relResourcePath: '/assets/200.css/' })).toEqual('/assets/200-1234567890abcdef.css');
   });
+  it(`handles resources without extension`, () => {
+    expect(getStaticPath({ relResourcePath: 'filenameWithoutExt' })).toEqual('filenameWithoutExt-1234567890abcdef');
+  });
 });

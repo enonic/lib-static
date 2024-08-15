@@ -1,9 +1,17 @@
 import type { Resource } from '@enonic-types/lib-io';
-import type { Request } from '/lib/enonic/static/types';
+import type { Request } from '/lib/enonic/static/types/Request';
+import type { Response } from '/lib/enonic/static/types/Response';
 
 export declare type CacheControlResolver = (filePathAndName?: string, resource?: Resource, mimeType?: string) => string | null;
 
 export declare type ContentTypeResolver = (filePathAndName?: string, resource?: Resource) => string | null;
+
+export declare type ContentHashMismatchResponseResolver = (params: {
+  contentHash: string;
+  contentType: string;
+  etag: string;
+  resource: Resource;
+}) => Response;
 
 declare interface GetParams {
   /**
