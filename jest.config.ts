@@ -14,6 +14,21 @@ const commonConfig: Config.InitialProjectOptions = {
     `${DIR_SRC}/${AND_BELOW}/${SOURCE_FILES}`,
   ],
 
+  // coveragePathIgnorePatterns [array<string>]
+  // Default: ["/node_modules/"]
+  // An array of regexp pattern strings that are matched against all file paths
+  // before executing the test. If the file path matches any of the patterns,
+  // coverage information will be skipped.
+  // These pattern strings match against the full path. Use the <rootDir> string
+  // token to include the path to your project's root directory to prevent it
+  // from accidentally ignoring all of your files in different environments that
+  // may have different root directories.
+  // Example: ["<rootDir>/build/", "<rootDir>/node_modules/"].
+  coveragePathIgnorePatterns: [
+    '<rootDir>/node_modules/',
+    `<rootDir>/${DIR_SRC_JEST}/`
+  ],
+
   // Insert Jest's globals (expect, test, describe, beforeEach etc.) into the
   // global environment. If you set this to false, you should import from @jest/globals, e.g.
   // injectGlobals: true, // Doesn't seem to work?

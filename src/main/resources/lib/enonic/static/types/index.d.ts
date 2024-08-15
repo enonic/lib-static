@@ -1,5 +1,6 @@
 export type {
   CacheControlResolver,
+  ContentHashMismatchResponseResolver,
   ContentTypeResolver,
   BuildGetterParams,
   BuildGetterParamsWithRoot,

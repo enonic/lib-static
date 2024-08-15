@@ -1,15 +1,18 @@
 import type { Resource } from '/lib/xp/io';
 import type {
   CacheControlResolver,
+  ContentHashMismatchResponseResolver,
   ContentTypeResolver,
 } from '/lib/enonic/static/types';
 
 import { RESPONSE_NOT_MODIFIED } from '/lib/enonic/static/constants';
 import { read } from '/lib/enonic/static/etagReader';
 import { getMimeType } from '/lib/enonic/static/io';
-import { getEtagHeaders } from '/lib/enonic/static/response/headers/getEtagHeaders';
 import { getImmuteableHeaders } from '/lib/enonic/static/response/headers/getImmuteableHeaders';
-import { okResponse } from '/lib/enonic/static/response/responses';
+import {
+  notFoundResponse,
+  okResponse
+} from '/lib/enonic/static/response/responses';
 import { isDev } from '/lib/enonic/static/runMode';
 
 
@@ -19,7 +22,7 @@ const DEBUG_PREFIX = 'getResponseWhenResourceMatchesUrlWithContentHashRemoved';
 // if the filename contentHash matches the etag
 //   return immuteable response
 // else (aka the "contentHash" is wrong or not really a contentHash)
-//   fallback to etag/notModified response
+//   use handleContentHashMismatch
 //
 //   DO NOT use 307 temporary redirect to correct immuteable url
 //   name-notHash.ext (etag: 123) -> redirect to name-notHash-123.ext
@@ -30,6 +33,9 @@ export function getResponseWhenResourceMatchesUrlWithContentHashRemoved({
   contentHashFromFilename,
   ifNoneMatchRequestHeader,
   getCacheControl,
+  getContentHashMismatchResponse = () => {
+    return notFoundResponse();
+  },
   getContentType = (path, _ignoredResource) => getMimeType(path),
   resourceWithContentHashRemoved,
 } :{
@@ -37,6 +43,7 @@ export function getResponseWhenResourceMatchesUrlWithContentHashRemoved({
   contentHashFromFilename: string
   ifNoneMatchRequestHeader?: string
   getCacheControl?: CacheControlResolver
+  getContentHashMismatchResponse?: ContentHashMismatchResponseResolver,
   getContentType?: ContentTypeResolver
   resourceWithContentHashRemoved: Resource
 }) {
@@ -62,29 +69,23 @@ export function getResponseWhenResourceMatchesUrlWithContentHashRemoved({
   log.debug('%s: contentHashMatchesEtag: %s', DEBUG_PREFIX, contentHashMatchesEtag);
   log.debug('%s: isDev: %s', DEBUG_PREFIX, isDev());
 
-  if (
-    !contentHashMatchesEtag
-    // Since Etag is not computed in dev mode, this would log on every request!
-    && !isDev()
-  ) {
-    log.debug(
-      '%s: Etag mismatch: In url: "%s" From resource: %s. Falling back to etag response.',
-      DEBUG_PREFIX,
-      contentHashFromFilename,
-      etagWithDblFnutts,
-    );
+  if (contentHashMatchesEtag) {
+    return okResponse({
+      body: resourceWithContentHashRemoved.getStream(),
+      contentType,
+      headers: getImmuteableHeaders({
+          getCacheControl,
+          contentType,
+          resource: resourceWithContentHashRemoved,
+          path: absoluteResourcePathWithoutContentHash,
+        })
+    });
   }
 
-  return okResponse({
-    body: resourceWithContentHashRemoved.getStream(),
+  return getContentHashMismatchResponse({
+    contentHash: contentHashFromFilename,
     contentType,
-    headers: contentHashMatchesEtag
-      ? getImmuteableHeaders({
-        getCacheControl,
-        contentType,
-        resource: resourceWithContentHashRemoved,
-        path: absoluteResourcePathWithoutContentHash,
-      })
-      : getEtagHeaders({ etagWithDblFnutts }),
+    etag: etagWithDblFnutts,
+    resource: resourceWithContentHashRemoved
   });
 }

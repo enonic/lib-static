@@ -1,10 +1,15 @@
-import type { ByteSource, ResourceKey } from '@enonic-types/lib-io';
+import type {
+  ByteSource,
+  getResource as getResourceValue,
+  ResourceKey
+} from '@enonic-types/lib-io';
 import type { App, DoubleUnderscore, Log } from './global.d';
 
 import { jest } from '@jest/globals';
 import { isObject } from './isObject';
 // import { mockLibXpVhost } from './mockLibXpVhost';
 import { Resource } from './Resource';
+import { STATIC_ASSETS_200_CSS } from './testdata';
 
 
 // Avoid type errors
@@ -31,9 +36,10 @@ export function mockJava({
   // potentially listed under types in tsconfig.json.
   globalThis.log = {
     debug: () => {},
+    error: () => {},
     info: () => {},
     warning: () => {},
-    error: console.error,
+    // error: console.error,
     // debug: console.debug,
     // info: console.info,
     // warning: console.warn,
@@ -119,6 +125,27 @@ export function mockJava({
       return v;
     },
   }
+
+  jest.mock('/lib/xp/io', () => ({
+    getResource: jest.fn<typeof getResourceValue>((key) => {
+      if (key === '/static/assets/200.css') {
+        return new Resource({
+          bytes: STATIC_ASSETS_200_CSS,
+          exists: true,
+          key: key.toString(),
+          size: STATIC_ASSETS_200_CSS.length,
+          timestamp: Date.now()
+        });
+      }
+      if (key === '/static/assets/500.css') {
+        throw new Error('Manually thrown error :)');
+      }
+      return {
+        exists: () => false,
+      } as Resource;
+    })
+  }), { virtual: true });
+
   jest.mock('/lib/xp/portal', () => ({
   }), { virtual: true });
   // mockLibXpVhost();
