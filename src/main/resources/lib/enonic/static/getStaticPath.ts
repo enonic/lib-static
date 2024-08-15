@@ -37,34 +37,3 @@ export function getStaticPath({
 
   return `${dir}${filename}-${etagWithoutQuotes}${ext ? `.${ext}` : ''}`;
 }
-
-// export function getStaticServiceUrl({
-//   application = app.name,
-//   path,
-//   root = GETTER_ROOT,
-// }: {
-//   application?: string
-//   branchId?: string
-//   path: string
-//   root?: string
-// }): string {
-//   return `/_/service/${application}/${root}/${path}`;
-// }
-
-// export function getStaticSiteUrl({
-//   application = app.name,
-//   branchId = 'master',
-//   path,
-//   repoId,
-//   root = GETTER_ROOT,
-//   site,
-// }: {
-//   application?: string
-//   branchId?: string
-//   path: string
-//   repoId: string
-//   root?: string
-//   site?: string
-// }): string {
-//   return `${site ? `${site}/`: ''}${repoId}/${branchId}/_/service/${application}/${root}/${path}`;
-// }

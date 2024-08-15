@@ -1,5 +1,3 @@
-/////////////////////////////////////////////////////////  Cache-control constants:
-
 const DEFAULT_MAX_AGE = 31536000;
 
 export const DEFAULT_CACHE_CONTROL_FIELDS = [
