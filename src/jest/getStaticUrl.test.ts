@@ -79,4 +79,23 @@ describe('getStaticUrl', () => {
     });
   });
 
+  it(`handles custom root`, () => {
+    import('../main/resources/lib/enonic/static').then(({ getStaticUrl }) => {
+      const fn = () => getStaticUrl({
+        relResourcePath: 'assets/200.css',
+        root: 'mycustomstaticfolder'
+      });
+      expect(fn).toThrow('getEtag: Unmocked path:com.example.myproject:/mycustomstaticfolder/assets/200.css etagOverride:0');
+    });
+  });
+
+  it(`handles service name`, () => {
+    import('../main/resources/lib/enonic/static').then(({ getStaticUrl }) => {
+      expect(getStaticUrl({
+        relResourcePath: 'assets/200.css',
+        service: 'mycustomstaticservice'
+      })).toEqual('/webapp/com.example.myproject/_/service/com.example.myproject/mycustomstaticservice/assets/200-1234567890abcdef.css');
+    });
+  });
+
 });
