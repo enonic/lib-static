@@ -11,16 +11,19 @@ export function getStaticUrl({
   params,
   relResourcePath, // relative to the root
   root,
+  service,
   type = 'server',
 }: {
   params?: ServiceUrlParams['params']
   relResourcePath: string
   root?: string
+  service?: string
   type?: AssetUrlParams['type'] // AssetUrl doesn't support 'websocket'
 }): string {
   const staticPath = getStaticPath({ relResourcePath, root });
   const staticServiceUrl = serviceUrlRootViaAssetUrl({
     params,
+    service,
     type,
   });
   const firstQuestionMarkIndex = staticServiceUrl.indexOf('?');

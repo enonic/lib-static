@@ -9,9 +9,11 @@ const SERVICE_NAME = 'static';
 
 export function serviceUrlRootViaAssetUrl({
   params,
+  service = SERVICE_NAME,
   type = 'server',
 }:{
   params?: ServiceUrlParams['params']
+  service?: string
   type?: AssetUrlParams['type']
 }) {
   let assetUrl = getAssetUrl({
@@ -34,7 +36,7 @@ export function serviceUrlRootViaAssetUrl({
 
   const serviceUrlRootWithoutParams = assetUrl
     .replace(/\/edit\/([^\/]+)\/([^\/]+)\/_\/asset/,'/preview/$1/$2/_/asset') // Avoid: Assets give 404 in edit mode
-    .replace(/\/_\/asset\/.*$/, `/_/service/${app.name}/${SERVICE_NAME}/`)
+    .replace(/\/_\/asset\/.*$/, `/_/service/${app.name}/${service}/`)
     .replace(/\/+$/, '');
   log.debug('serviceUrlRootWithoutParams:%s', serviceUrlRootWithoutParams);
 

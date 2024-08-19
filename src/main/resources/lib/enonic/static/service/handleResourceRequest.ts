@@ -36,12 +36,14 @@ export function handleResourceRequest({
   getContentHashMismatchResponse,
   getContentType,
   request,
+  root,
   throwErrors = false,
 }: {
   request: Request
   getCacheControl?: CacheControlResolver
   getContentHashMismatchResponse?: ContentHashMismatchResponseResolver,
   getContentType?: ContentTypeResolver
+  root?: string
   throwErrors?: boolean
 }) {
   try {
@@ -50,7 +52,10 @@ export function handleResourceRequest({
     const relResourcePath = getRelativeResourcePath(request);
     log.debug('handleResourceRequest: relFilePath: %s', relResourcePath);
 
-    const absResourcePathWithoutTrailingSlash = prefixWithRoot({ path: relResourcePath });
+    const absResourcePathWithoutTrailingSlash = prefixWithRoot({
+      path: relResourcePath,
+      root
+    });
     log.debug('handleResourceRequest: absoluteResourcePathWithoutTrailingSlash: %s', absResourcePathWithoutTrailingSlash);
 
     const pathError = getPathError(absResourcePathWithoutTrailingSlash.replace(/^\/+/, ''));
