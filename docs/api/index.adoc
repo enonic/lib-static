@@ -5,13 +5,13 @@ Three controller functions are exposed.
 
 - The first, link:buildgetter#api-buildgetter[buildgetter], is a broad configure-once/catch-all approach that's based on the relative path in the request. This is the one you usually want.
 - The second, link:get#api-get[get], specifically gets an asset based on a path string and options for each particular call.
-- The third, link:getstaticpath#api-getstaticpath[getStaticPath], is a helper function that generates a URL pointing to a static file.
+- The third, link:getstaticurl[getStaticUrl], is a helper function that generates a URL pointing to a static file.
 
 👉 link:get#example-get[Similarities and differences]
 
 * <<buildgetter#, buildGetter>>
 * <<get#, get>>
-* <<getStaticPath#, getStaticPath>>
+* <<getStaticUrl#, getStaticUrl>>
 
 [[behaviour]]
 == API: response and default behaviour

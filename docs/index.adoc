@@ -79,12 +79,12 @@ body {
 ./src/main/resources/site/pages/mypage/mypage.ts
 [source, TypeScript]
 ----
-import {getStaticPath} from '/lib/enonic/static';
+import { getStaticUrl } from '/lib/enonic/static';
 
 export function get(_request) {
 
-  const url = getStaticPath({
-    path: 'styles/main.css'
+  const url = getStaticUrl({
+    relResourcePath: 'styles/main.css'
   });
 
   return {
@@ -173,13 +173,13 @@ export const all = (request: Request) => router.dispatch(request);
 ./src/main/resources/site/pages/mypage/mypage.ts
 [source, TypeScript]
 ----
-import {getStaticPath} from '/lib/enonic/static';
+import { getStaticUrl } from '/lib/enonic/static';
 import { STATIC_FOLDER } from '../../../constants';
 
 export function get(_request) {
 
-  const url = getStaticPath({
-    path: 'styles/main.css',
+  const url = getStaticUrl({
+    relResourcePath: 'styles/main.css',
     root: STATIC_FOLDER,
     service: 'mycustomstaticservice'
   });

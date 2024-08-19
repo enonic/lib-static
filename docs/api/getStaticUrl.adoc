@@ -1,4 +1,4 @@
-= getStaticPath
+= getStaticUrl
 
 This function generates a URL pointing to a static file.
 
@@ -36,12 +36,12 @@ Example
 
 [source, TypeScript]
 ----
-import {getStaticPath} from '/lib/enonic/static';
+import { getStaticUrl } from '/lib/enonic/static';
 
 export function get(_request) {
 
-  const url = getStaticPath({
-    path: 'styles/main.css'
+  const url = getStaticUrl({
+    relResourcePath: 'styles/main.css'
   });
 
   return {
