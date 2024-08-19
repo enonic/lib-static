@@ -1,0 +1,26 @@
+[[example-options]]
+= Options and syntax
+
+The behaviour of the returned getter function from `.buildGetter` can be controlled with more link:#options[options], in addition to the `root`.
+
+If you set `root` with a pure string as the first argument, add a second argument object for the options. If you use the named-parameter way to set `root`, the options must be in the same first-argument object - in practice, just _never use two objects as parameters_.
+
+These are valid and equivalent:
+[source,javascript,options="nowrap"]
+----
+libStatic.buildGetter({
+    root: 'my/folder',
+    option1: "option value 1",
+    option2: "option value 2"
+});
+----
+...and:
+[source,javascript,options="nowrap"]
+----
+libStatic.buildGetter('my/folder', {
+    option1: "option value 1",
+    option2: "option value 2"
+});
+----
+
+👉 link:#options[Options API reference]

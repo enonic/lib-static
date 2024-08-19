@@ -1,0 +1,15 @@
+[[examples]]
+== Usage examples
+
+1. <<service#, A simple service>>
+2. <<urls#, Resource URLs>>
+3. <<options#, Options and syntax>>
+4. <<path#, Path resolution and other endpoints>>
+5. <<mapping#, XP controller mapping>>
+6. <<webapp#, Webapp with lib-router>>
+7. <<content#, Custom content type handling>>
+8. <<cache#, Custom Cache-Control headers>>
+9. <<etag#, ETag switch>>
+10. <<errors#, Errors: throw instead of return>>
+11. <<multi#, Multiple instances>>
+12 <<get#, Low-level: .get>>

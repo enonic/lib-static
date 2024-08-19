@@ -1,0 +1,25 @@
+= TODO: Later versions
+
+== Options params
+- `indexFallback` (`false`, string, string array, object or function(absolutePath -> stringOrStringarrayOrFalse)): filename(s) (without slashes or path) to fall back to, look for and serve, in cases where the asset path requested is a folder. If not set, requesting a folder will yield an error. Implementaion: before throwing a 404, check if postfixing any of the chosen /index files (with the slash) resolves it. If so, return that.
+  The rest is up to the developer, and their responsibility how it's used: what htm/html/other they explicitly add in this parameter. And cache headers, just same as if they had asked directly for the index file. Set to `false` (or have the object or function return it) to skip the index fallback.
+
+== Response
+- `'Last-Modified'` header, determined on file modified date
+
+== Range handling
+- `'Accept-Ranges': 'bytes'` header
+
+== .resolvePath(globPath/regex, root)
+Probably not in this lib? Worth mentioning though:
+
+To save huge complexity (detecting at buildtime what the output and unpredictable hash will be and hooking those references up to output), there should be a function that can resolve a fingerprinted asset filename at XP runtime: `resolvePath(globPath, root)`.
+
+For example, if a fingerprinted asset _bundle.92d34fd72.js_ is built into _/static_, then resolvePath('bundle.*.js', 'static') will look for matching files within _/static_ and return the string `"bundle.92d34fd72.js"`. We can always later add the functionality that the `globPath` argument can also be a regex pattern.
+- `resolvePath` should *never* be part of an asset-serving endpoint service - i.e. it should not be possible to send a glob to the server and get a file response. Instead, it’s meant to be used in controllers to fetch the name of a required asset, e.g:
+----
+    pageContributions: <script src="${libStaticEndpoint}/${resolvePath('bundle.*.js', 'static')}">
+----
+- Besides, `resolvePath` can/should be part of a different library. Can be its own library (‘lib-resolvepath’?) or part of some other general-purpose lib, for example lib-util.
+- In dev mode, `resolvePath` will often find more than one match and select the most recently updated one (and should log it at least once if that’s the case). In prod mode, it should throw an error if more than one is found, and if only one is found, cache it internally.
+

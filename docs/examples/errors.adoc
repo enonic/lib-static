@@ -1,0 +1,25 @@
+[[example-errors]]
+= Errors: throw instead of return
+
+By link:#behaviour[default], runtime errors during `.get` or during the returned getter function from `.buildGetter` will log the error message and return a 500-status response to the client.
+
+If you instead want to catch these errors and handle them yourself, set a `throwErrors: true` option:
+
+[source,javascript,options="nowrap"]
+----
+const getStatic = libStatic.buildGetter({
+    root: 'my/folder',
+    throwErrors: true
+});
+
+exports.get = function(request) {
+    try {
+        return getStatic(request);
+
+    } catch (e) {
+        // handle the error...
+    }
+}
+----
+
+👉 link:#options[Options API reference]

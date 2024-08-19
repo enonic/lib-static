@@ -1,0 +1,34 @@
+{
+  "menuItems": [
+    {
+      "title": "Examples",
+      "document": "examples/index"
+    },
+    {
+      "title": "API",
+      "document": "api/index",
+      "menuItems": [
+        {
+          "title": "buildGetter",
+          "document": "api/buildGetter"
+        },
+        {
+          "title": "get",
+          "document": "api/get"
+        },
+        {
+          "title": "getStaticUrl",
+          "document": "api/getStaticUrl"
+        }
+      ]
+    },
+    {
+      "title": "Assets and mutability",
+      "document": "mutability"
+    },
+    {
+      "title": "TODO: Later versions",
+      "document": "todo"
+    }
+  ]
+}

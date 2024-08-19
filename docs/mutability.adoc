@@ -1,0 +1,96 @@
+[[mutable-assets]]
+= Assets and mutability
+
+**Immutable assets**, in our context, are files whose content can be _trusted to never change_ without changing the file name. To ensure this, developers should adapt their build setup to link:https://survivejs.com/webpack/optimizing/adding-hashes-to-filenames/[content-hash] (or at least link:https://cloud.google.com/cdn/docs/best-practices#versioned-urls[version]) the resource file names when updating them. Many build toolchains can do this automatically, for example Webpack.
+
+**Mutable assets** on the other hand are any files whose content _may_ change and still keep the same filename/path/URL.
+
+
+[[mutable-headers]]
+== Headers
+**Mutable assets should never be served wtih the default header** `'Cache-Control': 'public, max-age=31536000, immutable'`. That header basically aims to make a browser never contact the server again for that asset, until the URL changes (although caveats exist to this). If an asset is served with that `immutable` header and later changes content but keeps its name/path, everyone who's downloaded it before will have - and to a large extent _keep_ - an outdated version of the asset!
+
+Mutable assets _can_ be handled by this library (since ETag support is in place by default), but they **should be given a different Cache-Control header**. This is up to you:
+
+- A balanced Cache-Control header, that still limits the number of requests to the server but also allows an asset to be stale for maximum an hour (3600 seconds) (remember that etag headers are still needed besides this):
++
+[source,javascript,options="nowrap"]
+----
+{
+    'Cache-Control': 'public, max-age=3600',
+}
+----
+
+- A more aggressive approach, that makes browsers check the asset's freshness with the server, could be:
++
+[source,javascript,options="nowrap"]
+----
+{
+    'Cache-Control': 'no-cache',
+}
+----
++
+In this last case, if the content hasn't changed, a simple 304 status code is returned by the getter from `.buildGetter`, with nothing in the body - so nothing will be downloaded.
+
+
+[[mutable-implementation]]
+== Implementation
+If you have mutable assets in your project, there are several ways you could implement the appropriate `Cache-Control` header with the lib-static library. Three approaches that can be combined or independent:
+
+1. **Fingerprint all your assets** so that that updated files get a new, uniquely _content-dependent filename_ - ensuring that are all actually immutable.
+    - The most common way: set the build pipeline up so that the file name depends on the content. Webpack can fairly easily link:https://webpack.js.org/guides/caching/[add a content hash to the file name], for example: _staticAssets/bundle.3a01c73e29.js_ etc. This is a reliable form of fingerprinting, with the advantage that unchanged files will keep their path and name and hence keep the client-cache intact, even if the XP app is updated and versioned. The disadvantage is that the file names are now dynamic (generated during the build) and harder to predict when writing calls from the code. Working around that is not the easiest, but one way is to export the resulting build stats from webpack and fetch file names at runtime, for example with link:https://www.npmjs.com/package/stats-webpack-plugin[stats-webpack-plugin].
+    - Another approach is to add version strings to file names, a timestamp etc.
+    - Or if you build assets to a subfolder named after the XP app's version, an XP controller can easily refer to them, e.g.: `"staticAssets/" + app.version + "/myFile.txt`. The disadvantage here: client-caching now depends on correct (and manual?) versioning. Every time the version is updated, all clients lose their cached assets, even unchanged ones. And worse, if a new version is deployed erroneously without changing the version string, assets may have changed without the path changing - leading to stale cache.
+{zwsp} +
+{zwsp} +
+[[separate-instances]]
+2. **Separate between mutable and immutable assets** in _two different directories_. Then you can set up asset serving separately. Immutable assets could use lib-static in the default ways. For the mutable assets...
+    - you can simply serve them from _/assets with link:https://developer.enonic.com/docs/xp/stable/api/lib-portal#asseturl[portal.assetUrl],
+    - or you could serve mutable assets from any custom directory, with a _separate instance_ of lib-static. A combined example:
++
+[source,javascript,options="nowrap"]
+----
+    const libStatic = require('lib/enonic/static');
+
+    // Root: /immutable folder. Only immutable assets there, since they are served with immutable-optimized header by default!
+    const getImmutableAsset = libStatic.buildGetter('immutable');
+
+    const getMutableAsset = libStatic.buildGetter(
+
+        // Root: /mutable folder. Any assets can be under there...
+        'mutable',
+
+        // ...because the options object overrides the Cache-Control header (and only that - etag is preserved, importantly):
+        {
+            cacheControl: 'no-cache'
+        }
+    );
+----
+{zwsp} +
+3. It's also possible to handle mutable vs immutable assets differently _from the same directory_, if you know you can distinguish immutable files from mutable ones by some pattern, by using a **function for the `cacheControl` option**. For example, if only immutable files are fingerprinted by the pattern `someName.[base-16-hash].ext` and others are not:
++
+[source,javascript,options="nowrap"]
+----
+    const libStatic = require('lib/enonic/static');
+
+    // Reliable immutable-filename regex pattern in this case:
+    const immutablePattern = /\w+\.[0-9a-fA-F].\w+$/;
+
+    const getStatic = libStatic.buildGetter(
+
+        // Root: the /static folder contains both immutable and mutable files:
+        'static',
+
+        {
+            cacheControl: (filePathAndName, content) => {
+                if (filePathAndName.match(immutablePattern)) {
+                    // fingerprinted file, ergo immutable:
+                    return 'public, max-age=31536000, immutable';
+                } else {
+                    // mutable file:
+                    return 'Cache-Control': 'public, max-age=3600';
+                }
+            }
+        }
+    );
+----

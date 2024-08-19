@@ -1,0 +1,16 @@
+[[example-etag]]
+= ETag switch
+
+By link:#behaviour[default], an ETag is generated from the asset and sent along with the response as a header, in XP prod run mode. In link:https://developer.enonic.com/docs/enonic-cli/master/dev#start[XP dev mode], no ETag is generated.
+
+This default behaviour can be overridden with the `etag` option. If set to `true`, an ETag will always be generated, even in XP dev mode. If set to `false`, no ETag is generated, even in XP prod mode:
+
+[source,javascript,options="nowrap"]
+----
+const getStatic = libStatic.buildGetter({
+    root: 'my/folder',
+    etag: false
+});
+----
+
+👉 link:#options[Options API reference]

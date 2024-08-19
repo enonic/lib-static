@@ -1,0 +1,77 @@
+[[example-service]]
+= A simple service
+
+One way to use lib-static is in an link:https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service[XP service], and use it to fetch the resource and serve the entire response object to the front end.
+
+Say you have some resources under a folder _/my/folder_ in your app. Making a service serve these as resources to the frontend can be as simple as importing lib-static, using `.buildGetter` to set up a getter function, and using the getter function when serving GET requests. Let's call the service _servemyfolder_:
+
+.src/main/resources/services/servemyfolder/servemyfolder.js
+[source,javascript,options="nowrap"]
+----
+const libStatic = require('/lib/enonic/static');
+
+// .buildGetter sets up a new, reusable getter function: getStatic
+const getStatic = libStatic.buildGetter({
+    root: 'my/folder',
+});
+
+exports.get = function(request) {
+    return getStatic(request);
+}
+----
+
+
+[[example-service-urls]]
+==== a) Resource path and URL
+If this was the entire content of _src/main/resources/services/servemyfolder/servemyfolder.js_ in an app with the app name/key `my.xp.app`, then XP would respond to GET requests at the URL `<domain>/_/service/my.xp.app/servemyfolder` (where `<domain>` is the domain or other prefix, depending on vhosts etc).
+
+NOTE: Using link:https://developer.enonic.com/docs/xp/stable/api/lib-portal#serviceurl[libPortal.serviceUrl] is recommended (for example:  `libPortal.serviceUrl('servemyfolder')`).
+
+Calling `libStatic.buildGetter` returns a reusable function (`getStatic`) that takes `request` as argument. It link:#example-path[uses the request] to resolve the resource path relative to the service's own URL. So when calling `<domain>/\_/service/my.xp.app/servemyfolder/some/subdir/some.file`, the resource path would be `some/subdir/some.file`. And since we initially used `root` to set up `getStatic` to look for resource files under the folder my/folder, it will look for my/folder/some/subdir/some.file.
+
+[NOTE]
+====
+It's recommended to use `.buildGetter` in an link:https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service[XP service controller] like this. Here, routing is included and easy to handle: the endpoint's standard root path is already provided by XP in `request.contextPath`, and the asset path is automatically determined relative to that by simply subtracting `request.contextPath` from the beginning of `request.rawPath`. If you use `.buildGetter` in a context where the asset path (relative to `root`) can't be determined this way, you should add a link:#example-path[`getCleanPath` option parameter].
+====
+
+👉 See the link:#example-path[path resolution] and link:#api-buildgetter[API reference] below for more details.
+
+[[example-output]]
+==== b) Output
+If _my/folder/some/subdir/some.file_ exists as a (readable) file, a full link:https://developer.enonic.com/docs/xp/stable/framework/http#http-response[XP response object] is returned. Typically something like:
+
+[source,javascript,options="nowrap"]
+----
+{
+  status: 200,
+  body: "File content from some/subdir/some.file",
+  contentType: "text/plain",
+  headers: {
+    ETag: "1234567890abcdef",
+    "Cache-Control": "public, max-age=31536000, immutable"
+  }
+}
+----
+
+If the link:#example-etag[ETag/client-cache functionality] is active and the file hasn't changed since a previous download, a `status:304` response is sent (and _only_ `status` - instructing browsers to use locally cached resources and saving some downloading time).
+
+👉 link:#behaviour[API: response and default behaviour]
+
+==== c) Syntax variations
+Above, `'my/folder'` is provided to `.buildGetter` as a named `root` attribute in a parameters object. If you prefer a simpler syntax (and don't need additional link:#example-options[options]), just use a string as a first-positional argument:
+
+[source,javascript,options="nowrap"]
+----
+const getStatic = libStatic.buildGetter('my/folder');
+----
+
+Also, since `getStatic` is a function that takes a `request` argument, it's directly interchangable with `exports.get`. So if you're really into one-liners, **the entire service above could be:**
+
+.src/main/resources/services/servemyfolder/servemyfolder.js
+[source,javascript,options="nowrap"]
+----
+const libStatic = require('/lib/enonic/static');
+exports.get = libStatic.buildGetter('my/folder');
+----
+
+👉 link:#api-buildgetter[.buildGetter API reference]

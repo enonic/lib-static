@@ -1,0 +1,61 @@
+= getStaticPath
+
+This function generates a URL pointing to a static file.
+
+== Parameters
+
+[%header,cols="1%,1%,98%a"]
+[frame="none"]
+[grid="none"]
+|===
+| Name   | Type   | Description
+| params | object | Input parameters as JSON
+
+[%header,cols="1%,1%,1%,1%,96%a"]
+[frame="topbot"]
+[grid="none"]
+[caption=""]
+.Properties
+!===
+! Name            ! Type   ! Attributes ! Default ! Description
+! relResourcePath ! string !            !         ! Path to the asset, relative to the root
+! root            ! string ! <optional> ! static  ! Root folder in the JAR where the static assets are located
+! type            ! string ! <optional> ! server  ! URL type. Either server (server-relative URL) or absolute
+! params          ! object ! <optional> !         ! Custom parameters to append to the url
+!===
+
+|===
+
+[.lead]
+Returns
+
+*string* : The generated URL.
+
+[.lead]
+Example
+
+[source, TypeScript]
+----
+import {getStaticPath} from '/lib/enonic/static';
+
+export function get(_request) {
+
+  const url = getStaticPath({
+    path: 'styles/main.css'
+  });
+
+  return {
+    body: `
+<html>
+  <head>
+    <link rel="stylesheet" href="${url}">
+  </head>
+  <body>
+    <h1>Hello, world!</h1>
+  </body>
+</html>
+`,
+    contentType: 'text/html'
+  };
+}
+----

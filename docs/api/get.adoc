@@ -1,0 +1,21 @@
+[[api-get]]
+= .get
+A specific-recource getter method, returns a link:#behaviour[response object] for the particular asset that's named in the argument string.
+
+Three optional and equivalent syntaxes:
+
+`const response = libStatic.get(path);`
+
+`const response = libStatic.get(path, options);`
+
+`const response = libStatic.get(optionsWithPath);`
+
+
+== Params:
+- `path` (string): path and full file name to an asset file, relative to the JAR root (or relative to _build/resources/main_ in XP dev mode, see link:#buildgetter-params[the 'root' param explanation] above. Cannot contain `..` or any of the characters `: | < > ' " ´ * ?` or backslash or backtick.
+- `options` (object): add an link:#options[options object] after `path` to control behaviour for this specific response.
+- `optionsWithPath` (object): same as above, an link:#options[options object] but when used as the first and only argument, this object _must_ include a `{ path: ..., }` attribute too - a path string same as above. This is simply for convenience if you prefer named parameters instead of a positional `path` argument. If both are supplied, the positional `path` argument is used.
+
+If `path` (either as a string argument or as an attribute in a `options` object) resolves to (or outside) the JAR root, contains `..` or any of the characters `: | < > ' " ´ * ?` or backslash or backtick, or is missing or empty, an error is thrown.
+
+👉 link:#example-get[Usage examples]
