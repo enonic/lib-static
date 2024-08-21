@@ -1,0 +1,40 @@
+=== Standard service
+
+This library comes with a service, that serves static files from a folder in the JAR.
+By default, it serves from the `static` folder in the JAR.
+Unless you need to serve from a different folder, or override some of the other default options, you can just use the service directly:
+
+./src/main/resources/static/styles/main.css
+[source, CSS]
+----
+body {
+  background-color: lightblue;
+}
+----
+
+./src/main/resources/site/pages/mypage/mypage.ts
+[source, TypeScript]
+----
+import { getStaticUrl } from '/lib/enonic/static';
+
+export function get(_request) {
+
+  const url = getStaticUrl({
+    relResourcePath: 'styles/main.css'
+  });
+
+  return {
+    body: `
+<html>
+  <head>
+    <link rel="stylesheet" href="${url}">
+  </head>
+  <body>
+    <h1>Hello, world!</h1>
+  </body>
+</html>
+`,
+    contentType: 'text/html'
+  };
+}
+----

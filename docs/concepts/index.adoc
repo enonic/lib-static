@@ -1,0 +1,4 @@
+= Concepts
+
+* <<why#, Why use lib-static instead of portal.assetUrl?>>
+* <<mutability#, Assets and mutability>>

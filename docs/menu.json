@@ -1,6 +1,20 @@
 {
   "menuItems": [
     {
+      "title": "Service",
+      "document": "service/index",
+      "menuItems": [
+        {
+          "title": "Standard service",
+          "document": "service/standard"
+        },
+        {
+          "title": "Custom service",
+          "document": "service/custom"
+        }
+      ]
+    },
+    {
       "title": "Examples",
       "document": "examples/index"
     },
@@ -23,8 +37,18 @@
       ]
     },
     {
-      "title": "Assets and mutability",
-      "document": "mutability"
+      "title": "Concepts",
+      "document": "concepts/index",
+      "menuItems": [
+        {
+          "title": "Why use lib-static instead of portal.assetUrl?",
+          "document": "why"
+        },
+        {
+          "title": "Assets and mutability",
+          "document": "mutability"
+        }
+      ]
     },
     {
       "title": "TODO: Later versions",

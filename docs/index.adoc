@@ -14,25 +14,12 @@ Intended for setting up XP endpoints that serve static files in a cache-optimize
 
 Some relevant sources: link:https://web.dev/http-cache/[web.dev], link:https://engineering.fb.com/2017/01/26/web/this-browser-tweak-saved-60-of-requests-to-facebook/[facebook], link:https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching[mozilla], link:https://imagekit.io/blog/ultimate-guide-to-http-caching-for-static-assets/[imagekit], link:https://freecontent.manning.com/caching-assets/[freecontent.manning.com].
 
-{zwsp} +
+== Concepts
 
-
-[[why]]
-=== Why use lib-static instead of portal.assetUrl?
-
-Enonic XP already comes with an link:https://developer.enonic.com/docs/xp/stable/runtime/engines/asset-service[asset service], where you can just put resources in the _/assets_ root folder and use `portal.assetUrl(resourcePath)` to generate URLs from where to fetch them. Lib-static basically does the same thing, but with more features and control:
-
-- **Caching behaviour:** With `assetUrl`, you get a URL where the current installation/version of the app is baked in as a hash. It will change whenever the app is updated, forcing browsers to skip their locally cached resources and request new ones, even if the resource wasn't changed during the update. Using lib-static with link:mutability#mutable-assets[immutable assets] retains stable URLs and has several ways to adapt the header to direct browsers' caching behaviour more effectively, even for mutable assets.
-- **Endpoint URLs:** make your resource endpoints anywhere,
-- **Response headers**: override and control the MIME-type resolution, or the Cache-Control headers more specifically
-- **Control resource folders:** As long as the resources are built into the app JAR, resources can be served from anywhere - even with multiple lib-static instances at once: serve from multiple specific-purpose folders, or use multi-instances to specify multiple rules from the same folder.
-  - Security issues around this are handled in the standard usage: a set root folder is required (and not at the JAR root), and URL navigation out from it is prevented. But if you still REALLY want to circumvent this, there is a lower-level API too.
-- **Error handling:** 500-type errors can be set to throw instead of returning an error response - leaving the handling to you.
-- **Index fallback:** A URL that refers to the name of a directory that contains a fallback file (`index.html`), will fetch the fallback file.
+* <<concepts/why#, Why use lib-static instead of portal.assetUrl?>>
+* <<concepts/mutability#, Assets and mutability>>
 
 {zwsp} +
-{zwsp} +
-
 
 [[get-started]]
 == Getting started
@@ -61,141 +48,13 @@ In any link:https://developer.enonic.com/docs/xp/stable/framework/controllers[XP
 const libStatic = require('/lib/enonic/static');
 ----
 
+== Service
 
-=== Easiest usage
+* <<service/standard#, Standard service>>
+* <<service/custom#, Custom service>>
 
-This library comes with a service, that serves static files from a folder in the JAR.
-By default, it serves from the `static` folder in the JAR.
-Unless you need to serve from a different folder, or override some of the other default options, you can just use the service directly:
+== API
 
-./src/main/resources/static/styles/main.css
-[source, CSS]
-----
-body {
-  background-color: lightblue;
-}
-----
-
-./src/main/resources/site/pages/mypage/mypage.ts
-[source, TypeScript]
-----
-import { getStaticUrl } from '/lib/enonic/static';
-
-export function get(_request) {
-
-  const url = getStaticUrl({
-    relResourcePath: 'styles/main.css'
-  });
-
-  return {
-    body: `
-<html>
-  <head>
-    <link rel="stylesheet" href="${url}">
-  </head>
-  <body>
-    <h1>Hello, world!</h1>
-  </body>
-</html>
-`,
-    contentType: 'text/html'
-  };
-}
-----
-
-=== Custom service
-
-If you need to serve from a different folder than the default `static`, or override some of the other default options, you can create a custom service:
-
-./src/main/resources/mycustomstaticfolder/styles/main.css
-[source, CSS]
-----
-body {
-  background-color: lightblue;
-}
-----
-
-./src/main/resources/constants.ts
-[source, TypeScript]
-----
-export const STATIC_FOLDER = 'mycustomstaticfolder';
-----
-
-./src/main/resources/services/mycustomstaticservice/mycustomstaticservice.ts
-[source, TypeScript]
-----
-import type {
-	Request,
-	Response,
-} from '/lib/enonic/static'; // Requires installation of @enonic-types/lib-static
-
-import Router from '/lib/router';
-import { getEtagHeaders } from '/lib/enonic/static/response/headers/getEtagHeaders';
-import { handleResourceRequest } from '/lib/enonic/static/service/handleResourceRequest';
-import { STATIC_FOLDER } from '../../constants';
-
-
-const router = Router();
-
-router.get('{path:.*}', (request: Request): Response => {
-  return handleResourceRequest({
-    getCacheControl: (path, _resource, contentType) => {
-      if (path === 'path') {
-        return 'path';
-      }
-      if (contentType === 'contentType') {
-        return 'contentType';
-      }
-      return 'resource';
-    },
-    getContentHashMismatchResponse: ({ contentHash, contentType, etag, resource }) => {
-      log.debug('contentHash: %s, contentType: %s, etag: %s', contentHash, contentType, etag);
-      return {
-        body: resource.getStream(),
-        contentType,
-        headers: getEtagHeaders({ etagWithDblFnutts: etag }),
-        status: 200
-      }
-    },
-    getContentType:(path, resource) => {
-      log.debug('getContentType path:%s', path, resource);
-      return 'text/plain';
-    },
-    request,
-    root: STATIC_FOLDER,
-    throwErrors: true
-  });
-});
-
-export const all = (request: Request) => router.dispatch(request);
-----
-
-./src/main/resources/site/pages/mypage/mypage.ts
-[source, TypeScript]
-----
-import { getStaticUrl } from '/lib/enonic/static';
-import { STATIC_FOLDER } from '../../../constants';
-
-export function get(_request) {
-
-  const url = getStaticUrl({
-    relResourcePath: 'styles/main.css',
-    root: STATIC_FOLDER,
-    service: 'mycustomstaticservice'
-  });
-
-  return {
-    body: `
-<html>
-  <head>
-    <link rel="stylesheet" href="${url}">
-  </head>
-  <body>
-    <h1>Hello, world!</h1>
-  </body>
-</html>
-`,
-    contentType: 'text/html'
-  };
-}
-----
+* <<api/buildgetter#, buildGetter>>
+* <<api/get#, get>>
+* <<api/getStaticUrl#, getStaticUrl>>
