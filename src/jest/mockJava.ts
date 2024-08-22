@@ -9,7 +9,10 @@ import { jest } from '@jest/globals';
 import { isObject } from './isObject';
 // import { mockLibXpVhost } from './mockLibXpVhost';
 import { Resource } from './Resource';
-import { STATIC_ASSETS_200_CSS } from './testdata';
+import {
+  STATIC_ASSETS_200_CSS,
+  STATIC_ASSETS_INDEX_HTML
+} from './testdata';
 
 
 // Avoid type errors
@@ -35,14 +38,14 @@ export function mockJava({
   // testEnvironment: 'node' the @types/node package must be installed and
   // potentially listed under types in tsconfig.json.
   globalThis.log = {
-    debug: () => {},
-    error: () => {},
-    info: () => {},
-    warning: () => {},
-    // error: console.error,
-    // debug: console.debug,
-    // info: console.info,
-    // warning: console.warn,
+    // debug: () => {},
+    // error: () => {},
+    // info: () => {},
+    // warning: () => {},
+    error: console.error,
+    debug: console.debug,
+    info: console.info,
+    warning: console.warn,
   }
   globalThis.__ = {
     // disposer,
@@ -56,6 +59,11 @@ export function mockJava({
       if (bean === 'lib.enonic.libStatic.etag.EtagService') {
         return {
           getEtag: (path: string, etagOverride?: number) => {
+            if (etagOverride === -1) {
+              return {
+                etag: undefined
+              };
+            }
             const name = path.replace(/^com\.example\.myproject:/, '');
             // console.debug('getEtag', {name, path, etagOverride});
             const resource = resources[name];
@@ -128,7 +136,16 @@ export function mockJava({
 
   jest.mock('/lib/xp/io', () => ({
     getResource: jest.fn<typeof getResourceValue>((key) => {
-      if (key === '/static/assets/200.css') {
+      if (key === '/static/assets/index.html') {
+        return new Resource({
+          bytes: STATIC_ASSETS_INDEX_HTML,
+          exists: true,
+          key: key.toString(),
+          size: STATIC_ASSETS_INDEX_HTML.length,
+          timestamp: Date.now()
+        });
+      }
+      if (key === '/static/assets/200.css' || key === '/custom/root/assets/200.css') {
         return new Resource({
           bytes: STATIC_ASSETS_200_CSS,
           exists: true,

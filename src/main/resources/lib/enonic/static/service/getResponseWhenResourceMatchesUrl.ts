@@ -15,7 +15,7 @@ import { getMimeType } from '/lib/enonic/static/io';
 const DEBUG_PREFIX = 'getResponseWhenResourceMatchesUrl';
 
 // NOTE: The resource filename might contain some kind of contenthash created at
-// build time, but we can't know it's uniq/immuteable, in comparison to our
+// build time, but we can't know it's uniq/immutable, in comparison to our
 // runtime contenthashes (etag).
 export function getResponseWhenResourceMatchesUrl({
   absResourcePathWithoutTrailingSlash,
