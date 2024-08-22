@@ -8,7 +8,7 @@ import type {
 import { RESPONSE_NOT_MODIFIED } from '/lib/enonic/static/constants';
 import { read } from '/lib/enonic/static/etagReader';
 import { getMimeType } from '/lib/enonic/static/io';
-import { getImmuteableHeaders } from '/lib/enonic/static/response/headers/getImmuteableHeaders';
+import { getImmutableHeaders } from '/lib/enonic/static/response/headers/getImmutableHeaders';
 import {
   notFoundResponse,
   okResponse
@@ -20,11 +20,11 @@ const DEBUG_PREFIX = 'getResponseWhenResourceMatchesUrlWithContentHashRemoved';
 
 // Psuedo code:
 // if the filename contentHash matches the etag
-//   return immuteable response
+//   return immutable response
 // else (aka the "contentHash" is wrong or not really a contentHash)
 //   use handleContentHashMismatch
 //
-//   DO NOT use 307 temporary redirect to correct immuteable url
+//   DO NOT use 307 temporary redirect to correct immutable url
 //   name-notHash.ext (etag: 123) -> redirect to name-notHash-123.ext
 //   name-wrongHash.ext (etag: 123) -> redirect to name-wrongHash-123.ext
 //   Could end up in endless redirect loop!
@@ -73,7 +73,7 @@ export function getResponseWhenResourceMatchesUrlWithContentHashRemoved({
     return okResponse({
       body: resourceWithContentHashRemoved.getStream(),
       contentType,
-      headers: getImmuteableHeaders({
+      headers: getImmutableHeaders({
           getCacheControl,
           contentType,
           resource: resourceWithContentHashRemoved,

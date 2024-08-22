@@ -5,12 +5,12 @@ import type {
 } from '/lib/enonic/static/types';
 
 import {
-  CACHE_CONTROL_IMMUTEABLE,
+  CACHE_CONTROL_IMMUTABLE,
   HTTP2_RESPONSE_HEADER_NAME_CACHE_CONTROL,
 } from '/lib/enonic/static/constants';
 
 
-export function getImmuteableHeaders({
+export function getImmutableHeaders({
   getCacheControl,
   contentType,
   path,
@@ -22,7 +22,7 @@ export function getImmuteableHeaders({
   contentType?: string
 } = {}) : Response['headers']
 {
-  let cacheControl: string = CACHE_CONTROL_IMMUTEABLE;
+  let cacheControl: string = CACHE_CONTROL_IMMUTABLE;
   if (getCacheControl) {
     const result = getCacheControl(path, resource, contentType);
       if (result !== null) {

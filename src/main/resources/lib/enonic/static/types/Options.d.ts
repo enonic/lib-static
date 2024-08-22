@@ -2,11 +2,52 @@ import type { Resource } from '@enonic-types/lib-io';
 import type { Request } from '/lib/enonic/static/types/Request';
 import type { Response } from '/lib/enonic/static/types/Response';
 
-export declare type CacheControlResolver = (filePathAndName?: string, resource?: Resource, mimeType?: string) => string | null;
+export type CacheControlResolver = (filePathAndName?: string, resource?: Resource, mimeType?: string) => string | null;
 
-export declare type ContentTypeResolver = (filePathAndName?: string, resource?: Resource) => string | null;
+export type ContentTypeResolver = (filePathAndName?: string, resource?: Resource) => string | null;
 
-export declare type ContentHashMismatchResponseResolver = (params: {
+export interface RequestHandlerParams {
+  // Required
+  request: Request
+  // Optional
+  getContentType?: ContentTypeResolver
+  root?: string
+  throwErrors?: boolean
+}
+
+export type EtagProcessing = 'auto'|'always'|'never'
+
+export type RequestHandler = (params: RequestHandlerParams) => Response;
+
+export type EtagRequestHandler = (params: RequestHandlerParams & {
+  etagCacheControlHeader?: string
+  etagProcessing?: EtagProcessing
+}) => Response
+
+export type UseEtagWhenFn = (params: {
+  contentType: string
+}) => boolean
+
+export type ImmutableRequestHandler = (params: RequestHandlerParams & {
+  etagCacheControlHeader?: string
+  etagProcessing?: EtagProcessing
+  getImmutableCacheControlHeader?: CacheControlResolver
+  useEtagWhen?: UseEtagWhenFn
+}) => Response;
+
+export type MatchResourceResponseResolver = (params: {
+  contentType: string;
+  path: string
+  resource: Resource;
+}) => Response;
+
+export type MatchResourceStemResponseResolver = (params: {
+  contentType: string;
+  path: string
+  resource: Resource;
+}) => Response;
+
+export type ContentHashMismatchResponseResolver = (params: {
   contentHash: string;
   contentType: string;
   etag: string;
@@ -55,9 +96,9 @@ export declare interface BuildGetterParams extends GetParams {
   getCleanPath?: (req: Request) => string;
 }
 
-export declare type BuildGetterParamsWithRoot = BuildGetterParams & { root: string }
+export type BuildGetterParamsWithRoot = BuildGetterParams & { root: string }
 
-export declare type BuildGetterParamsWithPath = BuildGetterParams & { path: string }
+export type BuildGetterParamsWithPath = BuildGetterParams & { path: string }
 
 export declare interface ParseStringAndOptionsCommonReturnValues {
   cacheControlFunc?: CacheControlResolver
