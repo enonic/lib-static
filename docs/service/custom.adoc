@@ -1,20 +1,111 @@
-=== Custom service
+= Custom service
 
-If you need to serve from a different folder than the default `static`, or override some of the other default options, you can create a custom service:
+The standard service is a good starting point, but sometimes you need more control over how static resources are served. This is where a custom service comes in.
 
-./src/main/resources/mycustomstaticfolder/styles/main.css
-[source, CSS]
-----
-body {
-  background-color: lightblue;
-}
-----
+The static library currently provides these main functions that can be imported to create a custom service:
 
-./src/main/resources/constants.ts
-[source, TypeScript]
-----
-export const STATIC_FOLDER = 'mycustomstaticfolder';
-----
+1. `requestHandler`
+2. `etagRequestHandler`
+3. `immutableRequestHandler`
+
+requestHandler is simply a wrapper around etagRequestHandler and immutableRequestHandler. It uses the configured cacheStrategy to determine which of those to call.
+
+== Parameters
+
+The requestHandler function has the combined parameters of both etagRequestHandler and immutableRequestHandler. In addition one can pass a cacheStrategy parameter to "hardcode" which strategy to use, regardless of the configured cacheStrategy.
+
+The immutableRequestHandler has all the same parameters as etagRequestHandler, since it by default fallsback to etag for html files. In addition it takes a `useEtagWhen` callback that can be used to determine if etag strategy should be used for a specific resource.
+
+=== common
+
+[%header,cols="1%,1%,98%a"]
+[frame="none"]
+[grid="none"]
+|===
+| Name   | Type   | Description
+| params | object | Input parameters as JSON
+
+[%header,cols="1%,1%,1%,1%,96%a"]
+[frame="topbot"]
+[grid="none"]
+[caption=""]
+.Properties
+!===
+! Name                   ! Type   ! Attributes ! Default ! Description
+! request                ! object ! *required* ! ! The request object
+! getContentType         ! function ! optional ! ! Used to override the default content type processing
+! root                   ! string ! optional ! static ! The root folder to serve files from
+! throwErrors            ! boolean ! optional ! false ! If true, throw instead of returning a 500 response
+!===
+
+|===
+
+=== etagRequestHandler
+
+[%header,cols="1%,1%,98%a"]
+[frame="none"]
+[grid="none"]
+|===
+| Name   | Type   | Description
+| params | object | Input parameters as JSON
+
+[%header,cols="1%,1%,1%,1%,96%a"]
+[frame="topbot"]
+[grid="none"]
+[caption=""]
+.Properties
+!===
+! Name                   ! Type   ! Attributes ! Default ! Description
+! etagCacheControlHeader ! string ! optional ! max-age=3600 ! Used to override what is configured
+! etagProcessing         ! string ! optional ! auto ! Used to override what is configured
+!===
+
+|===
+
+=== immutableRequestHandler
+
+[%header,cols="1%,1%,98%a"]
+[frame="none"]
+[grid="none"]
+|===
+| Name   | Type   | Description
+| params | object | Input parameters as JSON
+
+[%header,cols="1%,1%,1%,1%,96%a"]
+[frame="topbot"]
+[grid="none"]
+[caption=""]
+.Properties
+!===
+! Name                   ! Type   ! Attributes ! Default ! Description
+! getImmutableCacheControlHeader ! string ! optional ! public, max-age=31536000, immutable ! Used to override what is configured
+!  useEtagWhen         ! function ! optional ! ! Callback which is passed {contentType}. Uses etag strategy when it returns true, otherwise immutable strategy.
+!===
+
+|===
+
+=== requestHandler
+
+[%header,cols="1%,1%,98%a"]
+[frame="none"]
+[grid="none"]
+|===
+| Name   | Type   | Description
+| params | object | Input parameters as JSON
+
+[%header,cols="1%,1%,1%,1%,96%a"]
+[frame="topbot"]
+[grid="none"]
+[caption=""]
+.Properties
+!===
+! Name                   ! Type   ! Attributes ! Default ! Description
+! cacheStrategy ! string ! optional ! undefined ! Used to override what is configured
+!===
+
+|===
+
+== Example
 
 ./src/main/resources/services/mycustomstaticservice/mycustomstaticservice.ts
 [source, TypeScript]
@@ -25,40 +116,41 @@ import type {
 } from '/lib/enonic/static'; // Requires installation of @enonic-types/lib-static
 
 import Router from '/lib/router';
-import { getEtagHeaders } from '/lib/enonic/static/response/headers/getEtagHeaders';
-import { handleResourceRequest } from '/lib/enonic/static/service/handleResourceRequest';
-import { STATIC_FOLDER } from '../../constants';
+import { requestHandler } from '/lib/enonic/static/service/requestHandler';
 
 
 const router = Router();
 
 router.get('{path:.*}', (request: Request): Response => {
-  return handleResourceRequest({
-    getCacheControl: (path, _resource, contentType) => {
-      if (path === 'path') {
-        return 'path';
-      }
-      if (contentType === 'contentType') {
-        return 'contentType';
-      }
-      return 'resource';
-    },
-    getContentHashMismatchResponse: ({ contentHash, contentType, etag, resource }) => {
-      log.debug('contentHash: %s, contentType: %s, etag: %s', contentHash, contentType, etag);
-      return {
-        body: resource.getStream(),
-        contentType,
-        headers: getEtagHeaders({ etagWithDblFnutts: etag }),
-        status: 200
-      }
-    },
+  return requestHandler({
+    // Required
+    request,
+    // Optional
+    cacheStrategy: 'immutable',
+    etagCacheControlHeader: 'no-cache
+    etagProcessing: 'always',
+    // getCacheControl: (path, _resource, contentType) => {
+    //   if (path === 'path') {
+    //     return 'path';
+    //   }
+    //   if (contentType === 'contentType') {
+    //     return 'contentType';
+    //   }
+    //   return 'resource';
+    // },
     getContentType:(path, resource) => {
       log.debug('getContentType path:%s', path, resource);
       return 'text/plain';
     },
-    request,
-    root: STATIC_FOLDER,
-    throwErrors: true
+    getImmutableCacheControlHeader: (path, resource, contentType) => {
+      log.debug('getImmutableCacheControlHeader path:%s', path, resource, contentType);
+      return 'public, max-age=2147483647, immutable';
+    },
+    root: 'mystaticfolder',
+    throwErrors: true,
+    useEtagWhen: (contentType) => {
+      return contentType === 'text/html';
+    }
   });
 });
 
@@ -69,13 +161,11 @@ export const all = (request: Request) => router.dispatch(request);
 [source, TypeScript]
 ----
 import { getStaticUrl } from '/lib/enonic/static';
-import { STATIC_FOLDER } from '../../../constants';
 
 export function get(_request) {
 
   const url = getStaticUrl({
-    relResourcePath: 'styles/main.css',
-    root: STATIC_FOLDER,
+    path: 'styles/main.css',
     service: 'mycustomstaticservice'
   });
 

@@ -1,8 +1,7 @@
-=== Standard service
+= Standard service
 
 This library comes with a service, that serves static files from a folder in the JAR.
 By default, it serves from the `static` folder in the JAR.
-Unless you need to serve from a different folder, or override some of the other default options, you can just use the service directly:
 
 ./src/main/resources/static/styles/main.css
 [source, CSS]
@@ -20,7 +19,7 @@ import { getStaticUrl } from '/lib/enonic/static';
 export function get(_request) {
 
   const url = getStaticUrl({
-    relResourcePath: 'styles/main.css'
+    path: 'styles/main.css'
   });
 
   return {
@@ -38,3 +37,75 @@ export function get(_request) {
   };
 }
 ----
+
+== Configuration options
+
+The service can be configured by creating a config.json file in src/main/resources/lib/enonic/static/ folder.
+
+The default configuration is:
+
+.src/main/resources/lib/enonic/static/config.json
+[source, json]
+----
+{
+  "cacheStrategy": "etag",
+  "etagCacheControlHeader": "max-age=3600",
+  "etagProcessing": "auto",
+  "immutableCacheControlHeader": "public, max-age=31536000, immutable",
+  "root": "static"
+}
+----
+
+=== CacheStrategy
+
+Default: `etag`
+
+Available options: `etag` | `immutable`
+
+==== etag
+
+By default the service uses etag and not-modified responses to serve resources.
+
+Browsers will cache the resource for as long as the `etagCacheControlHeader` is set.
+
+==== immutable
+
+If you have a build system, which generates unique file names, typically adding some kind of fingerprint from hashing the file content, you can use the `immutable` caching strategy to cache the resources in the browser.
+
+Browsers will cache the resource for as long as the `immutableCacheControlHeader` is set.
+
+For *html* files, it will still use the `etag` strategy.
+
+This can be customized further by writing a <<custom#, custom service>> and passing a callback.
+
+=== EtagCacheControlHeader
+
+Default: `max-age=3600`
+
+This header is used to set the cache control header for etag responses.
+
+=== ImmutableCacheControlHeader
+
+Default: `public, max-age=31536000, immutable`
+
+This header is used to set the cache control header for immutable responses.
+
+=== Root
+
+Default: `static`
+
+This is the root folder in the JAR, where the service will look for resources.
+
+=== EtagProcessing
+
+Default: `auto`
+
+Available options: `auto` | `always` | `never`
+
+By default the service will only calculate and *cache* the etag for a resource when Enonic XP is running in *production* mode.
+
+This is because when Enonic XP is running in *development* mode, the resources can be served directly from the *file system*, were files can *change*, which means the etags can also change. With caching this could lead to *stale resources* and broken pages. Constantly recalculating etags is also a performance hit. So it's typically better to just serve the resource without caching in development mode.
+
+If you want to calculate etags in development mode too, you can set this to `always`.
+
+If you don't want to calculate etags, even in production mode, you can set this to `never`.

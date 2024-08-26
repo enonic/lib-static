@@ -17,11 +17,10 @@ This function generates a URL pointing to a static file.
 [caption=""]
 .Properties
 !===
-! Name            ! Type   ! Attributes ! Default ! Description
-! relResourcePath ! string !            !         ! Path to the asset, relative to the root
-! root            ! string ! <optional> ! static  ! Root folder in the JAR where the static assets are located
-! type            ! string ! <optional> ! server  ! URL type. Either server (server-relative URL) or absolute
-! params          ! object ! <optional> !         ! Custom parameters to append to the url
+! Name   ! Type   ! Attributes ! Default ! Description
+! path   ! string !            !         ! Path to the asset, relative to the root
+! type   ! string ! <optional> ! server  ! URL type. Either server (server-relative URL) or absolute
+! params ! object ! <optional> !         ! Custom parameters to append to the url
 !===
 
 |===
@@ -41,7 +40,7 @@ import { getStaticUrl } from '/lib/enonic/static';
 export function get(_request) {
 
   const url = getStaticUrl({
-    relResourcePath: 'styles/main.css'
+    path: 'styles/main.css'
   });
 
   return {
