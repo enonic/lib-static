@@ -5,21 +5,21 @@ import { prefixWithRoot } from '/lib/enonic/static/resource/path/prefixWithRoot'
 
 // Can be vhosted... so we don't care about the url, just the resource path.
 export function getStaticPath({
-  relResourcePath, // relative to the root
+  path, // relative to the root
   root,
 }: {
-  relResourcePath: string
+  path: string
   root?: string
 }): string {
   const absResourcePathWithoutTrailingSlash = prefixWithRoot({
-    path: relResourcePath,
+    path: path,
     root
   });
 
   const etagWithDblQuotes = read(absResourcePathWithoutTrailingSlash);
 
   if (!etagWithDblQuotes) { // Dev mode
-    return relResourcePath
+    return path
       // Remove trailing slash, so it behaves similar to prod mode
       .replace(/\/$/, '');
   }
@@ -33,7 +33,7 @@ export function getStaticPath({
     dir,
     ext,
     filename
-  } = parsePath({ path: relResourcePath.replace(/\/$/, '') })
+  } = parsePath({ path: path.replace(/\/$/, '') })
 
   return `${dir}${filename}-${etagWithoutQuotes}${ext ? `.${ext}` : ''}`;
 }

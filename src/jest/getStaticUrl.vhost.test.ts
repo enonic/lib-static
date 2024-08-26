@@ -107,7 +107,7 @@ describe('getStaticUrl', () => {
     it.skip(`handles type=server`, () => {
       import('../main/resources/lib/enonic/static').then(({ getStaticUrl }) => {
         expect(getStaticUrl({
-          relResourcePath: 'assets/200.css',
+          path: 'assets/200.css',
           // request: WEBAPP_REQUEST,
           // type: 'server'
         })).toEqual('/files/assets/200-1234567890abcdef.css');
@@ -117,7 +117,7 @@ describe('getStaticUrl', () => {
     it.skip(`handles type=absolute`, () => {
       import('../main/resources/lib/enonic/static').then(({ getStaticUrl }) => {
         expect(getStaticUrl({
-          relResourcePath: 'assets/200.css',
+          path: 'assets/200.css',
           // request: WEBAPP_REQUEST,
           type: 'absolute'
         })).toEqual('http://localhost:8080/files/assets/200-1234567890abcdef.css');
@@ -127,7 +127,7 @@ describe('getStaticUrl', () => {
     it.skip(`handles type=absolute with port 80`, () => {
       import('../main/resources/lib/enonic/static').then(({ getStaticUrl }) => {
         expect(getStaticUrl({
-          relResourcePath: 'assets/200.css',
+          path: 'assets/200.css',
           // request: {
           //   ...WEBAPP_REQUEST,
           //   port: 80
@@ -140,7 +140,7 @@ describe('getStaticUrl', () => {
     it.skip(`handles type=absolute with scheme https and port 443`, () => {
       import('../main/resources/lib/enonic/static').then(({ getStaticUrl }) => {
         expect(getStaticUrl({
-          relResourcePath: 'assets/200.css',
+          path: 'assets/200.css',
           // request: {
           //   ...WEBAPP_REQUEST,
           //   port: 443,
@@ -155,7 +155,7 @@ describe('getStaticUrl', () => {
   it.skip(`throws if type=absolute and request is missing`, () => {
     import('../main/resources/lib/enonic/static').then(({ getStaticUrl }) => {
       expect(() => getStaticUrl({
-        relResourcePath: 'assets/200.css',
+        path: 'assets/200.css',
         // request: undefined,
         type: 'absolute'
       })).toThrowError(`Can't handle type absolute without request!`);
