@@ -129,15 +129,6 @@ router.get('{path:.*}', (request: Request): Response => {
     cacheStrategy: 'immutable',
     etagCacheControlHeader: 'no-cache
     etagProcessing: 'always',
-    // getCacheControl: (path, _resource, contentType) => {
-    //   if (path === 'path') {
-    //     return 'path';
-    //   }
-    //   if (contentType === 'contentType') {
-    //     return 'contentType';
-    //   }
-    //   return 'resource';
-    // },
     getContentType:(path, resource) => {
       log.debug('getContentType path:%s', path, resource);
       return 'text/plain';
