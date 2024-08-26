@@ -38,14 +38,14 @@ export function mockJava({
   // testEnvironment: 'node' the @types/node package must be installed and
   // potentially listed under types in tsconfig.json.
   globalThis.log = {
-    // debug: () => {},
-    // error: () => {},
-    // info: () => {},
-    // warning: () => {},
-    error: console.error,
-    debug: console.debug,
-    info: console.info,
-    warning: console.warn,
+    debug: () => {},
+    error: () => {},
+    info: () => {},
+    warning: () => {},
+    // error: console.error,
+    // debug: console.debug,
+    // info: console.info,
+    // warning: console.warn,
   }
   globalThis.__ = {
     // disposer,
