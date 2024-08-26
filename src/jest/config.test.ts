@@ -171,7 +171,7 @@ describe('getConfig', () => {
   }); // it
 
   it("caches in production mode", () => {
-    //@ts-ignore
+    // @ts-ignore
     globalThis.__.newBean = (bean: string) => {
       if (bean === 'lib.enonic.libStatic.AppHelper') {
         return {

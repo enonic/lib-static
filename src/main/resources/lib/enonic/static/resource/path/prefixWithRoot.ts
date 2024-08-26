@@ -11,7 +11,7 @@ export function prefixWithRoot({
   // NOTE: For security reasons it's very important that GETTER_ROOT is the root
   // of the path, or all resources could be exposed.
   if (!root || root.replace(/\/+/g, '') === '') {
-    const errorMessage = `prefixWithRoot: root must be a non-empty string! root: ${root}`;
+    const errorMessage = `prefixWithRoot: root must be a non-empty string! root: "${root}"`;
     log.error(errorMessage);
     throw new Error(errorMessage);
   }

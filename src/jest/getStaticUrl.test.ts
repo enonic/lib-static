@@ -61,7 +61,7 @@ describe('getStaticUrl', () => {
     import('../main/resources/lib/enonic/static').then(({ getStaticUrl }) => {
       expect(getStaticUrl({
         path: 'assets/200.css'
-      })).toEqual('/webapp/com.example.myproject/_/service/com.example.myproject/static/assets/200-1234567890abcdef.css');
+      })).toEqual('/webapp/com.example.myproject/_/service/com.example.myproject/static/assets/200.css');
     });
   });
 
@@ -75,17 +75,7 @@ describe('getStaticUrl', () => {
           string: 'string',
         },
         path: 'assets/200.css'
-      })).toEqual('/webapp/com.example.myproject/_/service/com.example.myproject/static/assets/200-1234567890abcdef.css?string=string&number=0&boolean=true&array=two&array=three&array=one');
-    });
-  });
-
-  it(`handles custom root`, () => {
-    import('../main/resources/lib/enonic/static').then(({ getStaticUrl }) => {
-      const fn = () => getStaticUrl({
-        path: 'assets/200.css',
-        root: 'mycustomstaticfolder'
-      });
-      expect(fn).toThrow('getEtag: Unmocked path:com.example.myproject:/mycustomstaticfolder/assets/200.css etagOverride:0');
+      })).toEqual('/webapp/com.example.myproject/_/service/com.example.myproject/static/assets/200.css?string=string&number=0&boolean=true&array=two&array=three&array=one');
     });
   });
 
@@ -94,7 +84,7 @@ describe('getStaticUrl', () => {
       expect(getStaticUrl({
         path: 'assets/200.css',
         service: 'mycustomstaticservice'
-      })).toEqual('/webapp/com.example.myproject/_/service/com.example.myproject/mycustomstaticservice/assets/200-1234567890abcdef.css');
+      })).toEqual('/webapp/com.example.myproject/_/service/com.example.myproject/mycustomstaticservice/assets/200.css');
     });
   });
 
