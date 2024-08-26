@@ -13,11 +13,11 @@ export function getAbsoluteResourcePathWithoutTrailingSlash({
   request: Request
   root?: string
 }) {
-  const relResourcePath = getRelativeResourcePath(request);
-  log.debug('handleResourceRequest: relFilePath: %s', relResourcePath);
+  const path = getRelativeResourcePath(request);
+  log.debug('handleResourceRequest: relFilePath: %s', path);
 
   return prefixWithRoot({
-    path: relResourcePath,
+    path,
     root
   });
 }

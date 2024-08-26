@@ -17,10 +17,10 @@ describe('getStaticPath in dev mode', () => {
       }
     });
     import('../main/resources/lib/enonic/static').then(({ getStaticPath }) => {
-      expect(getStaticPath({ relResourcePath: 'assets/200.css' })).toEqual('assets/200.css');
-      expect(getStaticPath({ relResourcePath: 'assets/200.css/' })).toEqual('assets/200.css');
-      expect(getStaticPath({ relResourcePath: '/assets/200.css' })).toEqual('/assets/200.css');
-      expect(getStaticPath({ relResourcePath: '/assets/200.css/' })).toEqual('/assets/200.css');
+      expect(getStaticPath({ path: 'assets/200.css' })).toEqual('assets/200.css');
+      expect(getStaticPath({ path: 'assets/200.css/' })).toEqual('assets/200.css');
+      expect(getStaticPath({ path: '/assets/200.css' })).toEqual('/assets/200.css');
+      expect(getStaticPath({ path: '/assets/200.css/' })).toEqual('/assets/200.css');
     });
   });
 });
