@@ -36,6 +36,27 @@ describe('etagRequestHandler', () => {
     }); // import
   }); // it
 
+  it('responds with 400 error when path is illegal', () => {
+    const appName = 'com.example.myproject'; // globalThis.app.name
+    const routingUnderWebapp = 'assets';
+    const contextPath = `/webapp/${appName}`
+    const filename = '<';
+    // const unVhostedPath = `/webapp/${appName}/${routingUnderWebapp}/${filename}`;
+    const vhostedPath = `/mapping/${routingUnderWebapp}/${filename}`;
+    const request = buildRequest({
+      contextPath,
+      path: vhostedPath,
+      rawPath: `${contextPath}/assets/${filename}`
+    });
+    import('../../main/resources/lib/enonic/static/service/etagRequestHandler').then(({ etagRequestHandler }) => {
+      expect(etagRequestHandler({
+        request
+      })).toEqual({
+        status: 400
+      }); // expect
+    }); // import
+  }); // it
+
   it('responds with 304 Not modified when if-none-match matches etag', () => {
     const appName = 'com.example.myproject'; // globalThis.app.name
     const routingUnderWebapp = 'assets';
