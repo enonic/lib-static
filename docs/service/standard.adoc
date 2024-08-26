@@ -40,7 +40,7 @@ export function get(_request) {
 
 == Configuration options
 
-The service can be configured by creating a config.json file in src/main/resources/lib/enonic/static/ folder.
+The service can be configured by creating a config.json file in the src/main/resources/lib/enonic/static/ folder.
 
 The default configuration is:
 
