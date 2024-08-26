@@ -111,8 +111,8 @@ The immutableRequestHandler has all the same parameters as etagRequestHandler, s
 [source, TypeScript]
 ----
 import type {
-	Request,
-	Response,
+  Request,
+  Response,
 } from '/lib/enonic/static'; // Requires installation of @enonic-types/lib-static
 
 import Router from '/lib/router';
