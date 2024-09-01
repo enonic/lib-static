@@ -84,5 +84,3 @@ if (xpVersion) {
   console.error('Unable to read version from gradle.properties!!!');
   exit(1);
 }
-
-

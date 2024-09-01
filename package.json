@@ -13,7 +13,8 @@
     "check:types:server": "npx tsc --noEmit -p tsconfig.xp.json",
     "cov": "jest --no-cache --coverage",
     "lint": "eslint --cache",
-    "test": "jest --no-cache"
+    "test": "jest --no-cache",
+    "types": "tsc -p types/tsconfig.build.json && ts-node types/process.ts"
   },
   "repository": {
     "type": "git",

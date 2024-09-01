@@ -22,7 +22,6 @@ This function generates a URL pointing to a static file.
 ! type   ! string ! <optional> ! server  ! URL type. Either server (server-relative URL) or absolute
 ! params ! object ! <optional> !         ! Custom parameters to append to the url
 !===
-
 |===
 
 [.lead]
