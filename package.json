@@ -39,7 +39,7 @@
     "@enonic-types/lib-vhost": "^7.14.4",
     "@eslint/js": "^9.9.1",
     "@item-enonic-types/lib-router": "^3.0.0",
-    "@swc/core": "^1.7.18",
+    "@swc/core": "^1.7.23",
     "@types/node": "^22.5.2",
     "concurrently": "^8.2.2",
     "eslint": "^8.57.0",
