@@ -15,7 +15,7 @@ Three controller functions are exposed.
 
 [[behaviour]]
 == API: response and default behaviour
-Unless some of these aspects are overriden by an link:#options[options parameter], the returned object (from both `.get` and the getter function created by `.buildGetter`) is a standard link:https://developer.enonic.com/docs/xp/stable/framework/http#http-response[XP response object] ready to be returned from an XP controller.
+Unless some of these aspects are overriden by an link:../api/index#options[options parameter], the returned object (from both `.get` and the getter function created by `.buildGetter`) is a standard link:https://developer.enonic.com/docs/xp/stable/framework/http#http-response[XP response object] ready to be returned from an XP controller.
 
 **Response signature:**
 
@@ -96,7 +96,7 @@ link:https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
 
 **Default headers** optimized for immutable and link:https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching#private_browser_caches[browser cached] resources.
 
-Typically, there's an `ETag` and a `Cache-Control` attribute, but this may depend on whether they are active in link:#options[options], and on XP runtime mode: ETag is usually switched off in dev mode.
+Typically, there's an `ETag` and a `Cache-Control` attribute, but this may depend on whether they are active in link:../api/index#options[options], and on XP runtime mode: ETag is usually switched off in dev mode.
 
 [NOTE]
 ====
@@ -115,7 +115,7 @@ Typically, there's an `ETag` and a `Cache-Control` attribute, but this may depen
 [[options]]
 == API: options and overrides
 
-As described above, an options object can be added with optional attributes to **override** the link:#behaviour[default behaviour]:
+As described above, an options object can be added with optional attributes to **override** the link:../api/index#behaviour[default behaviour]:
 
 .For .buildGetter:
 ----
@@ -196,7 +196,7 @@ An output _contentType_ string is used directly in the response.
 +
 Now, since `request.rawPath` doesn't include the protocol or domain, the URL https://someDomain.com/resources/public/subfolder/target-resource.xml will give `request.rawPath` this value: `"resources/public/subfolder/target-resource.xml"`. So the `getCleanPath` function will return `"/subfolder/target-resource.xml"`, which together with the root, `"my-resources"`, will look up the resource _/my-resources/subfolder/target-resource.xml_ in the JAR (or in XP dev mode: _build/resources/main/my-resources/subfolder/target-resource.xml_).
 
-👉 link:#example-getcleanpath[Another usage example]
+👉 link:path#example-getcleanpath[Another usage example]
 
 [[option-throwerrors]]
 ==== throwErrors

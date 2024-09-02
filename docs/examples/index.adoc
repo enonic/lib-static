@@ -1,6 +1,8 @@
 [[examples]]
 == Usage examples
 
+Using low-level API functions <<../api/buildgetter#, buildGetter>> or <<../api/get#, get>>:
+
 1. <<service#, A simple service>>
 2. <<urls#, Resource URLs>>
 3. <<options#, Options and syntax>>

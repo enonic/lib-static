@@ -1,7 +1,7 @@
 [[example-options]]
 = Options and syntax
 
-The behaviour of the returned getter function from `.buildGetter` can be controlled with more link:#options[options], in addition to the `root`.
+The behaviour of the returned getter function from `.buildGetter` can be controlled with more link:../api/index#options[options], in addition to the `root`.
 
 If you set `root` with a pure string as the first argument, add a second argument object for the options. If you use the named-parameter way to set `root`, the options must be in the same first-argument object - in practice, just _never use two objects as parameters_.
 
@@ -23,4 +23,4 @@ libStatic.buildGetter('my/folder', {
 });
 ----
 
-👉 link:#options[Options API reference]
+👉 link:../api/index#options[Options API reference]

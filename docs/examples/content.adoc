@@ -1,7 +1,7 @@
 [[example-content]]
 = Custom content type handling
 
-By default, lib-static detects link:https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types[MIME-type] automatically. But you can use the `contentType` link:#example-options[option] to override it. Either way, the result is a string returned with link:#behaviour[the response object].
+By default, lib-static detects link:https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types[MIME-type] automatically. But you can use the `contentType` link:options#example-options[option] to override it. Either way, the result is a string returned with link:../api/#behaviour[the response object].
 
 If set as the **boolean** `false`, the detection and handling is switched off and no `Content-Type` header is returned:
 [source,javascript,options="nowrap"]
@@ -49,4 +49,4 @@ const getStatic = libStatic.buildGetter({
 });
 ----
 
-👉 link:#options[Options API reference]
+👉 link:../api/index#options[Options API reference]

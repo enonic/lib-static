@@ -1,7 +1,7 @@
 [[example-path]]
 = Path resolution and other endpoints
 
-Usually, the path to the resource file (relative to the root folder) is link:#example-service-urls[determined from the request]. Out of the box, this depends on a few things:
+Usually, the path to the resource file (relative to the root folder) is link:service#example-service-urls[determined from the request]. Out of the box, this depends on a few things:
 
 - The controller must be able to accept requests from sub-URI. For example, the controller handling requests to a root URI `/my/endpoint/` must also respond to `/my/endpoint/subpath`, `/my/endpoint/other/path`, etc.
 - The incoming `request` in the controller object must contain a `rawPath` and `contextPath` attribute to compare, and the contextPath value must be the prefix in the rawPath value. For example, from this request...
@@ -28,7 +28,7 @@ However, lib-static can be used in other contexts than in services, where these 
 
 You can *override the default file path resolution* by implementing a `request => string` function, and add that as a `getCleanPath` option in `.buildGetter`.
 
-👉 link:#options[Options API reference]
+👉 link:../api/index#options[Options API reference]
 
 For example, a simplified version of the default could be implemented like this:
 

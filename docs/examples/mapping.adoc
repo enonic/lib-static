@@ -1,8 +1,8 @@
 = XP controller mapping
 
-Using <<#example-getcleanpath, .getCleanPath>>, lib-static can be used to serve assets from link:https://developer.enonic.com/docs/xp/stable/cms/mappings[mapped controllers].
+Using <<path#example-getcleanpath, .getCleanPath>>, lib-static can be used to serve assets from link:https://developer.enonic.com/docs/xp/stable/cms/mappings[mapped controllers].
 
-This example uses regular expressions to support the `.getCleanPath` <<#example-gotchas, criteria>>, and will serve assets (including index fallbacks) from the root _my/folder_ on the endpoint `<siteUrl>/static`:
+This example uses regular expressions to support the `.getCleanPath` <<path#example-gotchas, criteria>>, and will serve assets (including index fallbacks) from the root _my/folder_ on the endpoint `<siteUrl>/static`:
 
 .src/main/resources/site/site.xml:
 [source,xml,options="nowrap"]

@@ -1,6 +1,7 @@
 [[example-urls]]
 = Resource URLs
-Once a service (or a link:#example-path[different endpoint]) has been set up like this, it can serve the resources as regular assets to the frontend. An link:https://developer.enonic.com/docs/xp/stable/runtime/engines/webapp-engine[XP webapp] for example just needs to resolve the base URL. In the previous example we set up the the _servemyfolder_ service, so we can just use `serviceUrl` here to call on it from a webapp, for example:
+
+Once a service (or a link:path#example-path[different endpoint]) has been set up like this, it can serve the resources as regular assets to the frontend. An link:https://developer.enonic.com/docs/xp/stable/runtime/engines/webapp-engine[XP webapp] for example just needs to resolve the base URL. In the previous example we set up the the _servemyfolder_ service, so we can just use `serviceUrl` here to call on it from a webapp, for example:
 
 .src/main/resources/webapp/webapp.js:
 [source,javascript,options="nowrap"]

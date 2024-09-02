@@ -7,7 +7,7 @@ Lib-static can also be used to serve assets on URIs directly below an link:https
 
 link:https://market.enonic.com/vendors/enonic/router-lib[Lib-router] is used to *add sub-routes under the webapp's root URL*, for example the route `<webappUrl>/static`. Lib-router can extract deeper sub-URIs below that, for example `<webappUrl>/static/css/styles.css`. This sub-URI is then isolated (`"css/styles.css"`) and added to the `request` object, under `request.pathParams` - as `.libRouterPath` in the example below.
 
-*Bottom line:* Combined with lib-router like this, <<#example-getcleanpath, .getCleanPath>> can just fetch and return `request.pathParams.libRouterPath`, and the `.getCleanPath` <<#example-gotchas, gotchas>> are automatically handled (except for index fallback at the root - more on that <<#index-fallback-route, here>>).
+*Bottom line:* Combined with lib-router like this, <<path#example-getcleanpath, .getCleanPath>> can just fetch and return `request.pathParams.libRouterPath`, and the `.getCleanPath` <<path#example-gotchas, gotchas>> are automatically handled (except for index fallback at the root - more on that <<#index-fallback-route, here>>).
 
 .src/main/resources/webapp/webapp.js:
 [source,javascript,options="nowrap"]
@@ -78,7 +78,7 @@ libRouter.get(
 [[index-fallback-route]]
 ==== a) Special case - webapp route with root-index-fallback
 
-The way lib-router works, only defining `'/static/{libRouterPath:.+}'` will make it respond to sub-URIs after `static/` - that is, _both the slash and some sub-URI is required_. So in the example above, lib-static's <<#index-fallback, index fallback functionality>> is supported _below_ the actual route (for example, `<webappRoot>/static/subfolder` would serve a file _/static/subfolder/index.html_ if it existed), but the route will not match `<webappRoot>/static` or `<webappRoot>/static/` (so they will just return a 404).
+The way lib-router works, only defining `'/static/{libRouterPath:.+}'` will make it respond to sub-URIs after `static/` - that is, _both the slash and some sub-URI is required_. So in the example above, lib-static's <<../api/index#index-fallback, index fallback functionality>> is supported _below_ the actual route (for example, `<webappRoot>/static/subfolder` would serve a file _/static/subfolder/index.html_ if it existed), but the route will not match `<webappRoot>/static` or `<webappRoot>/static/` (so they will just return a 404).
 
 Let's say we for some reason wanted that route to use index fallback at the root of `/static`, not only handle the sub-URIs. More precisely, we want to expand the example above so that lib-static can make `<webappRoot>/static` redirect to `<webappRoot>/static/`, and `<webappRoot>/static/` respond with (the contents of) a file `static/index.html`.
 
@@ -101,7 +101,7 @@ libRouter.get(
 // ...
 ----
 
-Now, on `<webappRoot>/static` and `<webappRoot>/static/`, lib-router matches with the new item in the route array, `'/static/?'`. But since `libRouterPath` is not defined in that item, it means `request.pathParams.libRouterPath` will be `undefined` at the root. So according to the <<#example-gotchas, criteria>> for `getCleanPath`, *we must also update the `getCleanPath` function* in the lib-static getter.
+Now, on `<webappRoot>/static` and `<webappRoot>/static/`, lib-router matches with the new item in the route array, `'/static/?'`. But since `libRouterPath` is not defined in that item, it means `request.pathParams.libRouterPath` will be `undefined` at the root. So according to the <<path#example-gotchas, criteria>> for `getCleanPath`, *we must also update the `getCleanPath` function* in the lib-static getter.
 
 In order to return `""` for `<webappRoot>/static`, and `"/"` for `<webappRoot>/static/`, what `getCleanPath` needs to do is to return `request.pathParams.libRouterPath` if it a value, and if not, return an empty string at `<webappRoot>/static` and a slash at `<webappRoot>/static/`. The easiest is to just see if `request.rawPath` ends with a slash or not.
 

@@ -1,7 +1,7 @@
 [[example-cache]]
 = Custom Cache-Control headers
 
-The `cacheControl` link:#example-options[option] controls the link:https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control['Cache-Control'] string that's returned in the header with a successful resource fetch. The string value, if any, directs the intraction between a browser and the server on subsequent requests for the same resource. By link:#behaviour[default] the string `"public, max-age=31536000, immutable"` is returned, the `cacheControl` option overrides this to return a different string, or switch it off:
+The `cacheControl` link:options#example-options[option] controls the link:https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control['Cache-Control'] string that's returned in the header with a successful resource fetch. The string value, if any, directs the intraction between a browser and the server on subsequent requests for the same resource. By link:../api/index#behaviour[default] the string `"public, max-age=31536000, immutable"` is returned, the `cacheControl` option overrides this to return a different string, or switch it off:
 
 Setting it to the **boolean** `false` means turning the entire cache-control header off in the response:
 [source,javascript,options="nowrap"]
@@ -42,4 +42,4 @@ const getStatic = libStatic.buildGetter({
 });
 ----
 
-👉 See the link:#options[options API reference] below, and link:#mutable-assets[handling mutable and immutable assets], for more details.
+👉 See the link:../api/index#options[options API reference] below, and link:../concepts/mutability#mutable-assets[handling mutable and immutable assets], for more details.

@@ -1,7 +1,7 @@
 [[example-errors]]
 = Errors: throw instead of return
 
-By link:#behaviour[default], runtime errors during `.get` or during the returned getter function from `.buildGetter` will log the error message and return a 500-status response to the client.
+By link:../api/index#behaviour[default], runtime errors during `.get` or during the returned getter function from `.buildGetter` will log the error message and return a 500-status response to the client.
 
 If you instead want to catch these errors and handle them yourself, set a `throwErrors: true` option:
 
@@ -22,4 +22,4 @@ exports.get = function(request) {
 }
 ----
 
-👉 link:#options[Options API reference]
+👉 link:../api/index#options[Options API reference]
