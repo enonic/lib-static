@@ -42,7 +42,7 @@
     "@swc/core": "^1.7.23",
     "@types/node": "^22.5.2",
     "concurrently": "^8.2.2",
-    "eslint": "^8.57.0",
+    "eslint": "^9.9.1",
     "glob": "^11.0.0",
     "jest-environment-jsdom": "^29.7.0",
     "ts-jest": "^29.2.5",
