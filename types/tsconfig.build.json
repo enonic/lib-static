@@ -1,27 +1,16 @@
 {
   "extends": "../src/main/resources/tsconfig.json",
   "compilerOptions": {
-
-    // tscpaths requires baseUrl
-    "baseUrl": "../src/main/resources/lib/enonic/static/",
-
     "emitDeclarationOnly": true,
     "declaration": true,
     "declarationDir": "../build/types",
-    // "module": "Preserve",
-    // "moduleResolution": "bundler",
     "outDir": "../build/types",
 
     // Note that this feature does not change how import paths are emitted by tsc
     "paths": {
-      // "/lib/enonic/static/*": ["../src/main/resources/lib/enonic/static/*"],
-      // "/lib/xp/*": ["../node_modules/@enonic-types/lib-*"]
-      // In combination with baseUrl
-      "/lib/enonic/static/*": ["*"],
-      "/lib/xp/*": ["../../../../../../node_modules/@enonic-types/lib-*"]
+      "/lib/enonic/static/*": ["../src/main/resources/lib/enonic/static/*"],
+      "/lib/xp/*": ["../node_modules/@enonic-types/lib-*"]
     },
-
-    // "rootDir": "../src/main/resources/lib/enonic/static",
   },
   "include": [
     "../src/main/resources/lib/enonic/static/**/*.ts"
