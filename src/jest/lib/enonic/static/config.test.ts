@@ -22,12 +22,10 @@ const CONFIG_JSON_DEFAULT = JSON.stringify(CONFIG_DEFAULT);
 
 
 const CONFIG_CUSTOM: Config = {
-  "cacheStrategy": "immutable",
-  "enabled": false,
-  "etagProcessing": "never",
-  "etagCacheControlHeader": "no-cache",
-  "immutableCacheControlHeader": "public, max-age=2147483647, immutable",
-  "root": "custom/root"
+  enabled: false,
+  etag: 'off',
+  cacheControl: 'public, max-age=2147483647, immutable',
+  root: 'custom/root'
 };
 const CONFIG_JSON_CUSTOM = JSON.stringify(CONFIG_CUSTOM);
 
@@ -58,37 +56,23 @@ describe('getConfig', () => {
     }), { virtual: true });
     import('../../../../main/resources/lib/enonic/static/config').then(({ getConfig }) => {
       expect(getConfig()).toEqual({
-        cacheStrategy: 'etag',
+        cacheControl: 'public, max-age=10, stale-while-revalidate=50',
         enabled: true,
-        etagProcessing: 'auto',
-        etagCacheControlHeader: 'max-age=3600',
-        immutableCacheControlHeader: 'public, max-age=31536000, immutable',
+        etag: 'auto',
         root: 'static'
       }); // expect
     }); // import
   }); // it
 
-  it('getConfiguredCacheStrategy', () => {
-    import('../../../../main/resources/lib/enonic/static/config').then(({ getConfiguredCacheStrategy }) => {
-      expect(getConfiguredCacheStrategy()).toBe('etag');
+  it('getConfiguredEtag', () => {
+    import('../../../../main/resources/lib/enonic/static/config').then(({ getConfiguredEtag }) => {
+      expect(getConfiguredEtag()).toBe('auto');
     });
   });
 
-  it('getConfiguredEtagCacheControlHeader', () => {
-    import('../../../../main/resources/lib/enonic/static/config').then(({ getConfiguredEtagCacheControlHeader }) => {
-      expect(getConfiguredEtagCacheControlHeader()).toBe('max-age=3600');
-    });
-  });
-
-  it('getConfiguredEtagProcessing', () => {
-    import('../../../../main/resources/lib/enonic/static/config').then(({ getConfiguredEtagProcessing }) => {
-      expect(getConfiguredEtagProcessing()).toBe('auto');
-    });
-  });
-
-  it('getConfiguredImmutableCacheControlHeader', () => {
-    import('../../../../main/resources/lib/enonic/static/config').then(({ getConfiguredImmutableCacheControlHeader }) => {
-      expect(getConfiguredImmutableCacheControlHeader()).toBe('public, max-age=31536000, immutable');
+  it('getConfiguredCacheControl', () => {
+    import('../../../../main/resources/lib/enonic/static/config').then(({ getConfiguredCacheControl }) => {
+      expect(getConfiguredCacheControl()).toBe('public, max-age=10, stale-while-revalidate=50');
     });
   });
 
@@ -105,23 +89,22 @@ describe('getConfig', () => {
   });
 
   it('returns correct settings based on config.json', () => {
-    const CONFIG_JSON = `{
-      "cacheStrategy": "immutable",
-      "enabled": true,
-      "etagProcessing": "never",
-      "etagCacheControlHeader": "no-cache",
-      "immutableCacheControlHeader": "public, max-age=2147483647, immutable",
-      "root": "custom/root"
-    }`;
+    const config: Config = {
+      enabled: true,
+      etag: 'off',
+      cacheControl: 'public, max-age=2147483647, immutable',
+      root: 'custom/root'
+    }
+    const configJson = JSON.stringify(config);
     jest.resetModules();
     jest.mock('/lib/xp/io', () => ({
       getResource: jest.fn<typeof getResourceValue>((key) => {
         if (key === '/lib/enonic/static/config.json') {
           return new Resource({
-            bytes: CONFIG_JSON,
+            bytes: configJson,
             exists: true,
             key: key.toString(),
-            size: CONFIG_JSON.length,
+            size: configJson.length,
             timestamp: Date.now()
           });
         }
@@ -132,17 +115,15 @@ describe('getConfig', () => {
       }),
       readText: (_stream: ByteSource) => {
         // console.debug('readText');
-        return CONFIG_JSON;
+        return configJson;
       },
     }), { virtual: true });
     import('../../../../main/resources/lib/enonic/static/config').then(({ getConfig }) => {
       expect(getConfig()).toEqual({
-        cacheStrategy: 'immutable',
-        enabled: true,
-        etagProcessing: 'never',
-        etagCacheControlHeader: 'no-cache',
         // Approx 68 years
-        immutableCacheControlHeader: 'public, max-age=2147483647, immutable',
+        cacheControl: 'public, max-age=2147483647, immutable',
+        enabled: true,
+        etag: 'off',
         root: 'custom/root'
       }); // expect
     }); // import
@@ -174,11 +155,9 @@ describe('getConfig', () => {
     }), { virtual: true });
     import('../../../../main/resources/lib/enonic/static/config').then(({ getConfig }) => {
       expect(getConfig()).toEqual({
-        cacheStrategy: 'etag',
+        cacheControl: 'public, max-age=10, stale-while-revalidate=50',
         enabled: true,
-        etagProcessing: 'auto',
-        etagCacheControlHeader: 'max-age=3600',
-        immutableCacheControlHeader: 'public, max-age=31536000, immutable',
+        etag: 'auto',
         root: 'static'
       }); // expect
     }); // import
@@ -223,11 +202,9 @@ describe('getConfig', () => {
     }), { virtual: true });
     import('../../../../main/resources/lib/enonic/static/config').then(({ getConfig }) => {
       const res = {
-        cacheStrategy: 'etag',
+        cacheControl: 'public, max-age=10, stale-while-revalidate=50',
         enabled: true,
-        etagProcessing: 'auto',
-        etagCacheControlHeader: 'max-age=3600',
-        immutableCacheControlHeader: 'public, max-age=31536000, immutable',
+        etag: 'auto',
         root: 'static'
       };
       expect(getConfig()).toEqual(res);
@@ -274,20 +251,16 @@ describe('getConfig', () => {
     }), { virtual: true });
     import('../../../../main/resources/lib/enonic/static/config').then(({ getConfig }) => {
       expect(getConfig()).toEqual({
-        cacheStrategy: 'etag',
         enabled: true,
-        etagProcessing: 'auto',
-        etagCacheControlHeader: 'max-age=3600',
-        immutableCacheControlHeader: 'public, max-age=31536000, immutable',
+        etag: 'auto',
+        cacheControl: 'public, max-age=10, stale-while-revalidate=50',
         root: 'static'
       }); // expect
       expect(getConfig()).toEqual({
-        cacheStrategy: 'immutable',
-        enabled: false,
-        etagProcessing: 'never',
-        etagCacheControlHeader: 'no-cache',
         // Approx 68 years
-        immutableCacheControlHeader: 'public, max-age=2147483647, immutable',
+        cacheControl: 'public, max-age=2147483647, immutable',
+        enabled: false,
+        etag: 'off',
         root: 'custom/root'
       }); // expect
     }); // import

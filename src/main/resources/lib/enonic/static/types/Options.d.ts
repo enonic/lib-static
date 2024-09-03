@@ -29,9 +29,9 @@ export type UseEtagWhenFn = (params: {
 }) => boolean
 
 export type ImmutableRequestHandler = (params: RequestHandlerParams & {
+  cacheControlFn?: CacheControlResolver
   etagCacheControlHeader?: string
   etagProcessing?: EtagProcessing
-  getImmutableCacheControlHeader?: CacheControlResolver
   useEtagWhen?: UseEtagWhenFn
 }) => Response;
 
