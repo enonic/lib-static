@@ -1,0 +1,58 @@
+{
+  "menuItems": [
+    {
+      "title": "Service",
+      "document": "service/index",
+      "menuItems": [
+        {
+          "title": "Standard service",
+          "document": "service/standard"
+        },
+        {
+          "title": "Custom service",
+          "document": "service/custom"
+        }
+      ]
+    },
+    {
+      "title": "Examples",
+      "document": "examples/index"
+    },
+    {
+      "title": "API",
+      "document": "api/index",
+      "menuItems": [
+        {
+          "title": "buildGetter",
+          "document": "api/buildGetter"
+        },
+        {
+          "title": "get",
+          "document": "api/get"
+        },
+        {
+          "title": "getStaticUrl",
+          "document": "api/getStaticUrl"
+        }
+      ]
+    },
+    {
+      "title": "Concepts",
+      "document": "concepts/index",
+      "menuItems": [
+        {
+          "title": "Why use lib-static instead of portal.assetUrl?",
+          "document": "why"
+        },
+        {
+          "title": "Assets and mutability",
+          "document": "mutability"
+        }
+      ]
+    },
+    {
+      "title": "TODO: Later versions",
+      "document": "todo"
+    }
+  ]
+}
