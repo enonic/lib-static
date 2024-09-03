@@ -4,8 +4,7 @@ import type {
 
 import { getResource, readText } from '/lib/xp/io';
 import {
-  CACHE_CONTROL_IMMUTABLE,
-  DEFAULT_CACHE_CONTROL_WHEN_ETAG,
+  CACHE_CONTROL_DEFAULT,
   GETTER_ROOT
 } from '/lib/enonic/static/constants';
 import { isDev } from '/lib/enonic/static/runMode';
@@ -14,11 +13,10 @@ import { isDev } from '/lib/enonic/static/runMode';
 const RESOURCE_PATH = '/lib/enonic/static/config.json';
 
 const DEFAULT_CONFIG: Config = {
-  cacheStrategy: 'etag',
+  // cacheStrategy: 'etag',
   enabled: true,
-  etagProcessing: 'auto',
-  etagCacheControlHeader: DEFAULT_CACHE_CONTROL_WHEN_ETAG,
-  immutableCacheControlHeader: CACHE_CONTROL_IMMUTABLE,
+  etag: 'auto',
+  cacheControl: CACHE_CONTROL_DEFAULT,
   root: GETTER_ROOT
 };
 
@@ -49,20 +47,12 @@ export function getConfig(): Config {
   return CONFIG;
 }
 
-export function getConfiguredCacheStrategy(): Config['cacheStrategy'] {
-  return getConfig().cacheStrategy;
+export function getConfiguredEtag(): Config['etag'] {
+  return getConfig().etag;
 }
 
-export function getConfiguredEtagCacheControlHeader(): Config['etagCacheControlHeader'] {
-  return getConfig().etagCacheControlHeader;
-}
-
-export function getConfiguredEtagProcessing(): Config['etagProcessing'] {
-  return getConfig().etagProcessing;
-}
-
-export function getConfiguredImmutableCacheControlHeader(): Config['immutableCacheControlHeader'] {
-  return getConfig().immutableCacheControlHeader;
+export function getConfiguredCacheControl(): Config['cacheControl'] {
+  return getConfig().cacheControl;
 }
 
 export function getRoot(): Config['root'] {

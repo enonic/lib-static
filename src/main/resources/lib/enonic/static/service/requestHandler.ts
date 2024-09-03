@@ -1,71 +1,104 @@
 import type {
   CacheControlResolver,
-  CacheStrategy,
   ContentTypeResolver,
-  EtagProcessing,
   Request,
-  UseEtagWhenFn,
 } from '/lib/enonic/static/types';
 
-import { getConfiguredCacheStrategy } from '/lib/enonic/static/config';
+import { getResource } from '/lib/xp/io';
+import {
+  getConfiguredCacheControl,
+  getConfiguredEtag,
+} from '/lib/enonic/static/config';
+import {
+  HTTP2_RESPONSE_HEADER,
+  RESPONSE_CACHE_CONTROL_DIRECTIVE,
+  RESPONSE_NOT_MODIFIED,
+} from '/lib/enonic/static/constants';
+import { read } from '/lib/enonic/static/etagReader';
+import { getIfNoneMatchHeader } from '/lib/enonic/static/request/getIfNoneMatchHeader';
 import { responseOrThrow } from '/lib/enonic/static/response/responseOrThrow';
-import { etagRequestHandler } from '/lib/enonic/static/service/etagRequestHandler';
-import { immutableRequestHandler } from '/lib/enonic/static/service/immutableRequestHandler';
+import {
+  notFoundResponse,
+  okResponse
+} from '/lib/enonic/static/response/responses';
+import { getAbsoluteResourcePathWithoutTrailingSlash } from '/lib/enonic/static/resource/path/getAbsoluteResourcePathWithoutTrailingSlash';
+import { checkPath } from '/lib/enonic/static/resource/path/checkPath';
+import { isDev } from '/lib/enonic/static/runMode';
 
 
 export function requestHandler({
-  cacheStrategy = getConfiguredCacheStrategy(),
-  etagCacheControlHeader, // Defaults set in getEtagOrNotModifiedOrNoCacheResponse
-  etagProcessing, // Defaults set in getEtagOrNotModifiedOrNoCacheResponse
+  cacheControlFn = getConfiguredCacheControl,
   getContentType, // Defaults set in etagRequestHandler and immutableRequestHandler
-  getImmutableCacheControlHeader, // Defaults set in immutableRequestHandler
   request,
   root,
   throwErrors,
-  useEtagWhen // Defaults set in immutableRequestHandler
 }: {
   // Required
   request: Request
   // Optional
-  cacheStrategy?: CacheStrategy
-  etagCacheControlHeader?: string
-  etagProcessing?: EtagProcessing
+  cacheControlFn?: CacheControlResolver
   getContentType?: ContentTypeResolver
-  getImmutableCacheControlHeader?: CacheControlResolver
   root?: string
   throwErrors?: boolean
-  useEtagWhen?: UseEtagWhenFn
 }) {
   return responseOrThrow({
     throwErrors,
     fn: () => {
-      if (cacheStrategy === 'etag') {
-        return etagRequestHandler({
-          etagCacheControlHeader,
-          etagProcessing,
-          getContentType,
-          request,
-          root,
-          throwErrors
+      const absResourcePathWithoutTrailingSlash = getAbsoluteResourcePathWithoutTrailingSlash({
+        request,
+        root // default is set and checked in prefixWithRoot
+      });
+
+      const errorResponse = checkPath({ absResourcePathWithoutTrailingSlash });
+      if (errorResponse) {
+        return errorResponse;
+      }
+
+      const resourceMatchingUrl = getResource(absResourcePathWithoutTrailingSlash);
+
+      if (!resourceMatchingUrl.exists()) {
+        return notFoundResponse();
+      }
+
+      const contentType = getContentType(absResourcePathWithoutTrailingSlash, resourceMatchingUrl);
+
+      if(isDev()) {
+        return okResponse({
+          body: resourceMatchingUrl.getStream(),
+          contentType,
+          headers: {
+            [HTTP2_RESPONSE_HEADER.CACHE_CONTROL]: RESPONSE_CACHE_CONTROL_DIRECTIVE.NO_STORE
+          }
         });
       }
 
-      if (cacheStrategy === 'immutable') {
-        return immutableRequestHandler({
-          etagCacheControlHeader,
-          etagProcessing,
-          getContentType,
-          getImmutableCacheControlHeader,
-          request,
-          root,
-          throwErrors,
-          useEtagWhen
-        });
+      // Production
+      const headers = {
+        [HTTP2_RESPONSE_HEADER.CACHE_CONTROL]: cacheControlFn(absResourcePathWithoutTrailingSlash, resourceMatchingUrl, contentType)
+      };
+
+      let etag = getConfiguredEtag();
+      if (etag === 'auto') {
+        etag = headers[HTTP2_RESPONSE_HEADER.CACHE_CONTROL].includes('immutable') ? 'off' : 'on';
       }
 
-      const msg = `Unsupported cache strategy:${cacheStrategy}`;
-      log.error(msg);
-      throw new Error('Unsupported cache strategy');
+      if (etag === 'on') {
+        const etagWithDblFnutts = read(absResourcePathWithoutTrailingSlash);
+        const ifNoneMatchRequestHeader = getIfNoneMatchHeader({ request })
+        if (
+          ifNoneMatchRequestHeader
+          && ifNoneMatchRequestHeader === etagWithDblFnutts
+        ) {
+          return RESPONSE_NOT_MODIFIED;
+        }
+        headers[HTTP2_RESPONSE_HEADER.ETAG] = etagWithDblFnutts;
+      } // etag === 'on'
+
+      return okResponse({
+        body: resourceMatchingUrl.getStream(),
+        contentType,
+        headers
+      });
     } // fn
   }); // responseOrThrow
 }
