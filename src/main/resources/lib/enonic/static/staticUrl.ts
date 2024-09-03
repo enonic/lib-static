@@ -6,7 +6,7 @@ import type {
 import { serviceUrlRootViaAssetUrl } from '/lib/enonic/static/service/serviceUrlRootViaAssetUrl';
 
 
-export function getStaticUrl({
+export function staticUrl({
   params,
   path, // relative to the root
   service,
