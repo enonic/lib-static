@@ -1,7 +1,7 @@
 import type {
   Request,
   Response
-} from '../main/resources/lib/enonic/static/types';
+} from '../../../../main/resources/lib/enonic/static/types';
 
 import {
   beforeAll,
@@ -9,18 +9,18 @@ import {
   expect,
   test as it
 } from '@jest/globals';
-import { mockJava } from './mockJava';
+import { mockJava } from '../../../mockJava';
 import {
   buildRequest,
   internalServerErrorResponse,
   notFoundResponse,
   silenceLogError
-} from './expectations';
+} from '../../../expectations';
 import {
   STATIC_ASSETS_INDEX_HTML,
   STATIC_ASSETS_200_CSS,
   STATIC_ASSETS_304_CSS,
-} from './testdata';
+} from '../../../testdata';
 
 beforeAll((done) => {
   mockJava({
@@ -78,7 +78,7 @@ describe('buildGetter', () => {
     it('no options', () => {
       const root = 'static';
       // In starter-tsup 'static' is used. No start or end slash.
-      import('../main/resources/lib/enonic/static').then(({ buildGetter }) => {
+      import('../../../../main/resources/lib/enonic/static').then(({ buildGetter }) => {
         const getter = buildGetter(root);
         expect(getter).toBeInstanceOf(Function);
 
@@ -119,7 +119,7 @@ describe('buildGetter', () => {
     it('request object without rawpath', () => {
       const request = {} as Request;
 
-      import('../main/resources/lib/enonic/static').then(({ buildGetter }) => {
+      import('../../../../main/resources/lib/enonic/static').then(({ buildGetter }) => {
         const getterWithoutThrowErrors = buildGetter('myroot');
         silenceLogError(() => expect(getterWithoutThrowErrors(request)).toEqual(internalServerErrorResponse));
 
@@ -159,7 +159,7 @@ describe('buildGetter', () => {
         scheme,
         url: `${scheme}://${host}:${port}${path}`
       };
-      import('../main/resources/lib/enonic/static').then(({ buildGetter }) => {
+      import('../../../../main/resources/lib/enonic/static').then(({ buildGetter }) => {
         const getterWithoutThrowErrors = buildGetter(root);
         expect(getterWithoutThrowErrors(request)).toEqual({
           body: expect.stringMatching(/^Illegal absolute resource path '.+' \(resolved relative path: '.+'\) can't contain '..' or any of these characters: \\ | ? * < > ' \" ` ´$/),
@@ -192,7 +192,7 @@ describe('buildGetter', () => {
         scheme,
         url: `${scheme}://${host}:${port}${path}`
       };
-      import('../main/resources/lib/enonic/static').then(({ buildGetter }) => {
+      import('../../../../main/resources/lib/enonic/static').then(({ buildGetter }) => {
         const getterWithoutThrowErrors = buildGetter(root);
         expect(getterWithoutThrowErrors(request)).toEqual(notFoundResponse)
       });
@@ -221,7 +221,7 @@ describe('buildGetter', () => {
         scheme,
         url: `${scheme}://${host}:${port}${path}`
       };
-      import('../main/resources/lib/enonic/static').then(({ buildGetter }) => {
+      import('../../../../main/resources/lib/enonic/static').then(({ buildGetter }) => {
         const getterWithoutThrowErrors = buildGetter(root);
         expect(getterWithoutThrowErrors(request)).toEqual({
           redirect: '/webapp/com.example.myproject/assets/303.css/'
@@ -231,7 +231,7 @@ describe('buildGetter', () => {
 
     it('handles trailing slash with fallback to index.html', () => {
       const root = 'static';
-      import('../main/resources/lib/enonic/static').then(({ buildGetter }) => {
+      import('../../../../main/resources/lib/enonic/static').then(({ buildGetter }) => {
         const getterWithoutThrowErrors = buildGetter(root);
 
         const appName = 'com.example.myproject'; // globalThis.app.name
@@ -285,7 +285,7 @@ describe('buildGetter', () => {
         scheme,
         url: `${scheme}://${host}:${port}${path}`
       };
-      import('../main/resources/lib/enonic/static').then(({ buildGetter }) => {
+      import('../../../../main/resources/lib/enonic/static').then(({ buildGetter }) => {
         const getterWithoutThrowErrors = buildGetter(root);
         expect(getterWithoutThrowErrors(request)).toEqual({
           body: STATIC_ASSETS_304_CSS,

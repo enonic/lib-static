@@ -5,14 +5,14 @@ import {
 } from '@jest/globals';
 import {
   errorMessageTemplateFirstArgumentMissing
-} from '../main/resources/lib/enonic/static/options/verifyAndTrimPathOrRoot';
-import { get } from '../main/resources/lib/enonic/static'
+} from '../../../../main/resources/lib/enonic/static/options/verifyAndTrimPathOrRoot';
+import { get } from '../../../../main/resources/lib/enonic/static'
 import {
   internalServerErrorResponse,
   okResponse,
   silenceLogError
-} from './expectations';
-import { STATIC_ASSETS_200_CSS } from './testdata';
+} from '../../../expectations';
+import { STATIC_ASSETS_200_CSS } from '../../../testdata';
 
 
 describe('get', () => {
@@ -43,7 +43,7 @@ describe('get', () => {
     });
 
     it('returns bad request when path is /', () => {
-      import('../main/resources/lib/enonic/static').then(({ get }) => {
+      import('../../../../main/resources/lib/enonic/static').then(({ get }) => {
         // NOTE: No body or contentType in prod mode
         expect(get('/')).toEqual({ status: 400 });
       });

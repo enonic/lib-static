@@ -15,6 +15,7 @@ const RESOURCE_PATH = '/lib/enonic/static/config.json';
 
 const DEFAULT_CONFIG: Config = {
   cacheStrategy: 'etag',
+  enabled: true,
   etagProcessing: 'auto',
   etagCacheControlHeader: DEFAULT_CACHE_CONTROL_WHEN_ETAG,
   immutableCacheControlHeader: CACHE_CONTROL_IMMUTABLE,
@@ -27,15 +28,15 @@ function _getConfig(): Config {
     return DEFAULT_CONFIG;
   }
   const resourceJson: string = readText(resource.getStream());
-  let config: Config;
+  let configFromFile: Config;
   try {
-    config = JSON.parse(resourceJson);
+    configFromFile = JSON.parse(resourceJson);
   } catch (e) {
     log.error(`Something went wrong while parsing resource path:${RESOURCE_PATH} json:${resourceJson}!`, e);
   }
   return {
     ...DEFAULT_CONFIG,
-    ...config,
+    ...configFromFile,
   };
 }
 
@@ -66,4 +67,8 @@ export function getConfiguredImmutableCacheControlHeader(): Config['immutableCac
 
 export function getRoot(): Config['root'] {
   return getConfig().root;
+}
+
+export function isEnabled(): Config['enabled'] {
+  return getConfig().enabled;
 }

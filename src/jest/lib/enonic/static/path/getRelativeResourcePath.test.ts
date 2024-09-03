@@ -9,7 +9,7 @@ import {
   ERROR_MESSAGE_REQUEST_RAWPATH_DOES_NOT_STARTWITH_REMOVEPREFIX,
   ERROR_MESSAGE_REQUEST_WITHOUT_RAWPATH,
   getRelativeResourcePath
-} from '../../main/resources/lib/enonic/static/path/getRelativeResourcePath';
+} from '../../../../../main/resources/lib/enonic/static/path/getRelativeResourcePath';
 
 
 describe('getRelativeResourcePath', () => {

@@ -58,7 +58,7 @@ beforeAll((done) => {
 describe('staticUrl', () => {
 
   it(`does it's thing`, () => {
-    import('../main/resources/lib/enonic/static').then(({ staticUrl }) => {
+    import('../../../../main/resources/lib/enonic/static').then(({ staticUrl }) => {
       expect(staticUrl({
         path: 'assets/200.css'
       })).toEqual('/webapp/com.example.myproject/_/service/com.example.myproject/static/assets/200.css');
@@ -66,7 +66,7 @@ describe('staticUrl', () => {
   });
 
   it(`handles url query params`, () => {
-    import('../main/resources/lib/enonic/static').then(({ staticUrl }) => {
+    import('../../../../main/resources/lib/enonic/static').then(({ staticUrl }) => {
       expect(staticUrl({
         params: {
           array: [ 'one', 'two', 'three' ],
@@ -80,7 +80,7 @@ describe('staticUrl', () => {
   });
 
   it(`handles service name`, () => {
-    import('../main/resources/lib/enonic/static').then(({ staticUrl }) => {
+    import('../../../../main/resources/lib/enonic/static').then(({ staticUrl }) => {
       expect(staticUrl({
         path: 'assets/200.css',
         service: 'mycustomstaticservice'

@@ -1,23 +1,23 @@
 import type {
   Request,
   Response
-} from '../main/resources/lib/enonic/static/types';
+} from '../../../../main/resources/lib/enonic/static/types';
 
 import {
   describe,
   expect,
   test as it
 } from '@jest/globals';
-import { buildGetter } from '../main/resources/lib/enonic/static';
+import { buildGetter } from '../../../../main/resources/lib/enonic/static';
 import {
   buildRequest,
   internalServerErrorResponse,
   silenceLogError
-} from './expectations';
+} from '../../../expectations';
 import {
   STATIC_ASSETS_INDEX_HTML,
   STATIC_ASSETS_200_CSS,
-} from './testdata';
+} from '../../../testdata';
 
 describe('buildGetter', () => {
 
