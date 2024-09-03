@@ -7,7 +7,7 @@ import {
   // jest,
   test as it
 } from '@jest/globals';
-import { getContentTypeFunc } from '../../main/resources/lib/enonic/static/options/getContentTypeFunc'
+import { getContentTypeFunc } from '../../../../../main/resources/lib/enonic/static/options/getContentTypeFunc'
 
 
 describe('getContentTypeFunc', () => {

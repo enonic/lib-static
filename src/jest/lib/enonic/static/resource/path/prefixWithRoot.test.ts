@@ -7,7 +7,7 @@ import {
 
 describe('prefixWithRoot', () => {
   it('throws when root is an empty string', () => {
-    import('../../../main/resources/lib/enonic/static/resource/path/prefixWithRoot').then(({ prefixWithRoot }) => {
+    import('../../../../../../main/resources/lib/enonic/static/resource/path/prefixWithRoot').then(({ prefixWithRoot }) => {
       expect(() => prefixWithRoot({
         path: 'static/assets/200.css',
         root: ''
@@ -16,7 +16,7 @@ describe('prefixWithRoot', () => {
   });
 
   it('throws when root is just a slash', () => {
-    import('../../../main/resources/lib/enonic/static/resource/path/prefixWithRoot').then(({ prefixWithRoot }) => {
+    import('../../../../../../main/resources/lib/enonic/static/resource/path/prefixWithRoot').then(({ prefixWithRoot }) => {
       expect(() => prefixWithRoot({
         path: 'static/assets/200.css',
         root: '/'

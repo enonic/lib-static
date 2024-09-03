@@ -7,7 +7,7 @@ import {
 
 describe('checkPath', () => {
   it("returns void when path doesn't contain an error", () => {
-    import('../../../main/resources/lib/enonic/static/resource/path/checkPath').then(({ checkPath }) => {
+    import('../../../../../../main/resources/lib/enonic/static/resource/path/checkPath').then(({ checkPath }) => {
       expect(checkPath({
         absResourcePathWithoutTrailingSlash: '/static/assets/200.css'
       })).toBeUndefined();
@@ -15,7 +15,7 @@ describe('checkPath', () => {
   });
 
   it("returns bad request when path contains illegal char", () => {
-    import('../../../main/resources/lib/enonic/static/resource/path/checkPath').then(({ checkPath }) => {
+    import('../../../../../../main/resources/lib/enonic/static/resource/path/checkPath').then(({ checkPath }) => {
       expect(checkPath({
         absResourcePathWithoutTrailingSlash: '<'
       })).toEqual({
@@ -35,7 +35,7 @@ describe('checkPath', () => {
       }
       throw new Error(`Unmocked bean:${bean}!`);
     };
-    import('../../../main/resources/lib/enonic/static/resource/path/checkPath').then(({ checkPath }) => {
+    import('../../../../../../main/resources/lib/enonic/static/resource/path/checkPath').then(({ checkPath }) => {
       expect(checkPath({
         absResourcePathWithoutTrailingSlash: '<'
       })).toEqual({

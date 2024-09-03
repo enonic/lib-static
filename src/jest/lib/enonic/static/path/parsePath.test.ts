@@ -3,7 +3,7 @@ import {
   expect,
   test as it
 } from '@jest/globals';
-import { parsePath } from '../../main/resources/lib/enonic/static/path/parsePath';
+import { parsePath } from '../../../../../main/resources/lib/enonic/static/path/parsePath';
 
 
 const TEST_CASES = [
