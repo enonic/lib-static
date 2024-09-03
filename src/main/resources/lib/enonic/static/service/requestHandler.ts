@@ -16,6 +16,7 @@ import {
 } from '/lib/enonic/static/constants';
 import { read } from '/lib/enonic/static/etagReader';
 import { getIfNoneMatchHeader } from '/lib/enonic/static/request/getIfNoneMatchHeader';
+import { getMimeType } from '/lib/enonic/static/io';
 import { responseOrThrow } from '/lib/enonic/static/response/responseOrThrow';
 import {
   notFoundResponse,
@@ -27,8 +28,8 @@ import { isDev } from '/lib/enonic/static/runMode';
 
 
 export function requestHandler({
-  cacheControlFn = getConfiguredCacheControl,
-  getContentType, // Defaults set in etagRequestHandler and immutableRequestHandler
+  cacheControl = getConfiguredCacheControl,
+  contentType: contentTypeFn = (path) => getMimeType(path),
   request,
   root,
   throwErrors,
@@ -36,8 +37,8 @@ export function requestHandler({
   // Required
   request: Request
   // Optional
-  cacheControlFn?: CacheControlResolver
-  getContentType?: ContentTypeResolver
+  cacheControl?: CacheControlResolver
+  contentType?: ContentTypeResolver
   root?: string
   throwErrors?: boolean
 }) {
@@ -60,7 +61,7 @@ export function requestHandler({
         return notFoundResponse();
       }
 
-      const contentType = getContentType(absResourcePathWithoutTrailingSlash, resourceMatchingUrl);
+      const contentType = contentTypeFn(absResourcePathWithoutTrailingSlash, resourceMatchingUrl);
 
       if(isDev()) {
         return okResponse({
@@ -74,7 +75,7 @@ export function requestHandler({
 
       // Production
       const headers = {
-        [HTTP2_RESPONSE_HEADER.CACHE_CONTROL]: cacheControlFn(absResourcePathWithoutTrailingSlash, resourceMatchingUrl, contentType)
+        [HTTP2_RESPONSE_HEADER.CACHE_CONTROL]: cacheControl(absResourcePathWithoutTrailingSlash, resourceMatchingUrl, contentType)
       };
 
       let etag = getConfiguredEtag();
