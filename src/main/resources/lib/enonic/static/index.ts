@@ -1,6 +1,6 @@
 export { buildGetter } from '/lib/enonic/static/buildGetter';
 export { get } from '/lib/enonic/static/get';
-export { getStaticUrl } from '/lib/enonic/static/getStaticUrl';
+export { staticUrl } from '/lib/enonic/static/staticUrl';
 
 // Exported for testing only:
 export { getPathError as __getPathError__ } from '/lib/enonic/static/path/getPathError';
