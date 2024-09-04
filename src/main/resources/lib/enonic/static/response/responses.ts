@@ -21,6 +21,19 @@ export function badRequestResponse({
   }
 }
 
+export function movedPermanentlyResponse({
+  location,
+}: {
+  location: string
+}): Response {
+  return {
+    headers: {
+      location
+    },
+    status: 301,
+  }
+}
+
 export function notFoundResponse({
   status: _hardcoded,
   ...rest

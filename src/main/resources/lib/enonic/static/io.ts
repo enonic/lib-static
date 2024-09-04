@@ -1,14 +1,52 @@
 import type {
   ByteSource,
-  Resource as ResourceInterface,
   ResourceKey
 } from '/lib/xp/io';
+import type { LibStaticResourceInterface } from '/lib/enonic/static/types';
+
+
+export class LibStaticResource implements LibStaticResourceInterface {
+  private readonly native: LibStaticResourceInterface;
+
+  constructor(native: LibStaticResourceInterface) {
+    this.native = native;
+  }
+
+  public exists(): boolean {
+    return this.native.exists();
+  }
+
+  public getBytes(): ByteSource {
+    return this.native.getBytes();
+  }
+
+  public getSize(): number {
+    return this.native.getSize();
+  }
+
+  public getStream(): ByteSource {
+    return this.native.getStream();
+  }
+
+  public getTimestamp(): number {
+    return this.native.getTimestamp();
+  }
+
+  public isDirectory(): boolean {
+    return this.native.isDirectory();
+  }
+
+  public readString(): string {
+    return this.native.readString();
+  }
+} // class LibStaticResource
+
 
 const ioService = __.newBean<{
   getMimeType: (name: string|ResourceKey) => string,
-  getResource: (key: string|ResourceKey) => ResourceInterface,
-  readText: (stream: ByteSource) => string,
+  getResource: (key: string|ResourceKey) => LibStaticResource,
   isDirectory: (key: string|ResourceKey) => boolean,
+  readText: (stream: ByteSource) => string,
 }>('lib.enonic.libStatic.IoService');
 
 export const getMimeType = (name: string|ResourceKey) => {
@@ -16,34 +54,10 @@ export const getMimeType = (name: string|ResourceKey) => {
 };
 
 export const getResource = (key: string|ResourceKey) => {
-    const res = ioService.getResource(key);
-    return new Resource(res);
+    const native = ioService.getResource(key);
+    return new LibStaticResource(native);
 };
 
 export const readText = (stream: ByteSource) => {
     return ioService.readText(stream);
-};
-
-export const isDirectory = (key: string | ResourceKey) => {
-  return ioService.isDirectory(key);
-};
-
-function Resource(native: ResourceInterface) {
-    this.res = native;
-}
-
-Resource.prototype.getStream = function () {
-    return this.res.getBytes();
-};
-
-Resource.prototype.getSize = function () {
-    return this.res.getSize();
-};
-
-Resource.prototype.exists = function () {
-    return this.res.exists();
-};
-
-Resource.prototype.readString = function () {
-    return this.res.readString();
 };

@@ -8,12 +8,14 @@ export class Resource implements ResourceInterface {
   private readonly _bytes: string; // ByteSource
   private readonly _exists: boolean;
   private readonly _key: string;
+  private readonly _isDirectory: boolean;
   private readonly _size: number; // ResourceKey
   private readonly _timestamp: number;
 
   constructor({
     bytes,
     exists,
+    isDirectory = false,
     key,
     size,
     timestamp,
@@ -21,12 +23,14 @@ export class Resource implements ResourceInterface {
     bytes: string
     exists: boolean
     key: string
+    isDirectory?: boolean
     size: number
     timestamp: number
   }) {
     this._bytes = bytes;
     this._exists = exists;
     this._key = key;
+    this._isDirectory = isDirectory;
     this._size = size;
     this._timestamp = timestamp;
   }
@@ -50,5 +54,13 @@ export class Resource implements ResourceInterface {
 
   public getTimestamp(): number {
     return this._timestamp;
+  }
+
+  public isDirectory(): boolean {
+    return this._isDirectory;
+  }
+
+  public readString(): string {
+    return this._bytes;
   }
 }

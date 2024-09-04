@@ -58,6 +58,28 @@ describe('requestHandler', () => {
     }); // import
   }); // it
 
+  it('responds with 301 Moved Permanently when resource isDirectory and rawPath no trailing slash', () => {
+    const appName = 'com.example.myproject'; // globalThis.app.name
+    const routingUnderWebapp = 'assets';
+    const contextPath = `/webapp/${appName}`
+    const vhostedPath = `/mapping/${routingUnderWebapp}`;
+    const request = buildRequest({
+      contextPath,
+      path: vhostedPath,
+      rawPath: `${contextPath}/assets`
+    });
+    import('../../../../../main/resources/lib/enonic/static/service/requestHandler').then(({ requestHandler }) => {
+      expect(requestHandler({
+        request
+      })).toEqual({
+        headers: {
+          location: `${vhostedPath}/`,
+        },
+        status: 301
+      }); // expect
+    }); // import
+  }); // it
+
   it('responds with index when request.rawPath endsWith slash', () => {
     const appName = 'com.example.myproject'; // globalThis.app.name
     const routingUnderWebapp = 'assets';

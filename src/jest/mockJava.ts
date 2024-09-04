@@ -33,7 +33,8 @@ export function mockJava({
     bytes?: string
     exists?: boolean
     etag?: string
-    mimeType: string
+    isDirectory?: boolean
+    mimeType?: string
   }>
 }) {
   // In order for console to exist in the global scope when running tests in

@@ -10,7 +10,10 @@ import { requestHandler } from '/lib/enonic/static/service/requestHandler';
 const router = Router();
 
 router.get('{path:.*}', (request: Request): Response => {
-  return requestHandler({ request });
+  return requestHandler({
+    index: false,
+    request
+  });
 });
 
 export const all = (request: Request) => {
