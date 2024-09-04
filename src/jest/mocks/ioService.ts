@@ -20,7 +20,8 @@ export function mockIoService({
     bytes?: string
     exists?: boolean
     etag?: string
-    mimeType: string
+    isDirectory?: boolean
+    mimeType?: string
   }>
 }) {
   return {
@@ -41,6 +42,7 @@ export function mockIoService({
       if (!resource.exists) {
         return {
           exists: () => false,
+          isDirectory: () => resource.isDirectory,
         };
       }
 
@@ -48,13 +50,13 @@ export function mockIoService({
         bytes: resource.bytes || '',
         exists: true,
         key: key.toString(),
+        isDirectory: resource.isDirectory,
         size: (resource.bytes || '').length,
         timestamp: 2
       });
     }, // getResource
     readText: (_stream: ByteSource) => {
-      // console.debug('readText');
-      return 'readTextResult';
+      return _stream as unknown as string;
     }
   }
 }

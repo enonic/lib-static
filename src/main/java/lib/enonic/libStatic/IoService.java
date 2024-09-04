@@ -165,6 +165,11 @@ public class IoService
             return true;
         }
 
+        public isDirectory()
+        {
+            return false;
+        }
+
         @Override
         public long getSize()
         {

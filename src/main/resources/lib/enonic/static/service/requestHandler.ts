@@ -4,7 +4,6 @@ import type {
   Request,
 } from '/lib/enonic/static/types';
 
-import { getResource } from '/lib/xp/io';
 import {
   getConfiguredCacheControl,
   getConfiguredEtag,
@@ -15,10 +14,12 @@ import {
   RESPONSE_NOT_MODIFIED,
 } from '/lib/enonic/static/constants';
 import { read } from '/lib/enonic/static/etagReader';
+import { getResource } from '/lib/enonic/static/io';
 import { getIfNoneMatchHeader } from '/lib/enonic/static/request/getIfNoneMatchHeader';
 import { getMimeType } from '/lib/enonic/static/io';
 import { responseOrThrow } from '/lib/enonic/static/response/responseOrThrow';
 import {
+  movedPermanentlyResponse,
   notFoundResponse,
   okResponse
 } from '/lib/enonic/static/response/responses';
@@ -40,23 +41,26 @@ export function requestHandler({
   // Optional
   cacheControl?: CacheControlResolver
   contentType?: ContentTypeResolver
-  index?: string
+  index?: string|false
   root?: string
   throwErrors?: boolean
 }) {
   return responseOrThrow({
     throwErrors,
     fn: () => {
+      let indexAndNoTrailingSlash = false;
       if (index) {
         if (typeof request.rawPath !== 'string') {
-          const msg = `Illegal request without rawPath: ${JSON.stringify(request)}! request.rawPath is needed when index is set to "${index}"`;
+          const msg = `Invalid request without rawPath: ${JSON.stringify(request)}! request.rawPath is needed when index is set to "${index}"`;
           log.error(msg);
           throw new Error(msg);
         }
         if (request.rawPath.endsWith('/')) {
           request.rawPath += index;
+        } else {
+          indexAndNoTrailingSlash = true;
         }
-      }
+      } // if index
 
       const absResourcePathWithoutTrailingSlash = getAbsoluteResourcePathWithoutTrailingSlash({
         request,
@@ -69,6 +73,12 @@ export function requestHandler({
       }
 
       const resourceMatchingUrl = getResource(absResourcePathWithoutTrailingSlash);
+
+      if (indexAndNoTrailingSlash && resourceMatchingUrl.isDirectory()) {
+        return movedPermanentlyResponse({
+          location: `${request.path}/`
+        });
+      }
 
       if (!resourceMatchingUrl.exists()) {
         return notFoundResponse();

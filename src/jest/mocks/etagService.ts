@@ -5,7 +5,8 @@ export function mockEtagService({
     bytes?: string
     exists?: boolean
     etag?: string
-    mimeType: string
+    isDirectory?: boolean
+    mimeType?: string
   }>
 }) {
   return {

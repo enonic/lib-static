@@ -20,6 +20,7 @@ export interface Response<
 		'cache-control'?: string
 		'content-security-policy'?: string
 		etag?: string|number
+    location?: string
 	}
 > {
 	applyFilters?: boolean

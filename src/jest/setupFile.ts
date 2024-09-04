@@ -1,3 +1,4 @@
+import { time } from 'console';
 import {mockJava} from './mockJava';
 import {
   STATIC_ASSETS_INDEX_HTML,
@@ -6,12 +7,8 @@ import {
 } from './testdata'
 
 
-mockJava({
-  // Testing production mode is the most importent, override per test if needed
-  devMode: false,
-  // NOTE: Prod mode has etags, dev mode does not
-  resources: {
-    '/static/assets/index.html': {
+const resources = {
+  '/static/assets/index.html': {
       bytes: STATIC_ASSETS_INDEX_HTML,
       etag: '1234567890abcdef',
       exists: true,
@@ -75,5 +72,33 @@ mockJava({
       etag: '1234567890abcdef',
       mimeType: 'text/html',
     }
-  }
+};
+
+[
+  '/',
+  // 'static', // lib/xp/io expects path to start with a slash
+  // 'static/',
+  '/static',
+  '/static/',
+  // 'static/assets',
+  // 'static/assets/',
+  '/static/assets',
+  '/static/assets/',
+].forEach(path => {
+  resources[path] = {
+    bytes: undefined,
+    etag: undefined,
+    exists: false,
+    isDirectory: true,
+    mimeType: undefined,
+    // timestamp: -1,
+    // size: -1,
+  };
+});
+
+mockJava({
+  // Testing production mode is the most importent, override per test if needed
+  devMode: false,
+  // NOTE: Prod mode has etags, dev mode does not
+  resources
 });
