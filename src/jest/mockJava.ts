@@ -9,6 +9,8 @@ import { jest } from '@jest/globals';
 import { isObject } from './isObject';
 // import { mockLibXpVhost } from './mockLibXpVhost';
 import { Resource } from './Resource';
+import { mockEtagService } from './mocks/etagService';
+import { mockIoService } from './mocks/ioService';
 import {
   STATIC_ASSETS_200_CSS,
   STATIC_ASSETS_INDEX_HTML
@@ -57,61 +59,11 @@ export function mockJava({
         };
       } // AppHelper
       if (bean === 'lib.enonic.libStatic.etag.EtagService') {
-        return {
-          getEtag: (path: string, etagOverride?: number) => {
-            if (etagOverride === -1) {
-              return {
-                etag: undefined
-              };
-            }
-            const name = path.replace(/^com\.example\.myproject:/, '');
-            // console.debug('getEtag', {name, path, etagOverride});
-            const resource = resources[name];
-            if (resource) {
-              return {
-                etag: resource.etag ? `"${resource.etag}"` : undefined
-              };
-            }
-            throw new Error(`getEtag: Unmocked path:${path} etagOverride:${etagOverride}!`);
-          }
-        }
-      } // EtagService
+        return mockEtagService({ resources });
+      }
       if (bean === 'lib.enonic.libStatic.IoService') {
-        return {
-          getMimeType: (name: string|ResourceKey) => {
-            const mimeType = resources[name as string]?.mimeType;
-            if (mimeType) {
-              return mimeType;
-            }
-            log.debug(`getMimeType: Unmocked name:${name}!`);
-            return 'application/octet-stream';
-          },
-          getResource: (key: string|ResourceKey) => {
-            const resource = resources[key as string];
-            if (!resource) {
-              throw new Error(`getResource: Unmocked key:${JSON.stringify(key, null, 4)}!`);
-            }
-
-            if (!resource.exists) {
-              return {
-                exists: () => false,
-              };
-            }
-
-            return new Resource({
-              bytes: resource.bytes,
-              exists: true,
-              key: key.toString(),
-              size: resource.bytes.length,
-              timestamp: 2
-            });
-          }, // getResource
-          readText: (_stream: ByteSource) => {
-            // console.debug('readText');
-            return 'readTextResult';
-          },
-        }
-      } // IoService
+        return mockIoService({ resources });
+      }
       throw new Error(`Unmocked bean:${bean}!`);
     }, // newBean
     nullOrValue: (v: any) => {
