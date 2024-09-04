@@ -88,7 +88,7 @@ export function mockJava({
 
   jest.mock('/lib/xp/io', () => ({
     getResource: jest.fn<typeof getResourceValue>((key) => {
-      if (key === '/static/assets/index.html') {
+      if (key === '/static/assets/index.html' || key === '/static/assets/200.css/index.html') {
         return new Resource({
           bytes: STATIC_ASSETS_INDEX_HTML,
           exists: true,

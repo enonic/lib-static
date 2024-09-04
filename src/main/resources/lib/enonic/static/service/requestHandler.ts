@@ -30,6 +30,7 @@ import { isDev } from '/lib/enonic/static/runMode';
 export function requestHandler({
   cacheControl = getConfiguredCacheControl,
   contentType: contentTypeFn = (path) => getMimeType(path),
+  index = 'index.html',
   request,
   root,
   throwErrors,
@@ -39,12 +40,24 @@ export function requestHandler({
   // Optional
   cacheControl?: CacheControlResolver
   contentType?: ContentTypeResolver
+  index?: string
   root?: string
   throwErrors?: boolean
 }) {
   return responseOrThrow({
     throwErrors,
     fn: () => {
+      if (index) {
+        if (typeof request.rawPath !== 'string') {
+          const msg = `Illegal request without rawPath: ${JSON.stringify(request)}! request.rawPath is needed when index is set to "${index}"`;
+          log.error(msg);
+          throw new Error(msg);
+        }
+        if (request.rawPath.endsWith('/')) {
+          request.rawPath += index;
+        }
+      }
+
       const absResourcePathWithoutTrailingSlash = getAbsoluteResourcePathWithoutTrailingSlash({
         request,
         root // default is set and checked in prefixWithRoot
