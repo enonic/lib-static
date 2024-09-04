@@ -1,5 +1,5 @@
 import type {Resource} from '@enonic-types/lib-io';
-import type {CacheControlResolver} from '/lib/enonic/static/types';
+import type {CacheControlResolverPositional} from '/lib/enonic/static/types';
 
 import {DEFAULT_CACHE_CONTROL} from '/lib/enonic/static/constants';
 import {isStringLiteral} from '/lib/enonic/static/util/isStringLiteral';
@@ -11,7 +11,7 @@ import {isStringLiteral} from '/lib/enonic/static/util/isStringLiteral';
  *
  * @param cacheControl (string, boolean or function). See README for how the cacheControl option works.
  * */
-export const getCacheControlFunc = (cacheControl: string|boolean|CacheControlResolver) => {
+export const getCacheControlFunc = (cacheControl: string|boolean|CacheControlResolverPositional) => {
   if (cacheControl === false || cacheControl === '') {
     // Override: explicitly switch off with false or empty string
     return () => undefined;

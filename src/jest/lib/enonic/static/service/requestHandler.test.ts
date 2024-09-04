@@ -13,7 +13,7 @@ import {
   test as it
 } from '@jest/globals';
 import {
-  CACHE_CONTROL_DEFAULT,
+  RESPONSE_CACHE_CONTROL,
   HTTP2_RESPONSE_HEADER,
   RESPONSE_CACHE_CONTROL_DIRECTIVE,
 } from '/lib/enonic/static/constants';
@@ -43,14 +43,14 @@ describe('requestHandler', () => {
       path: vhostedPath,
       rawPath: `${contextPath}/assets/${filename}`
     });
-    import('../../../../../main/resources/lib/enonic/static/service/requestHandler').then(({ requestHandler }) => {
+    import('../../../../../main/resources/lib/enonic/static').then(({ requestHandler }) => {
       expect(requestHandler({
         request
       })).toEqual({
         body: 'body { color: green; }',
         contentType: 'text/css',
         headers: {
-          [HTTP2_RESPONSE_HEADER.CACHE_CONTROL]: CACHE_CONTROL_DEFAULT,
+          [HTTP2_RESPONSE_HEADER.CACHE_CONTROL]: RESPONSE_CACHE_CONTROL.SAFE,
           [HTTP2_RESPONSE_HEADER.ETAG]: '"1234567890abcdef"'
         },
         status: 200
@@ -68,7 +68,7 @@ describe('requestHandler', () => {
       path: vhostedPath,
       rawPath: `${contextPath}/assets`
     });
-    import('../../../../../main/resources/lib/enonic/static/service/requestHandler').then(({ requestHandler }) => {
+    import('../../../../../main/resources/lib/enonic/static').then(({ requestHandler }) => {
       expect(requestHandler({
         request
       })).toEqual({
@@ -92,14 +92,14 @@ describe('requestHandler', () => {
       path: vhostedPath,
       rawPath: `${contextPath}/assets/${filename}`
     });
-    import('../../../../../main/resources/lib/enonic/static/service/requestHandler').then(({ requestHandler }) => {
+    import('../../../../../main/resources/lib/enonic/static').then(({ requestHandler }) => {
       expect(requestHandler({
         request
       })).toEqual({
         body: STATIC_ASSETS_INDEX_HTML,
         contentType: 'text/css',
         headers: {
-          [HTTP2_RESPONSE_HEADER.CACHE_CONTROL]: CACHE_CONTROL_DEFAULT,
+          [HTTP2_RESPONSE_HEADER.CACHE_CONTROL]: RESPONSE_CACHE_CONTROL.SAFE,
           [HTTP2_RESPONSE_HEADER.ETAG]: '"static_assets_200_css_index_html"'
         },
         status: 200
@@ -119,7 +119,7 @@ describe('requestHandler', () => {
       path: vhostedPath,
       rawPath: `${contextPath}/assets/${filename}`
     });
-    import('../../../../../main/resources/lib/enonic/static/service/requestHandler').then(({ requestHandler }) => {
+    import('../../../../../main/resources/lib/enonic/static').then(({ requestHandler }) => {
       expect(requestHandler({
         request
       })).toEqual({
@@ -140,7 +140,7 @@ describe('requestHandler', () => {
       path: vhostedPath,
       rawPath: `${contextPath}/assets/${filename}`
     });
-    import('../../../../../main/resources/lib/enonic/static/service/requestHandler').then(({ requestHandler }) => {
+    import('../../../../../main/resources/lib/enonic/static').then(({ requestHandler }) => {
       expect(requestHandler({
         request
       })).toEqual({
@@ -164,7 +164,7 @@ describe('requestHandler', () => {
       path: vhostedPath,
       rawPath: `${contextPath}/assets/${filename}`
     });
-    import('../../../../../main/resources/lib/enonic/static/service/requestHandler').then(({ requestHandler }) => {
+    import('../../../../../main/resources/lib/enonic/static').then(({ requestHandler }) => {
       expect(requestHandler({
         request
       })).toEqual({
@@ -241,7 +241,7 @@ describe('requestHandler', () => {
       path: vhostedPath,
       rawPath: `${contextPath}/assets/${filename}`
     });
-    import('../../../../../main/resources/lib/enonic/static/service/requestHandler').then(({ requestHandler }) => {
+    import('../../../../../main/resources/lib/enonic/static').then(({ requestHandler }) => {
       expect(requestHandler({
         request
       })).toEqual({
@@ -323,14 +323,14 @@ describe('requestHandler', () => {
       path: vhostedPath,
       rawPath: `${contextPath}/assets/${filename}`
     });
-    import('../../../../../main/resources/lib/enonic/static/service/requestHandler').then(({ requestHandler }) => {
+    import('../../../../../main/resources/lib/enonic/static').then(({ requestHandler }) => {
       expect(requestHandler({
         request
       })).toEqual({
         body: 'body { color: green; }',
         contentType: 'text/css',
         headers: {
-          [HTTP2_RESPONSE_HEADER.CACHE_CONTROL]: CACHE_CONTROL_DEFAULT,
+          [HTTP2_RESPONSE_HEADER.CACHE_CONTROL]: RESPONSE_CACHE_CONTROL.SAFE,
         },
         status: 200
       }); // expect
@@ -373,7 +373,7 @@ describe('requestHandler', () => {
       path: vhostedPath,
       rawPath: `${contextPath}/assets/${filename}`
     });
-    import('../../../../../main/resources/lib/enonic/static/service/requestHandler').then(({ requestHandler }) => {
+    import('../../../../../main/resources/lib/enonic/static').then(({ requestHandler }) => {
       expect(requestHandler({ request })).toEqual({
         body: 'body { color: green; }',
         contentType: 'text/css',

@@ -7,19 +7,14 @@ export type {
 export type { LibStaticResourceInterface } from '/lib/enonic/static/types/Io';
 export type {
   CacheControlResolver,
-  ContentHashMismatchResponseResolver,
+  CacheControlResolverPositional,
   ContentTypeResolver,
+  ContentTypeResolverPositional,
   BuildGetterParams,
   BuildGetterParamsWithRoot,
   BuildGetterParamsWithPath,
-  EtagProcessing,
-  EtagRequestHandler,
-  ImmutableRequestHandler,
-  MatchResourceResponseResolver,
-  MatchResourceStemResponseResolver,
   ParseStringAndOptionsCommonReturnValues,
   RequestHandler,
-  UseEtagWhenFn
 } from '/lib/enonic/static/types/Options';
 export type {Request} from '/lib/enonic/static/types/Request';
 export type {Response} from '/lib/enonic/static/types/Response';
