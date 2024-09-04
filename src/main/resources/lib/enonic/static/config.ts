@@ -4,8 +4,8 @@ import type {
 
 import { getResource, readText } from '/lib/xp/io';
 import {
-  CACHE_CONTROL_DEFAULT,
-  GETTER_ROOT
+  GETTER_ROOT,
+  RESPONSE_CACHE_CONTROL,
 } from '/lib/enonic/static/constants';
 import { isDev } from '/lib/enonic/static/runMode';
 
@@ -16,7 +16,7 @@ const DEFAULT_CONFIG: Config = {
   // cacheStrategy: 'etag',
   enabled: true,
   etag: 'auto',
-  cacheControl: CACHE_CONTROL_DEFAULT,
+  cacheControl: RESPONSE_CACHE_CONTROL.SAFE,
   root: GETTER_ROOT
 };
 

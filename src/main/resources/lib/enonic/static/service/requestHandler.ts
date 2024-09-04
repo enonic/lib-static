@@ -1,8 +1,4 @@
-import type {
-  CacheControlResolver,
-  ContentTypeResolver,
-  Request,
-} from '/lib/enonic/static/types';
+import type { RequestHandler } from '/lib/enonic/static/types';
 
 import {
   getConfiguredCacheControl,
@@ -28,23 +24,14 @@ import { checkPath } from '/lib/enonic/static/resource/path/checkPath';
 import { isDev } from '/lib/enonic/static/runMode';
 
 
-export function requestHandler({
-  cacheControl = getConfiguredCacheControl,
-  contentType: contentTypeFn = (path) => getMimeType(path),
+export const requestHandler: RequestHandler = ({
+  cacheControlFn = getConfiguredCacheControl,
+  contentTypeFn = ({ path }) => getMimeType(path),
   index = 'index.html',
   request,
   root,
   throwErrors,
-}: {
-  // Required
-  request: Request
-  // Optional
-  cacheControl?: CacheControlResolver
-  contentType?: ContentTypeResolver
-  index?: string|false
-  root?: string
-  throwErrors?: boolean
-}) {
+}) => {
   return responseOrThrow({
     throwErrors,
     fn: () => {
@@ -84,7 +71,10 @@ export function requestHandler({
         return notFoundResponse();
       }
 
-      const contentType = contentTypeFn(absResourcePathWithoutTrailingSlash, resourceMatchingUrl);
+      const contentType = contentTypeFn({
+        path: absResourcePathWithoutTrailingSlash,
+        resource: resourceMatchingUrl
+      });
 
       if(isDev()) {
         return okResponse({
@@ -98,7 +88,11 @@ export function requestHandler({
 
       // Production
       const headers = {
-        [HTTP2_RESPONSE_HEADER.CACHE_CONTROL]: cacheControl(absResourcePathWithoutTrailingSlash, resourceMatchingUrl, contentType)
+        [HTTP2_RESPONSE_HEADER.CACHE_CONTROL]: cacheControlFn({
+          contentType,
+          path: absResourcePathWithoutTrailingSlash,
+          resource: resourceMatchingUrl,
+        })
       };
 
       let etag = getConfiguredEtag();

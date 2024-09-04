@@ -2,68 +2,49 @@ import type { Resource } from '@enonic-types/lib-io';
 import type { Request } from '/lib/enonic/static/types/Request';
 import type { Response } from '/lib/enonic/static/types/Response';
 
-export type CacheControlResolver = (filePathAndName?: string, resource?: Resource, mimeType?: string) => string | null;
+export interface CacheControlResolverParams {
+  contentType?: string
+  path?: string
+  resource?: Resource
+}
 
-export type ContentTypeResolver = (filePathAndName?: string, resource?: Resource) => string | null;
+export type CacheControlResolver = (params: CacheControlResolverParams) => string | null;
+
+export type CacheControlResolverPositional = (filePathAndName?: string, resource?: Resource, mimeType?: string) => string | null;
+
+export interface ContentTypeResolverParams {
+  path?: string
+  resource?: Resource
+}
+
+export type ContentTypeResolver = (params: ContentTypeResolverParams) => string | null;
+
+export type ContentTypeResolverPositional = (filePathAndName?: string, resource?: Resource) => string | null;
 
 export interface RequestHandlerParams {
   // Required
   request: Request
   // Optional
-  getContentType?: ContentTypeResolver
+  cacheControlFn?: CacheControlResolver
+  contentTypeFn?: ContentTypeResolver
+  index?: string|false
   root?: string
   throwErrors?: boolean
 }
 
-export type EtagProcessing = 'auto'|'always'|'never'
-
 export type RequestHandler = (params: RequestHandlerParams) => Response;
 
-export type EtagRequestHandler = (params: RequestHandlerParams & {
-  etagCacheControlHeader?: string
-  etagProcessing?: EtagProcessing
-}) => Response
-
-export type UseEtagWhenFn = (params: {
-  contentType: string
-}) => boolean
-
-export type ImmutableRequestHandler = (params: RequestHandlerParams & {
-  cacheControlFn?: CacheControlResolver
-  etagCacheControlHeader?: string
-  etagProcessing?: EtagProcessing
-  useEtagWhen?: UseEtagWhenFn
-}) => Response;
-
-export type MatchResourceResponseResolver = (params: {
-  contentType: string;
-  path: string
-  resource: Resource;
-}) => Response;
-
-export type MatchResourceStemResponseResolver = (params: {
-  contentType: string;
-  path: string
-  resource: Resource;
-}) => Response;
-
-export type ContentHashMismatchResponseResolver = (params: {
-  contentHash: string;
-  contentType: string;
-  etag: string;
-  resource: Resource;
-}) => Response;
 
 declare interface GetParams {
   /**
    * Override the default Cache-Control header value ('public, max-age=31536000, immutable').
    */
-  cacheControl?: boolean | string | CacheControlResolver;
+  cacheControl?: boolean | string | CacheControlResolverPositional;
 
   /**
    * Override the built-in MIME type detection.
    */
-  contentType?: boolean | string | Record<string, string> | ContentTypeResolver;
+  contentType?: boolean | string | Record<string, string> | ContentTypeResolverPositional;
 
   /**
    *  The default behaviour of lib-static is to generate/handle ETag in prod, while skipping it entirely in dev mode.
@@ -101,8 +82,8 @@ export type BuildGetterParamsWithRoot = BuildGetterParams & { root: string }
 export type BuildGetterParamsWithPath = BuildGetterParams & { path: string }
 
 export declare interface ParseStringAndOptionsCommonReturnValues {
-  cacheControlFunc?: CacheControlResolver
-  contentTypeFunc?: ContentTypeResolver
+  cacheControlFunc?: CacheControlResolverPositional
+  contentTypeFunc?: ContentTypeResolverPositional
   errorMessage?: string
   etagOverride?: boolean
   getCleanPath?: (req: Request) => string

@@ -1,5 +1,5 @@
 import type {Resource} from '@enonic-types/lib-io';
-import type {ContentTypeResolver} from '/lib/enonic/static/types';
+import type {ContentTypeResolverPositional} from '/lib/enonic/static/types';
 
 import {getMimeType} from '/lib/enonic/static/io';
 import {isFunction} from '/lib/enonic/static/util/isFunction';
@@ -12,7 +12,7 @@ import {isStringLiteral} from '/lib/enonic/static/util/isStringLiteral';
  *
  * @param contentType (string, boolean, function or object). See README for how the contentType option works.
  * */
-export const getContentTypeFunc = (contentType: string|boolean|ContentTypeResolver|Record<string,string>): ContentTypeResolver => {
+export const getContentTypeFunc = (contentType: string|boolean|ContentTypeResolverPositional|Record<string,string>): ContentTypeResolverPositional => {
   if (contentType === false) {
     return () => undefined;
   }
