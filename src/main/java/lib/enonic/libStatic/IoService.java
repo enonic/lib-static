@@ -165,7 +165,7 @@ public class IoService
             return true;
         }
 
-        public isDirectory()
+        public boolean isDirectory()
         {
             return false;
         }
