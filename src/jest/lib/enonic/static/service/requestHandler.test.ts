@@ -23,7 +23,10 @@ import {
   buildRequest,
   // internalServerErrorResponse
 } from '../../../../expectations';
-import { STATIC_ASSETS_200_CSS } from '../../../../testdata';
+import {
+  STATIC_ASSETS_200_CSS,
+  STATIC_ASSETS_INDEX_HTML,
+} from '../../../../testdata';
 import { Resource } from '../../../../Resource';
 
 
@@ -49,6 +52,33 @@ describe('requestHandler', () => {
         headers: {
           [HTTP2_RESPONSE_HEADER.CACHE_CONTROL]: CACHE_CONTROL_DEFAULT,
           [HTTP2_RESPONSE_HEADER.ETAG]: '"1234567890abcdef"'
+        },
+        status: 200
+      }); // expect
+    }); // import
+  }); // it
+
+  it('responds with index when request.rawPath endsWith slash', () => {
+    const appName = 'com.example.myproject'; // globalThis.app.name
+    const routingUnderWebapp = 'assets';
+    const contextPath = `/webapp/${appName}`
+    const filename = '200.css/';
+    // const unVhostedPath = `/webapp/${appName}/${routingUnderWebapp}/${filename}`;
+    const vhostedPath = `/mapping/${routingUnderWebapp}/${filename}`;
+    const request = buildRequest({
+      contextPath,
+      path: vhostedPath,
+      rawPath: `${contextPath}/assets/${filename}`
+    });
+    import('../../../../../main/resources/lib/enonic/static/service/requestHandler').then(({ requestHandler }) => {
+      expect(requestHandler({
+        request
+      })).toEqual({
+        body: STATIC_ASSETS_INDEX_HTML,
+        contentType: 'text/css',
+        headers: {
+          [HTTP2_RESPONSE_HEADER.CACHE_CONTROL]: CACHE_CONTROL_DEFAULT,
+          [HTTP2_RESPONSE_HEADER.ETAG]: '"static_assets_200_css_index_html"'
         },
         status: 200
       }); // expect
@@ -121,87 +151,87 @@ describe('requestHandler', () => {
     }); // import
   }); // it
 
-// NOTE: This test resets modules, so it should be after tests that uses default mocks.
-it('responds without etag, when cacheControl contains immutable', () => {
-  jest.resetModules();
-  const config: Partial<Config> = {
-    cacheControl: 'immutable',
-  }
-  const configJson = JSON.stringify(config);
-  const resources = {
-    '/static/assets/200.css': {
-      bytes: STATIC_ASSETS_200_CSS,
-      etag: '1234567890abcdef',
-      exists: true,
-      mimeType: 'text/css',
-    },
-  };
-  // @ts-ignore
-  globalThis.__.newBean = (bean: string) => {
-    if (bean === 'lib.enonic.libStatic.AppHelper') {
-      return {
-        isDevMode: () => false
-      };
+  // NOTE: This test resets modules, so it should be after tests that uses default mocks.
+  it('responds without etag, when cacheControl contains immutable', () => {
+    jest.resetModules();
+    const config: Partial<Config> = {
+      cacheControl: 'immutable',
     }
-    if (bean === 'lib.enonic.libStatic.etag.EtagService') {
-      return mockEtagService({ resources });
-    }
-    if (bean === 'lib.enonic.libStatic.IoService') {
-      return mockIoService({ resources });
-    }
-    throw new Error(`Unmocked bean:${bean}!`);
-  }
-  jest.mock('/lib/xp/io', () => ({
-    getResource: jest.fn<typeof getResourceValue>((key) => {
-      if (key === '/lib/enonic/static/config.json') {
-        return new Resource({
-          bytes: configJson,
-          exists: true,
-          key: key.toString(),
-          size: configJson.length,
-          timestamp: Date.now()
-        });
-      }
-      if (key === '/static/assets/200.css') {
-        return new Resource({
-          bytes: STATIC_ASSETS_200_CSS,
-          exists: true,
-          key: key.toString(),
-          size: STATIC_ASSETS_200_CSS.length,
-          timestamp: Date.now()
-        });
-      }
-      return {
-        exists: () => false,
-      } as Resource;
-    }),
-    readText: (_stream: ByteSource) => {
-      return configJson;
-    },
-  }), { virtual: true });
-  const appName = 'com.example.myproject'; // globalThis.app.name
-  const routingUnderWebapp = 'assets';
-  const contextPath = `/webapp/${appName}`
-  const filename = '200.css';
-  const vhostedPath = `/mapping/${routingUnderWebapp}/${filename}`;
-  const request = buildRequest({
-    contextPath,
-    path: vhostedPath,
-    rawPath: `${contextPath}/assets/${filename}`
-  });
-  import('../../../../../main/resources/lib/enonic/static/service/requestHandler').then(({ requestHandler }) => {
-    expect(requestHandler({
-      request
-    })).toEqual({
-      body: 'body { color: green; }',
-      contentType: 'text/css',
-      headers: {
-        [HTTP2_RESPONSE_HEADER.CACHE_CONTROL]: 'immutable',
+    const configJson = JSON.stringify(config);
+    const resources = {
+      '/static/assets/200.css': {
+        bytes: STATIC_ASSETS_200_CSS,
+        etag: '1234567890abcdef',
+        exists: true,
+        mimeType: 'text/css',
       },
-      status: 200
-    }); // expect
-  }); // import
-}); // it
+    };
+    // @ts-ignore
+    globalThis.__.newBean = (bean: string) => {
+      if (bean === 'lib.enonic.libStatic.AppHelper') {
+        return {
+          isDevMode: () => false
+        };
+      }
+      if (bean === 'lib.enonic.libStatic.etag.EtagService') {
+        return mockEtagService({ resources });
+      }
+      if (bean === 'lib.enonic.libStatic.IoService') {
+        return mockIoService({ resources });
+      }
+      throw new Error(`Unmocked bean:${bean}!`);
+    }
+    jest.mock('/lib/xp/io', () => ({
+      getResource: jest.fn<typeof getResourceValue>((key) => {
+        if (key === '/lib/enonic/static/config.json') {
+          return new Resource({
+            bytes: configJson,
+            exists: true,
+            key: key.toString(),
+            size: configJson.length,
+            timestamp: Date.now()
+          });
+        }
+        if (key === '/static/assets/200.css') {
+          return new Resource({
+            bytes: STATIC_ASSETS_200_CSS,
+            exists: true,
+            key: key.toString(),
+            size: STATIC_ASSETS_200_CSS.length,
+            timestamp: Date.now()
+          });
+        }
+        return {
+          exists: () => false,
+        } as Resource;
+      }),
+      readText: (_stream: ByteSource) => {
+        return configJson;
+      },
+    }), { virtual: true });
+    const appName = 'com.example.myproject'; // globalThis.app.name
+    const routingUnderWebapp = 'assets';
+    const contextPath = `/webapp/${appName}`
+    const filename = '200.css';
+    const vhostedPath = `/mapping/${routingUnderWebapp}/${filename}`;
+    const request = buildRequest({
+      contextPath,
+      path: vhostedPath,
+      rawPath: `${contextPath}/assets/${filename}`
+    });
+    import('../../../../../main/resources/lib/enonic/static/service/requestHandler').then(({ requestHandler }) => {
+      expect(requestHandler({
+        request
+      })).toEqual({
+        body: 'body { color: green; }',
+        contentType: 'text/css',
+        headers: {
+          [HTTP2_RESPONSE_HEADER.CACHE_CONTROL]: 'immutable',
+        },
+        status: 200
+      }); // expect
+    }); // import
+  }); // it
 
   // NOTE: This test resets modules, so it should be after tests that uses default mocks.
   it('responds without etag, when etag configured to off', () => {

@@ -29,6 +29,12 @@ mockJava({
       exists: true,
       mimeType: 'text/css',
     },
+    '/static/assets/200.css/index.html': {
+      bytes: STATIC_ASSETS_INDEX_HTML,
+      etag: 'static_assets_200_css_index_html',
+      exists: true,
+      mimeType: 'text/css',
+    },
     '/custom/root/assets/200.css': {
       bytes: STATIC_ASSETS_200_CSS,
       etag: '1234567890abcdef',
