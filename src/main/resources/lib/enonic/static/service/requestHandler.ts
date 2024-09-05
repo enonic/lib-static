@@ -24,6 +24,18 @@ import { checkPath } from '/lib/enonic/static/resource/path/checkPath';
 import { isDev } from '/lib/enonic/static/runMode';
 
 
+function stringIncludes(
+	string :string,
+	searchString :string,
+	position?: number
+) :boolean {
+	if ((searchString as unknown) instanceof RegExp) {
+		throw new TypeError('second argument must not be a RegExp');
+	}
+	if (position === undefined) { position = 0; }
+	return string.indexOf(searchString, position) !== -1;
+}
+
 export const requestHandler: RequestHandler = ({
   cacheControlFn = getConfiguredCacheControl,
   contentTypeFn = ({ path }) => getMimeType(path),
@@ -97,7 +109,7 @@ export const requestHandler: RequestHandler = ({
 
       let etag = getConfiguredEtag();
       if (etag === 'auto') {
-        etag = headers[HTTP2_RESPONSE_HEADER.CACHE_CONTROL].includes('immutable') ? 'off' : 'on';
+        etag = stringIncludes(headers[HTTP2_RESPONSE_HEADER.CACHE_CONTROL], 'immutable') ? 'off' : 'on';
       }
 
       if (etag === 'on') {

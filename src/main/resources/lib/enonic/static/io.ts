@@ -25,7 +25,7 @@ export class LibStaticResource implements LibStaticResourceInterface {
   }
 
   public getStream(): ByteSource {
-    return this.native.getStream();
+    return this.native.getBytes();
   }
 
   public getTimestamp(): number {
@@ -33,7 +33,8 @@ export class LibStaticResource implements LibStaticResourceInterface {
   }
 
   public isDirectory(): boolean {
-    return this.native.isDirectory();
+    return false;
+    // return this.native.isDirectory();
   }
 
   public readString(): string {
