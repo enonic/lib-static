@@ -1,0 +1,1 @@
+export const FINGERPRINT = '0000019150605440';
