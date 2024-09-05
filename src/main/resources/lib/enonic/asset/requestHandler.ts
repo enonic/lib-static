@@ -19,6 +19,7 @@ import {
   okResponse
 } from '/lib/enonic/static/response/responses';
 import { isDev } from '/lib/enonic/static/runMode';
+import { getFingerprint } from '/lib/enonic/static/runMode';
 
 
 export function requestHandler({
@@ -26,6 +27,11 @@ export function requestHandler({
 }: {
   request: Request
 }): Response {
+  const fingerprint = getFingerprint(app.name);
+  if (fingerprint && request.rawPath.endsWith(`/${fingerprint}`)) {
+    request.rawPath.replace(`/${fingerprint}`, '');
+  }
+
   const absResourcePathWithoutTrailingSlash = getAbsoluteResourcePathWithoutTrailingSlash({
     request,
     root: '/assets' // TODO config?
