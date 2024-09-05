@@ -33,8 +33,8 @@ export class LibStaticResource implements LibStaticResourceInterface {
   }
 
   public isDirectory(): boolean {
-    return false;
-    // return this.native.isDirectory();
+    // return false;
+    return this.native.isDirectory();
   }
 
   public readString(): string {
