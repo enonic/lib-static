@@ -1,6 +1,6 @@
 import type {
   ByteSource,
-  getResource as getResourceValue
+  ResourceKey,
 } from '@enonic-types/lib-io';
 import type {
   Config,
@@ -13,7 +13,11 @@ import {
   jest,
   test as it
 } from '@jest/globals';
-import { Resource } from '../../../Resource';
+import { mockEtagService } from '../../../mocks/etagService';
+import {
+  mockGetResource,
+  mockIoService
+} from '../../../mocks/ioService';
 
 
 // An empty config.json should return defaults
@@ -33,27 +37,6 @@ const CONFIG_JSON_CUSTOM = JSON.stringify(CONFIG_CUSTOM);
 describe('getConfig', () => {
   it('returns hardcoded default when no config.json', () => {
     jest.resetModules();
-    jest.mock('/lib/xp/io', () => ({
-      getResource: jest.fn<typeof getResourceValue>((key) => {
-        if (key === '/lib/enonic/static/config.json') {
-          return new Resource({
-            bytes: undefined,
-            exists: false,
-            key: key.toString(),
-            size: 0,
-            timestamp: Date.now()
-          });
-        }
-        // console.debug('getResource', key);
-        return {
-          exists: () => false,
-        } as Resource;
-      }),
-      readText: (_stream: ByteSource) => {
-        // console.debug('readText');
-        return undefined;
-      },
-    }), { virtual: true });
     import('../../../../main/resources/lib/enonic/static/config').then(({ getConfig }) => {
       expect(getConfig()).toEqual({
         cacheControl: 'public, max-age=10, stale-while-revalidate=50',
@@ -96,28 +79,28 @@ describe('getConfig', () => {
       root: 'custom/root'
     }
     const configJson = JSON.stringify(config);
-    jest.resetModules();
-    jest.mock('/lib/xp/io', () => ({
-      getResource: jest.fn<typeof getResourceValue>((key) => {
-        if (key === '/lib/enonic/static/config.json') {
-          return new Resource({
-            bytes: configJson,
-            exists: true,
-            key: key.toString(),
-            size: configJson.length,
-            timestamp: Date.now()
-          });
-        }
-        // console.debug('getResource', key);
-        return {
-          exists: () => false,
-        } as Resource;
-      }),
-      readText: (_stream: ByteSource) => {
-        // console.debug('readText');
-        return configJson;
+    const resources = {
+      '/lib/enonic/static/config.json': {
+        bytes: configJson,
+        exists: true,
       },
-    }), { virtual: true });
+    };
+    jest.resetModules();
+    // @ts-ignore
+    globalThis.__.newBean = (bean: string) => {
+      if (bean === 'lib.enonic.libStatic.AppHelper') {
+        return {
+          isDevMode: () => false
+        };
+      }
+      if (bean === 'lib.enonic.libStatic.etag.EtagService') {
+        return mockEtagService({ resources });
+      }
+      if (bean === 'lib.enonic.libStatic.IoService') {
+        return mockIoService({ resources });
+      }
+      throw new Error(`Unmocked bean:${bean}!`);
+    }
     import('../../../../main/resources/lib/enonic/static/config').then(({ getConfig }) => {
       expect(getConfig()).toEqual({
         // Approx 68 years
@@ -130,29 +113,29 @@ describe('getConfig', () => {
   }); // it
 
   it("returns defaults when config.json doesn't parse", () => {
-    const CONFIG_JSON = 'not json';
-    jest.resetModules();
-    jest.mock('/lib/xp/io', () => ({
-      getResource: jest.fn<typeof getResourceValue>((key) => {
-        if (key === '/lib/enonic/static/config.json') {
-          return new Resource({
-            bytes: CONFIG_JSON,
-            exists: true,
-            key: key.toString(),
-            size: CONFIG_JSON.length,
-            timestamp: Date.now()
-          });
-        }
-        // console.debug('getResource', key);
-        return {
-          exists: () => false,
-        } as Resource;
-      }),
-      readText: (_stream: ByteSource) => {
-        // console.debug('readText');
-        return CONFIG_JSON;
+    const configJson = 'not json';
+    const resources = {
+      '/lib/enonic/static/config.json': {
+        bytes: configJson,
+        exists: true,
       },
-    }), { virtual: true });
+    };
+    jest.resetModules();
+    // @ts-ignore
+    globalThis.__.newBean = (bean: string) => {
+      if (bean === 'lib.enonic.libStatic.AppHelper') {
+        return {
+          isDevMode: () => false
+        };
+      }
+      if (bean === 'lib.enonic.libStatic.etag.EtagService') {
+        return mockEtagService({ resources });
+      }
+      if (bean === 'lib.enonic.libStatic.IoService') {
+        return mockIoService({ resources });
+      }
+      throw new Error(`Unmocked bean:${bean}!`);
+    }
     import('../../../../main/resources/lib/enonic/static/config').then(({ getConfig }) => {
       expect(getConfig()).toEqual({
         cacheControl: 'public, max-age=10, stale-while-revalidate=50',
@@ -164,6 +147,18 @@ describe('getConfig', () => {
   }); // it
 
   it("caches in production mode", () => {
+    const resources1 = {
+      '/lib/enonic/static/config.json': {
+        bytes: CONFIG_JSON_DEFAULT,
+        exists: true,
+      },
+    };
+    const resources2 = {
+      '/lib/enonic/static/config.json': {
+        bytes: CONFIG_JSON_CUSTOM,
+        exists: true,
+      },
+    };
     // @ts-ignore
     globalThis.__.newBean = (bean: string) => {
       if (bean === 'lib.enonic.libStatic.AppHelper') {
@@ -171,35 +166,34 @@ describe('getConfig', () => {
           isDevMode: () => false
         };
       }
+      if (bean === 'lib.enonic.libStatic.etag.EtagService') {
+        return mockEtagService({ resources: resources1 });
+      }
+      if (bean === 'lib.enonic.libStatic.IoService') {
+        // return mockIoService({ resources });
+        return {
+          getMimeType: (name: string|ResourceKey) => {
+            const mimeType = resources1[name as string]?.mimeType;
+            if (mimeType) {
+              return mimeType;
+            }
+            log.debug(`getMimeType: Unmocked name:${name}!`);
+            return 'application/octet-stream';
+          },
+          getResource: jest.fn()
+            .mockImplementationOnce(mockGetResource({ resources: resources1 }))
+            .mockImplementationOnce(mockGetResource({ resources: resources1 }))
+            .mockImplementationOnce(mockGetResource({ resources: resources2 }))
+            .mockImplementationOnce(mockGetResource({ resources: resources2 }))
+          , // getResource
+          readText: (_stream: ByteSource) => {
+            return _stream as unknown as string;
+          }
+        }
+      }
       throw new Error(`Unmocked bean:${bean}!`);
     }
     jest.resetModules();
-    jest.mock('/lib/xp/io', () => ({
-      getResource: jest.fn<typeof getResourceValue>()
-      .mockReturnValueOnce(new Resource({
-        bytes: CONFIG_JSON_DEFAULT,
-        exists: true,
-        key: '/lib/enonic/static/config.json',
-        size: CONFIG_JSON_DEFAULT.length,
-        timestamp: Date.now()
-      }))
-      .mockReturnValueOnce(({
-        exists: () => false,
-      } as Resource))
-      .mockReturnValueOnce(new Resource({
-        bytes: CONFIG_JSON_CUSTOM,
-        exists: true,
-        key: '/lib/enonic/static/config.json',
-        size: CONFIG_JSON_CUSTOM.length,
-        timestamp: Date.now()
-      }))
-      .mockReturnValueOnce(({
-        exists: () => false,
-      } as Resource)),
-      readText: jest.fn()
-        .mockReturnValueOnce(CONFIG_JSON_DEFAULT)
-        .mockReturnValueOnce(CONFIG_JSON_CUSTOM),
-    }), { virtual: true });
     import('../../../../main/resources/lib/enonic/static/config').then(({ getConfig }) => {
       const res = {
         cacheControl: 'public, max-age=10, stale-while-revalidate=50',
@@ -213,42 +207,52 @@ describe('getConfig', () => {
   }); // it
 
   it("doesn't cache in dev mode", () => {
-    //@ts-ignore
+    const resources1 = {
+      '/lib/enonic/static/config.json': {
+        bytes: CONFIG_JSON_DEFAULT,
+        exists: true,
+      },
+    };
+    const resources2 = {
+      '/lib/enonic/static/config.json': {
+        bytes: CONFIG_JSON_CUSTOM,
+        exists: true,
+      },
+    };
+    jest.resetModules();
+    // @ts-ignore
     globalThis.__.newBean = (bean: string) => {
       if (bean === 'lib.enonic.libStatic.AppHelper') {
         return {
           isDevMode: () => true
         };
       }
+      if (bean === 'lib.enonic.libStatic.etag.EtagService') {
+        return mockEtagService({ resources: resources1 });
+      }
+      if (bean === 'lib.enonic.libStatic.IoService') {
+        return {
+          getMimeType: (name: string|ResourceKey) => {
+            const mimeType = resources1[name as string]?.mimeType;
+            if (mimeType) {
+              return mimeType;
+            }
+            log.debug(`getMimeType: Unmocked name:${name}!`);
+            return 'application/octet-stream';
+          },
+          getResource: jest.fn()
+            .mockImplementationOnce(mockGetResource({ resources: resources1 }))
+            .mockImplementationOnce(mockGetResource({ resources: resources1 }))
+            .mockImplementationOnce(mockGetResource({ resources: resources2 }))
+            .mockImplementationOnce(mockGetResource({ resources: resources2 }))
+          , // getResource
+          readText: (_stream: ByteSource) => {
+            return _stream as unknown as string;
+          }
+        }
+      }
       throw new Error(`Unmocked bean:${bean}!`);
     }
-    jest.resetModules();
-    jest.mock('/lib/xp/io', () => ({
-      getResource: jest.fn<typeof getResourceValue>()
-      .mockReturnValueOnce(new Resource({
-        bytes: CONFIG_JSON_DEFAULT,
-        exists: true,
-        key: '/lib/enonic/static/config.json',
-        size: CONFIG_JSON_DEFAULT.length,
-        timestamp: Date.now()
-      }))
-      .mockReturnValueOnce(({
-        exists: () => false,
-      } as Resource))
-      .mockReturnValueOnce(new Resource({
-        bytes: CONFIG_JSON_CUSTOM,
-        exists: true,
-        key: '/lib/enonic/static/config.json',
-        size: CONFIG_JSON_CUSTOM.length,
-        timestamp: Date.now()
-      }))
-      .mockReturnValueOnce(({
-        exists: () => false,
-      } as Resource)),
-      readText: jest.fn()
-        .mockReturnValueOnce(CONFIG_JSON_DEFAULT)
-        .mockReturnValueOnce(CONFIG_JSON_CUSTOM),
-    }), { virtual: true });
     import('../../../../main/resources/lib/enonic/static/config').then(({ getConfig }) => {
       expect(getConfig()).toEqual({
         enabled: true,

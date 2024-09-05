@@ -1,4 +1,4 @@
-import { getResource, readText } from '/lib/xp/io';
+import { getResource, readText } from '/lib/enonic/static/io';
 import { isDev } from '/lib/enonic/static/runMode';
 
 

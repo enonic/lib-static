@@ -1,8 +1,4 @@
 import type {
-  ByteSource,
-  getResource as getResourceValue
-} from '@enonic-types/lib-io';
-import type {
   Config,
 } from '/lib/enonic/static/types';
 
@@ -27,7 +23,6 @@ import {
   STATIC_ASSETS_200_CSS,
   STATIC_ASSETS_INDEX_HTML,
 } from '../../../../testdata';
-import { Resource } from '../../../../Resource';
 
 
 describe('requestHandler', () => {
@@ -181,6 +176,12 @@ describe('requestHandler', () => {
     }
     const configJson = JSON.stringify(config);
     const resources = {
+      '/lib/enonic/static/config.json': {
+        bytes: configJson,
+        // etag: undefined,
+        exists: true,
+        // mimeType: 'application/json',
+      },
       '/static/assets/200.css': {
         bytes: STATIC_ASSETS_200_CSS,
         etag: '1234567890abcdef',
@@ -203,34 +204,6 @@ describe('requestHandler', () => {
       }
       throw new Error(`Unmocked bean:${bean}!`);
     }
-    jest.mock('/lib/xp/io', () => ({
-      getResource: jest.fn<typeof getResourceValue>((key) => {
-        if (key === '/lib/enonic/static/config.json') {
-          return new Resource({
-            bytes: configJson,
-            exists: true,
-            key: key.toString(),
-            size: configJson.length,
-            timestamp: Date.now()
-          });
-        }
-        if (key === '/static/assets/200.css') {
-          return new Resource({
-            bytes: STATIC_ASSETS_200_CSS,
-            exists: true,
-            key: key.toString(),
-            size: STATIC_ASSETS_200_CSS.length,
-            timestamp: Date.now()
-          });
-        }
-        return {
-          exists: () => false,
-        } as Resource;
-      }),
-      readText: (_stream: ByteSource) => {
-        return configJson;
-      },
-    }), { virtual: true });
     const appName = 'com.example.myproject'; // globalThis.app.name
     const routingUnderWebapp = 'assets';
     const contextPath = `/webapp/${appName}`
@@ -263,6 +236,10 @@ describe('requestHandler', () => {
     }
     const configJson = JSON.stringify(config);
     const resources = {
+      '/lib/enonic/static/config.json': {
+        bytes: configJson,
+        exists: true,
+      },
       '/static/assets/200.css': {
         bytes: STATIC_ASSETS_200_CSS,
         etag: '1234567890abcdef',
@@ -285,34 +262,6 @@ describe('requestHandler', () => {
       }
       throw new Error(`Unmocked bean:${bean}!`);
     }
-    jest.mock('/lib/xp/io', () => ({
-      getResource: jest.fn<typeof getResourceValue>((key) => {
-        if (key === '/lib/enonic/static/config.json') {
-          return new Resource({
-            bytes: configJson,
-            exists: true,
-            key: key.toString(),
-            size: configJson.length,
-            timestamp: Date.now()
-          });
-        }
-        if (key === '/static/assets/200.css') {
-          return new Resource({
-            bytes: STATIC_ASSETS_200_CSS,
-            exists: true,
-            key: key.toString(),
-            size: STATIC_ASSETS_200_CSS.length,
-            timestamp: Date.now()
-          });
-        }
-        return {
-          exists: () => false,
-        } as Resource;
-      }),
-      readText: (_stream: ByteSource) => {
-        return configJson;
-      },
-    }), { virtual: true });
     const appName = 'com.example.myproject'; // globalThis.app.name
     const routingUnderWebapp = 'assets';
     const contextPath = `/webapp/${appName}`
@@ -348,6 +297,9 @@ describe('requestHandler', () => {
         };
       }
       const resources = {
+        '/lib/enonic/static/config.json': {
+          exists: false,
+        },
         '/static/assets/200.css': {
           bytes: STATIC_ASSETS_200_CSS,
           etag: 'SHOULD_NOT_APPEAR',
