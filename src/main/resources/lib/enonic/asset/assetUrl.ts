@@ -26,7 +26,7 @@ export const assetUrl: typeof assetUrlFn = ({
   }
   const fingerprint = getFingerprint(application);
   if (fingerprint) {
-    staticServiceUrl.replace(`/_/service/${application}/asset/`, `/_/service/${application}:${fingerprint}/asset/`);
+    staticServiceUrl.replace(`/_/service/${application}/asset/`, `/_/service/${application}/asset/${fingerprint}/`);
   }
   const firstQuestionMarkIndex = staticServiceUrl.indexOf('?');
   if (firstQuestionMarkIndex !== -1) {
