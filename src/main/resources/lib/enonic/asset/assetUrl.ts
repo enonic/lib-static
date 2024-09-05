@@ -17,17 +17,17 @@ export const assetUrl: typeof assetUrlFn = ({
 }) => {
   const pathWithoutTrailingSlash = path.replace(/\/$/, '');
   let staticServiceUrl = serviceUrlRootViaAssetUrl({
+    application,
     params,
     service: 'asset',
     type,
   });
-  if (application !== app.name) {
-    staticServiceUrl.replace(`/_/service/${app.name}/asset/`, `/_/service/${application}/asset/`);
-  }
+
   const fingerprint = getFingerprint(application);
   if (fingerprint) {
-    staticServiceUrl.replace(`/_/service/${application}/asset/`, `/_/service/${application}/asset/${fingerprint}/`);
+    staticServiceUrl = staticServiceUrl.replace(`/_/service/${application}/asset`, `/_/service/${application}/asset/${fingerprint}`);
   }
+
   const firstQuestionMarkIndex = staticServiceUrl.indexOf('?');
   if (firstQuestionMarkIndex !== -1) {
     return `${staticServiceUrl.substring(0, firstQuestionMarkIndex)}/${pathWithoutTrailingSlash}${staticServiceUrl.substring(firstQuestionMarkIndex)}`;
