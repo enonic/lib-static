@@ -1,7 +1,3 @@
-import type {
-  ByteSource,
-  getResource as getResourceValue
-} from '@enonic-types/lib-io';
 // import type { Router } from '@item-enonic-types/lib-router';
 import type {
   Config,
@@ -17,7 +13,8 @@ import {
 import {
   buildRequest,
 } from '../../expectations';
-import { Resource } from '../../Resource';
+import { mockEtagService } from '../../mocks/etagService';
+import { mockIoService } from '../../mocks/ioService';
 
 
 const MOCKED_RESPONSE: Response = {
@@ -42,30 +39,6 @@ function mockLibRouter() {
 
 describe('services/static', () => {
   it('returns response when config.json enabled is true', () => {
-    const config: Partial<Config> = {
-      enabled: true,
-    };
-    const configJson = JSON.stringify(config);
-    jest.resetModules();
-    jest.mock('/lib/xp/io', () => ({
-      getResource: jest.fn<typeof getResourceValue>((key) => {
-        if (key === '/lib/enonic/static/config.json') {
-          return new Resource({
-            bytes: configJson,
-            exists: true,
-            key: key.toString(),
-            size: configJson.length,
-            timestamp: Date.now()
-          });
-        }
-        return {
-          exists: () => true,
-        } as Resource;
-      }),
-      readText: (_stream: ByteSource) => {
-        return configJson;
-      },
-    }), { virtual: true });
     mockLibRouter();
     import('../../../main/resources/services/static/static').then(({ all }) => {
       const request = buildRequest({});
@@ -78,26 +51,28 @@ describe('services/static', () => {
       enabled: false,
     };
     const configJson = JSON.stringify(config);
-    jest.resetModules();
-    jest.mock('/lib/xp/io', () => ({
-      getResource: jest.fn<typeof getResourceValue>((key) => {
-        if (key === '/lib/enonic/static/config.json') {
-          return new Resource({
-            bytes: configJson,
-            exists: true,
-            key: key.toString(),
-            size: configJson.length,
-            timestamp: Date.now()
-          });
-        }
-        return {
-          exists: () => true,
-        } as Resource;
-      }),
-      readText: (_stream: ByteSource) => {
-        return configJson;
+    const resources = {
+      '/lib/enonic/static/config.json': {
+        bytes: configJson,
+        exists: true,
       },
-    }), { virtual: true });
+    };
+    jest.resetModules();
+    // @ts-ignore
+    globalThis.__.newBean = (bean: string) => {
+      if (bean === 'lib.enonic.libStatic.AppHelper') {
+        return {
+          isDevMode: () => false
+        };
+      }
+      if (bean === 'lib.enonic.libStatic.etag.EtagService') {
+        return mockEtagService({ resources });
+      }
+      if (bean === 'lib.enonic.libStatic.IoService') {
+        return mockIoService({ resources });
+      }
+      throw new Error(`Unmocked bean:${bean}!`);
+    }
     mockLibRouter();
     import('../../../main/resources/services/static/static').then(({ all }) => {
       const request = buildRequest({});

@@ -87,35 +87,6 @@ export function mockJava({
     },
   }
 
-  jest.mock('/lib/xp/io', () => ({
-    getResource: jest.fn<typeof getResourceValue>((key) => {
-      if (key === '/static/assets/index.html' || key === '/static/assets/200.css/index.html') {
-        return new Resource({
-          bytes: STATIC_ASSETS_INDEX_HTML,
-          exists: true,
-          key: key.toString(),
-          size: STATIC_ASSETS_INDEX_HTML.length,
-          timestamp: Date.now()
-        });
-      }
-      if (key === '/static/assets/200.css' || key === '/custom/root/assets/200.css') {
-        return new Resource({
-          bytes: STATIC_ASSETS_200_CSS,
-          exists: true,
-          key: key.toString(),
-          size: STATIC_ASSETS_200_CSS.length,
-          timestamp: Date.now()
-        });
-      }
-      if (key === '/static/assets/500.css') {
-        throw new Error('Manually thrown error :)');
-      }
-      return {
-        exists: () => false,
-      } as Resource;
-    })
-  }), { virtual: true });
-
   jest.mock('/lib/xp/portal', () => ({
   }), { virtual: true });
   // mockLibXpVhost();

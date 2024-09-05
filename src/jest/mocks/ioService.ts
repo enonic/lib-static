@@ -13,6 +13,41 @@ declare module globalThis {
 }
 
 
+export function mockGetResource({
+  resources = {}
+}: {
+  resources?: Record<string, {
+    bytes?: string
+    exists?: boolean
+    etag?: string
+    isDirectory?: boolean
+    mimeType?: string
+  }>
+}) {
+  return (key: string|ResourceKey) => {
+    const resource = resources[key as string];
+    if (!resource) {
+      throw new Error(`getResource: Unmocked key:${JSON.stringify(key, null, 4)}!`);
+    }
+
+    if (!resource.exists) {
+      return {
+        exists: () => false,
+        isDirectory: () => resource.isDirectory,
+      };
+    }
+
+    return new Resource({
+      bytes: resource.bytes || '',
+      exists: true,
+      key: key.toString(),
+      isDirectory: resource.isDirectory,
+      size: (resource.bytes || '').length,
+      timestamp: 2
+    });
+  };
+}
+
 export function mockIoService({
   resources = {}
 }: {
@@ -33,28 +68,7 @@ export function mockIoService({
       log.debug(`getMimeType: Unmocked name:${name}!`);
       return 'application/octet-stream';
     },
-    getResource: (key: string|ResourceKey) => {
-      const resource = resources[key as string];
-      if (!resource) {
-        throw new Error(`getResource: Unmocked key:${JSON.stringify(key, null, 4)}!`);
-      }
-
-      if (!resource.exists) {
-        return {
-          exists: () => false,
-          isDirectory: () => resource.isDirectory,
-        };
-      }
-
-      return new Resource({
-        bytes: resource.bytes || '',
-        exists: true,
-        key: key.toString(),
-        isDirectory: resource.isDirectory,
-        size: (resource.bytes || '').length,
-        timestamp: 2
-      });
-    }, // getResource
+    getResource: mockGetResource({ resources }),
     readText: (_stream: ByteSource) => {
       return _stream as unknown as string;
     }

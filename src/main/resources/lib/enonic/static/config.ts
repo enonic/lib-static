@@ -2,7 +2,7 @@ import type {
   Config,
 } from '/lib/enonic/static/types';
 
-import { getResource, readText } from '/lib/xp/io';
+import { getResource, readText } from '/lib/enonic/static/io';
 import {
   GETTER_ROOT,
   RESPONSE_CACHE_CONTROL,

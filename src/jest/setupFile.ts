@@ -1,4 +1,3 @@
-import { time } from 'console';
 import {mockJava} from './mockJava';
 import {
   STATIC_ASSETS_INDEX_HTML,
@@ -8,6 +7,9 @@ import {
 
 
 const resources = {
+  '/lib/enonic/static/config.json': {
+    exists: false,
+  },
   '/static/assets/index.html': {
       bytes: STATIC_ASSETS_INDEX_HTML,
       etag: '1234567890abcdef',
@@ -74,14 +76,11 @@ const resources = {
     }
 };
 
+// NOTE: /lib/xp/io expects path to start with a slash
 [
   '/',
-  // 'static', // lib/xp/io expects path to start with a slash
-  // 'static/',
   '/static',
   '/static/',
-  // 'static/assets',
-  // 'static/assets/',
   '/static/assets',
   '/static/assets/',
 ].forEach(path => {
