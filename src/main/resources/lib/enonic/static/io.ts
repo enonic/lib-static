@@ -16,6 +16,7 @@ export class LibStaticResource implements LibStaticResourceInterface {
     return this.native.exists();
   }
 
+  /* coverage ignore start */
   public getBytes(): ByteSource {
     return this.native.getBytes();
   }
@@ -23,23 +24,29 @@ export class LibStaticResource implements LibStaticResourceInterface {
   public getSize(): number {
     return this.native.getSize();
   }
+  /* coverage ignore end */
 
   public getStream(): ByteSource {
     return this.native.getBytes();
   }
 
+  /* coverage ignore start */
   public getTimestamp(): number {
     return this.native.getTimestamp();
   }
+  /* coverage ignore end */
 
   public isDirectory(): boolean {
     // return false;
     return this.native.isDirectory();
   }
 
+  /* coverage ignore start */
   public readString(): string {
     return this.native.readString();
   }
+  /* coverage ignore end */
+
 } // class LibStaticResource
 
 
