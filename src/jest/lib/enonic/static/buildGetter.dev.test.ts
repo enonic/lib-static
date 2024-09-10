@@ -26,7 +26,7 @@ beforeAll((done) => {
   mockJava({
     devMode: true,
     resources: {
-      '/lib/enonic/static/config.json': {
+      '/com.enonic.lib.static.json': {
         exists: false,
       },
       '/static/assets/200.css': {

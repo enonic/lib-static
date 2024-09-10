@@ -21,13 +21,17 @@ export type ContentTypeResolver = (params: ContentTypeResolverParams) => string 
 
 export type ContentTypeResolverPositional = (filePathAndName?: string, resource?: Resource) => string | null;
 
+export type RelativePathResolver = (req: Request) => string;
+
 export interface RequestHandlerParams {
   // Required
   request: Request
   // Optional
-  cacheControlFn?: CacheControlResolver
-  contentTypeFn?: ContentTypeResolver
+  cacheControl?: CacheControlResolver
+  contentType?: ContentTypeResolver
+  etag?: boolean
   index?: string|false
+  relativePath?: RelativePathResolver
   root?: string
   throwErrors?: boolean
 }
@@ -74,7 +78,7 @@ export declare interface BuildGetterParams extends GetParams {
    * relative asset path below root (so that later, prefixing the root value to that relative path will give the
    * absolute full path to the resource in the JAR).
    */
-  getCleanPath?: (req: Request) => string;
+  getCleanPath?: RelativePathResolver
 }
 
 export type BuildGetterParamsWithRoot = BuildGetterParams & { root: string }
@@ -86,6 +90,6 @@ export declare interface ParseStringAndOptionsCommonReturnValues {
   contentTypeFunc?: ContentTypeResolverPositional
   errorMessage?: string
   etagOverride?: boolean
-  getCleanPath?: (req: Request) => string
+  getCleanPath?: RelativePathResolver
   throwErrors: boolean
 }

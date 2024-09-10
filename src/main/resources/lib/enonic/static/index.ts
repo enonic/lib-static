@@ -1,7 +1,6 @@
 export { buildGetter } from '/lib/enonic/static/buildGetter';
 export { get } from '/lib/enonic/static/get';
 export { requestHandler } from '/lib/enonic/static/service/requestHandler';
-export { staticUrl } from '/lib/enonic/static/staticUrl';
 export { webAppCacheControl } from '/lib/enonic/static/service/webAppCacheControl';
 
 

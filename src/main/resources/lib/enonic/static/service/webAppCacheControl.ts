@@ -13,6 +13,8 @@ export const webAppCacheControl: CacheControlResolver = ({
   path,
   resource: _resource,
 }) => {
+  // log.debug(`webAppCacheControl contentType:%s path:%s`, contentType, path);
+
   if (contentType === CONTENT_TYPE.HTML) {
     return RESPONSE_CACHE_CONTROL.PREVENT;
   }

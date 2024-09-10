@@ -7,7 +7,7 @@ import {
 
 
 const resources = {
-  '/lib/enonic/static/config.json': {
+  '/com.enonic.lib.static.json': {
     exists: false,
   },
   '/static/assets/index.html': {
