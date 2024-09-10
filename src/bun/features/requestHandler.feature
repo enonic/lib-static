@@ -320,3 +320,15 @@ Scenario: Responds with safe cache-control when resource path ends with .webmani
     | header        | value                                         |
     | cache-control | public, max-age=10, stale-while-revalidate=50 |
     | etag          | "etag-whatever-webmanifest"                   |
+
+Scenario: Responds with 500 internal server error when root parameter is empty
+  Given enonic xp is running in production mode
+  When requestHandler is called with the following parameters:
+    | param | value |
+    | root  |       |
+  # Then the response is info logged
+  Then the response should have the following properties:
+    | property    | value                     |
+    | status      | 500                       |
+    | contentType | text/plain; charset=utf-8 |
+  And the response body should start with "Server error (logged with error ID:"

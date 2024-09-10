@@ -1,6 +1,7 @@
 import type { StepDefinitions } from 'jest-cucumber';
 import type {
 	Request,
+  RequestHandlerParams,
 	Response,
 } from '../../main/resources/lib/enonic/static/types';
 import type { App, DoubleUnderscore, Log } from '../../jest/global.d';
@@ -47,6 +48,7 @@ export const steps: StepDefinitions = ({
 }) => {
   let request: Partial<Request> = {};
   let response: Response;
+  let params: RequestHandlerParams = {};
 
   given('enonic xp is running in development mode', () => {
     globalThis._devMode = true;
@@ -92,6 +94,7 @@ export const steps: StepDefinitions = ({
     table.forEach(({ property, value }) => {
       request[property] = value;
     });
+    params.request = request;
 	});
 
   given('the following request headers:', (table: {header: string, value: string}[]) => {
@@ -99,6 +102,7 @@ export const steps: StepDefinitions = ({
     table.forEach(({ header, value }) => {
       request.headers[header] = value;
     });
+    params.request = request;
 	});
 
   when('the resources are info logged', () => {
@@ -110,8 +114,15 @@ export const steps: StepDefinitions = ({
 	});
 
   when('requestHandler is called', () => {
-    response = requestHandler({ request });
+    response = requestHandler(params);
 	});
+
+  when('requestHandler is called with the following parameters:', (table: {param: string, value: string}[]) => {
+    table.forEach(({ param, value }) => {
+      params[param] = value;
+    });
+    response = requestHandler(params);
+  });
 
   then('the response is info logged', () => {
     log.info('response:%s', response);
