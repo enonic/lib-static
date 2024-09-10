@@ -34,6 +34,13 @@
       "es2023" // string.replaceAll
     ],
 
+    "paths": {
+      "/lib/enonic/asset/*": ["./src/main/resources/lib/enonic/asset/*"],
+      "/lib/enonic/static/*": ["./src/main/resources/lib/enonic/static/*"]
+    },
+
+    "strict": false,
+
     // By default all visible ”@types” packages are included in your compilation.
     // Packages in node_modules/@types of any enclosing folder are considered visible.
     // For example, that means packages within ./node_modules/@types/,

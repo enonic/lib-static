@@ -10,22 +10,19 @@ import { Resource } from '../Resource';
 // Avoid type errors
 declare module globalThis {
   var log: Log
-}
-
-
-export function mockGetResource({
-  resources = {}
-}: {
-  resources?: Record<string, {
+  var _resources: Record<string, {
     bytes?: string
     exists?: boolean
     etag?: string
     isDirectory?: boolean
     mimeType?: string
   }>
-}) {
+}
+
+
+export function mockGetResource() {
   return (key: string|ResourceKey) => {
-    const resource = resources[key as string];
+    const resource = globalThis._resources[key as string];
     if (!resource) {
       throw new Error(`getResource: Unmocked key:${JSON.stringify(key, null, 4)}!`);
     }
@@ -48,27 +45,17 @@ export function mockGetResource({
   };
 }
 
-export function mockIoService({
-  resources = {}
-}: {
-  resources?: Record<string, {
-    bytes?: string
-    exists?: boolean
-    etag?: string
-    isDirectory?: boolean
-    mimeType?: string
-  }>
-}) {
+export function mockIoService() {
   return {
     getMimeType: (name: string|ResourceKey) => {
-      const mimeType = resources[name as string]?.mimeType;
+      const mimeType = globalThis._resources[name as string]?.mimeType;
       if (mimeType) {
         return mimeType;
       }
       log.debug(`getMimeType: Unmocked name:${name}!`);
       return 'application/octet-stream';
     },
-    getResource: mockGetResource({ resources }),
+    getResource: mockGetResource(),
     readText: (_stream: ByteSource) => {
       return _stream as unknown as string;
     }

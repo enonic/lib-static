@@ -23,24 +23,24 @@ export function serviceUrlRootViaAssetUrl({
     params,
     type
   });
-  log.debug('assetUrl:%s', assetUrl);
+  // log.debug('assetUrl:%s', assetUrl);
 
   let assetUrlParams = '';
 
   const firstQuestionMarkIndex = assetUrl.indexOf('?');
   if (firstQuestionMarkIndex !== -1) {
     assetUrlParams = assetUrl.substring(firstQuestionMarkIndex);
-    log.debug('assetUrlParams:%s', assetUrlParams);
+    // log.debug('assetUrlParams:%s', assetUrlParams);
 
     assetUrl = assetUrl.substring(0, firstQuestionMarkIndex);
-    log.debug('assetUrlWithoutParams:%s', assetUrl);
+    // log.debug('assetUrlWithoutParams:%s', assetUrl);
   }
 
   const serviceUrlRootWithoutParams = assetUrl
     .replace(/\/edit\/([^\/]+)\/([^\/]+)\/_\/asset/,'/preview/$1/$2/_/asset') // Avoid: Assets give 404 in edit mode
     .replace(/\/_\/asset\/.*$/, `/_/service/${application}/${service}/`)
     .replace(/\/+$/, '');
-  log.debug('serviceUrlRootWithoutParams:%s', serviceUrlRootWithoutParams);
+  // log.debug('serviceUrlRootWithoutParams:%s', serviceUrlRootWithoutParams);
 
   return `${serviceUrlRootWithoutParams}${assetUrlParams}`;
 }
