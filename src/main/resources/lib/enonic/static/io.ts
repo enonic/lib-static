@@ -21,6 +21,10 @@ export class LibStaticResource implements LibStaticResourceInterface {
     return this.native.getBytes();
   }
 
+  public getKey(): ResourceKey {
+    return this.native.getKey();
+  }
+
   public getSize(): number {
     return this.native.getSize();
   }
@@ -54,11 +58,17 @@ const ioService = __.newBean<{
   getMimeType: (name: string|ResourceKey) => string,
   getResource: (key: string|ResourceKey) => LibStaticResource,
   isDirectory: (key: string|ResourceKey) => boolean,
-  readText: (stream: ByteSource) => string,
+  // readText: (stream: ByteSource) => string,
 }>('lib.enonic.libStatic.IoService');
 
 export const getMimeType = (name: string|ResourceKey) => {
     return ioService.getMimeType(name);
+};
+
+export const isDirectory = (key: string | ResourceKey) => {
+  const res = ioService.isDirectory(key);
+  log.info('isDirectory key:%s res:%s', key, res);
+  return res;
 };
 
 export const getResource = (key: string|ResourceKey) => {
@@ -66,6 +76,6 @@ export const getResource = (key: string|ResourceKey) => {
     return new LibStaticResource(native);
 };
 
-export const readText = (stream: ByteSource) => {
-    return ioService.readText(stream);
-};
+// export const readText = (stream: ByteSource) => {
+//     return ioService.readText(stream);
+// };

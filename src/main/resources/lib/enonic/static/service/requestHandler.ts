@@ -6,7 +6,7 @@ import {
   RESPONSE_NOT_MODIFIED,
 } from '/lib/enonic/static/constants';
 import { read } from '/lib/enonic/static/etagReader';
-import { getResource } from '/lib/enonic/static/io';
+import { getResource, isDirectory } from '/lib/enonic/static/io';
 import { getIfNoneMatchHeader } from '/lib/enonic/static/request/getIfNoneMatchHeader';
 import { getMimeType } from '/lib/enonic/static/io';
 import { responseOrThrow } from '/lib/enonic/static/response/responseOrThrow';
@@ -69,8 +69,9 @@ export const requestHandler: RequestHandler = ({
       }
 
       const resourceMatchingUrl = getResource(absResourcePathWithoutTrailingSlash);
+      const resourceKey = resourceMatchingUrl.getKey();
 
-      if (indexAndNoTrailingSlash && resourceMatchingUrl.isDirectory()) {
+      if (indexAndNoTrailingSlash && isDirectory(resourceKey)) {
         if(!request.path) {
           const msg = `Invalid request without path: ${JSON.stringify(request)}! request.path is needed when index is enabled and the request path does not end with a slash.`;
           if(isDev()) {
