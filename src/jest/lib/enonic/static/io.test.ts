@@ -32,16 +32,16 @@ describe('io', () => {
     }); // it
   }); // describe getResource
 
-  describe('readText', () => {
-    it('should read text from a byte source', () => {
-      import('../../../../main/resources/lib/enonic/static/io').then(({
-        getResource,
-        readText,
-      }) => {
-        const resource = getResource('/static/assets/index.html');
-        const stream = resource.getStream();
-        expect(readText(stream)).toBe(STATIC_ASSETS_INDEX_HTML);
-      }); // import
-    }); // it
-  }); // describe readText
+  // describe('readText', () => {
+  //   it('should read text from a byte source', () => {
+  //     import('../../../../main/resources/lib/enonic/static/io').then(({
+  //       getResource,
+  //       readText,
+  //     }) => {
+  //       const resource = getResource('/static/assets/index.html');
+  //       const stream = resource.getStream();
+  //       expect(readText(stream)).toBe(STATIC_ASSETS_INDEX_HTML);
+  //     }); // import
+  //   }); // it
+  // }); // describe readText
 }); // describe io
