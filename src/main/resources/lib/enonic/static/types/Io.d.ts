@@ -6,6 +6,7 @@ import type {
 
 export interface LibStaticResourceInterface extends ResourceInterface {
   getBytes: () => ByteSource
+  getKey: () => ResourceKey
   isDirectory: () => boolean
   readString: () => string
 }

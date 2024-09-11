@@ -57,18 +57,27 @@ public class IoService
 
     public boolean isDirectory( final Object key )
     {
+      final ResourceKey resourceKey = toResourceKey( key );
+      LOG.info("RK: " + resourceKey);
       final Resource resource = resourceServiceSupplier.get().getResource( toResourceKey( key ) );
+      LOG.info("resource: " + resource);
       final URL url = resource.getUrl();
+      LOG.info("URL: " + url);
       if ( url == null )
       {
+        LOG.info("here1");
         return false;
       }
       try
       {
-        return Files.isDirectory( Path.of( url.toURI() ) );
+        final boolean isDir = Files.isDirectory( Path.of( url.toURI() ) );
+        LOG.info("isDir: " + isDir);
+        return isDir;
+        // return Files.isDirectory( Path.of( url.toURI() ) );
       }
       catch ( URISyntaxException e )
       {
+        LOG.info("here2");
         LOG.debug( "Failed to determine if resource is directory", e );
         return false;
       }
