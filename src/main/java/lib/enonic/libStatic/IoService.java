@@ -9,6 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Supplier;
 
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +33,8 @@ public class IoService
     private Supplier<ResourceService> resourceServiceSupplier;
 
     private ResourceKey parentResourceKey;
+
+    private Bundle bundle;
 
     public String getMimeType( final Object key )
     {
@@ -55,29 +59,19 @@ public class IoService
         return byteSource.asCharSource( StandardCharsets.UTF_8 ).read();
     }
 
-    public boolean isDirectory( final Object key )
+    public boolean isDirectory( final String pathToResource )
     {
-      final ResourceKey resourceKey = toResourceKey( key );
-      LOG.info("RK: " + resourceKey);
-      final Resource resource = resourceServiceSupplier.get().getResource( toResourceKey( key ) );
-      LOG.info("resource: " + resource);
-      final URL url = resource.getUrl();
-      LOG.info("URL: " + url);
+      final URL url = this.bundle.getResource( pathToResource );
       if ( url == null )
       {
-        LOG.info("here1");
         return false;
       }
       try
       {
-        final boolean isDir = Files.isDirectory( Path.of( url.toURI() ) );
-        LOG.info("isDir: " + isDir);
-        return isDir;
-        // return Files.isDirectory( Path.of( url.toURI() ) );
+        return Files.isDirectory( Path.of( url.toURI() ) );
       }
       catch ( URISyntaxException e )
       {
-        LOG.info("here2");
         LOG.debug( "Failed to determine if resource is directory", e );
         return false;
       }
@@ -103,6 +97,7 @@ public class IoService
     {
         this.resourceServiceSupplier = context.getService( ResourceService.class );
         this.parentResourceKey = context.getResourceKey();
+        this.bundle = FrameworkUtil.getBundle( this.getClass() );
     }
 
     private static class ResourceWrapper

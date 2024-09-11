@@ -69,9 +69,9 @@ export const requestHandler: RequestHandler = ({
       }
 
       const resourceMatchingUrl = getResource(absResourcePathWithoutTrailingSlash);
-      const resourceKey = resourceMatchingUrl.getKey();
+      const pathToResource = resourceMatchingUrl.getKey().getPath();
 
-      if (indexAndNoTrailingSlash && isDirectory(resourceKey)) {
+      if (indexAndNoTrailingSlash && isDirectory(pathToResource)) {
         if(!request.path) {
           const msg = `Invalid request without path: ${JSON.stringify(request)}! request.path is needed when index is enabled and the request path does not end with a slash.`;
           if(isDev()) {
