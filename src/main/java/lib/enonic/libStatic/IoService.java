@@ -9,6 +9,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Supplier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.io.ByteSource;
 import com.google.common.net.MediaType;
 
@@ -23,6 +26,8 @@ import com.enonic.xp.util.MediaTypes;
 public class IoService
     implements ScriptBean
 {
+    private static final Logger LOG = LoggerFactory.getLogger( IoService.class );
+
     private Supplier<ResourceService> resourceServiceSupplier;
 
     private ResourceKey parentResourceKey;
@@ -48,6 +53,25 @@ public class IoService
         throws IOException
     {
         return byteSource.asCharSource( StandardCharsets.UTF_8 ).read();
+    }
+
+    public boolean isDirectory( final Object key )
+    {
+      final Resource resource = resourceServiceSupplier.get().getResource( toResourceKey( key ) );
+      final URL url = resource.getUrl();
+      if ( url == null )
+      {
+        return false;
+      }
+      try
+      {
+        return Files.isDirectory( Path.of( url.toURI() ) );
+      }
+      catch ( URISyntaxException e )
+      {
+        LOG.debug( "Failed to determine if resource is directory", e );
+        return false;
+      }
     }
 
     private ResourceKey toResourceKey( final Object value )
@@ -166,6 +190,12 @@ public class IoService
         {
             requireExists();
             return resource.getBytes();
+        }
+
+        @Override
+        public String getResolverName()
+        {
+          return "resourceWrapper";
         }
     }
 }

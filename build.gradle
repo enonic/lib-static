@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'jacoco'
     id 'maven-publish'
     id 'com.enonic.defaults' version '2.1.5'
     id 'com.enonic.xp.base' version '3.5.0'
@@ -8,13 +9,18 @@ plugins {
     id "org.aim42.htmlSanityCheck" version '1.1.6'
 }
 
-java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(11)
-	}
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = sourceCompatibility
+
+def defaultEncoding = 'UTF-8'
+
+compileJava {
+  options.encoding = defaultEncoding
 }
 
-sourceCompatibility = JavaVersion.VERSION_11
+compileTestJava {
+  options.encoding = defaultEncoding
+}
 
 dependencies {
    // compileOnly: This is used for dependencies that are only needed during
@@ -32,9 +38,11 @@ dependencies {
   // implementation "com.enonic.xp:lib-vhost:${xpVersion}"
   implementation 'com.enonic.lib:lib-router:3.1.0'
 
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.0'
+  testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.11.0'
+  testImplementation 'org.junit.vintage:junit-vintage-engine:5.11.0'
   testImplementation "com.enonic.xp:testing:${xpVersion}"
-
-  testImplementation "org.mockito:mockito-inline:5.2.0"
+  testImplementation "org.mockito:mockito-core:5.13.0"
 }
 
 processResources {
@@ -129,3 +137,18 @@ tasks.register('npmTest', NpmTask) {
 }
 
 test.dependsOn npmTest
+
+compileTestJava.dependsOn(':npmBuild')
+
+test {
+  useJUnitPlatform()
+}
+
+jacocoTestReport {
+  reports {
+    xml.required = true
+    html.required = true
+  }
+}
+
+check.dependsOn jacocoTestReport

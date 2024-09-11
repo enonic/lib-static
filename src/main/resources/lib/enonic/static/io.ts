@@ -6,8 +6,9 @@ import type {
 
 const ioService = __.newBean<{
   getMimeType: (name: string|ResourceKey) => string,
-  getResource: (key: string|ResourceKey) => ResourceInterface
-  readText: (stream: ByteSource) => string
+  getResource: (key: string|ResourceKey) => ResourceInterface,
+  readText: (stream: ByteSource) => string,
+  isDirectory: (key: string|ResourceKey) => boolean,
 }>('lib.enonic.libStatic.IoService');
 
 export const getMimeType = (name: string|ResourceKey) => {
@@ -21,6 +22,10 @@ export const getResource = (key: string|ResourceKey) => {
 
 export const readText = (stream: ByteSource) => {
     return ioService.readText(stream);
+};
+
+export const isDirectory = (key: string | ResourceKey) => {
+  return ioService.isDirectory(key);
 };
 
 function Resource(native: ResourceInterface) {
