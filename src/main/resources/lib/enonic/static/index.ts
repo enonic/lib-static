@@ -1,3 +1,5 @@
+export {RESPONSE_CACHE_CONTROL} from '/lib/enonic/static/constants';
+
 export { buildGetter } from '/lib/enonic/static/buildGetter';
 export { get } from '/lib/enonic/static/get';
 export { requestHandler } from '/lib/enonic/static/service/requestHandler';
