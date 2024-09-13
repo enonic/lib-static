@@ -62,19 +62,7 @@ public class IoService
     public boolean isDirectory( final String pathToResource )
     {
       final URL url = this.bundle.getResource( pathToResource );
-      if ( url == null )
-      {
-        return false;
-      }
-      try
-      {
-        return Files.isDirectory( Path.of( url.toURI() ) );
-      }
-      catch ( URISyntaxException e )
-      {
-        LOG.debug( "Failed to determine if resource is directory", e );
-        return false;
-      }
+      return url != null && url.getPath().endsWith( "/" );
     }
 
     private ResourceKey toResourceKey( final Object value )
