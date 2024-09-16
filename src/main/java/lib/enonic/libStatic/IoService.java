@@ -59,12 +59,6 @@ public class IoService
         return byteSource.asCharSource( StandardCharsets.UTF_8 ).read();
     }
 
-    public boolean isDirectory( final String pathToResource )
-    {
-      final URL url = this.bundle.getResource( pathToResource );
-      return url != null && url.getPath().endsWith( "/" );
-    }
-
     private ResourceKey toResourceKey( final Object value )
     {
         if ( value == null )
@@ -155,11 +149,6 @@ public class IoService
             }
 
             return true;
-        }
-
-        public boolean isDirectory()
-        {
-            return false;
         }
 
         @Override

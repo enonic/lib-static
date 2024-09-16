@@ -24,7 +24,6 @@ describe('io', () => {
       import('../../../../main/resources/lib/enonic/static/io').then(({ getResource }) => {
         const resource = getResource('/static/assets/index.html');
         expect(resource.exists()).toBe(true);
-        expect(resource.isDirectory()).toBe(false);
         expect(resource.getSize()).toBe(STATIC_ASSETS_INDEX_HTML.length);
         expect(resource.readString()).toBe(STATIC_ASSETS_INDEX_HTML);
         expect(resource.getStream()).toBe(STATIC_ASSETS_INDEX_HTML);
