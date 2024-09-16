@@ -10,16 +10,12 @@ export interface CacheControlResolverParams {
 
 export type CacheControlResolver = (params: CacheControlResolverParams) => string | null;
 
-export type CacheControlResolverPositional = (filePathAndName?: string, resource?: Resource, mimeType?: string) => string | null;
-
 export interface ContentTypeResolverParams {
   path?: string
   resource?: Resource
 }
 
 export type ContentTypeResolver = (params: ContentTypeResolverParams) => string | null;
-
-export type ContentTypeResolverPositional = (filePathAndName?: string, resource?: Resource) => string | null;
 
 export type RelativePathResolver = (req: Request) => string;
 
@@ -37,59 +33,3 @@ export interface RequestHandlerParams {
 }
 
 export type RequestHandler = (params: RequestHandlerParams) => Response;
-
-
-declare interface GetParams {
-  /**
-   * Override the default Cache-Control header value ('public, max-age=31536000, immutable').
-   */
-  cacheControl?: boolean | string | CacheControlResolverPositional;
-
-  /**
-   * Override the built-in MIME type detection.
-   */
-  contentType?: boolean | string | Record<string, string> | ContentTypeResolverPositional;
-
-  /**
-   *  The default behaviour of lib-static is to generate/handle ETag in prod, while skipping it entirely in dev mode.
-   *  - Setting the etag parameter to false will turn off etag processing (runtime content processing, headers and
-   *    handling) in prod too.
-   *  - Setting it to true will turn it on in dev mode too.
-   */
-  etag?: boolean;
-
-  /**
-   * By default, the .get method should not throw errors when used correctly. Instead, it internally server-logs
-   * (and hash-ID-tags) errors and automatically outputs a 500 error response.
-   *
-   * Setting throwErrors to true overrides this: the 500-response generation is skipped, and the error is re-thrown down
-   * to the calling context, to be handled there.
-   *
-   * This does not apply to 400-bad-request and 404-not-found type "errors", they will always generate a 404-response
-   * either way. 200 and 304 are also untouched, of course.
-   */
-  throwErrors?: boolean;
-}
-
-export declare interface BuildGetterParams extends GetParams {
-  /**
-   * The default behaviour of the returned getStatic function is to take a request object, and compare the beginning of
-   * the current requested path (request.rawPath) to the endpoint’s own root path (request.contextPath) and get a
-   * relative asset path below root (so that later, prefixing the root value to that relative path will give the
-   * absolute full path to the resource in the JAR).
-   */
-  getCleanPath?: RelativePathResolver
-}
-
-export type BuildGetterParamsWithRoot = BuildGetterParams & { root: string }
-
-export type BuildGetterParamsWithPath = BuildGetterParams & { path: string }
-
-export declare interface ParseStringAndOptionsCommonReturnValues {
-  cacheControlFunc?: CacheControlResolverPositional
-  contentTypeFunc?: ContentTypeResolverPositional
-  errorMessage?: string
-  etagOverride?: boolean
-  getCleanPath?: RelativePathResolver
-  throwErrors: boolean
-}
