@@ -35,7 +35,6 @@
     ],
 
     "paths": {
-      "/lib/enonic/asset/*": ["./src/main/resources/lib/enonic/asset/*"],
       "/lib/enonic/static/*": ["./src/main/resources/lib/enonic/static/*"]
     },
 
