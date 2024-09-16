@@ -34,6 +34,16 @@ export function movedPermanentlyResponse({
   }
 }
 
+export function notModifiedResponse({
+  status: _hardcoded,
+  ...rest
+}: Partial<Response> = {}): Response {
+  return {
+    ...rest,
+    status: 304,
+  }
+}
+
 export function notFoundResponse({
   status: _hardcoded,
   ...rest
