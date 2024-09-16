@@ -84,7 +84,6 @@ const serverSideConfig: Config.InitialProjectOptions = {
   moduleNameMapper: {
     // '/types': `<rootDir>/${DIR_SRC}/types/index.d.ts`,
     // '/types/(.*)': `<rootDir>/${DIR_SRC}/types/$1.ts`,
-    '/lib/enonic/asset/(.*)': `<rootDir>/${DIR_SRC}/lib/enonic/asset/$1`,
     '/lib/enonic/static/(.*)': `<rootDir>/${DIR_SRC}/lib/enonic/static/$1`,
   },
 
