@@ -15,7 +15,6 @@ import {
 import { stringify } from 'q-i';
 import { isObject } from '../jest/isObject';
 // import { Resource } from '../jest/Resource';
-import { FINGERPRINT } from './constants';
 import { mockEtagService } from '../jest/mocks/etagService';
 import { mockIoService } from '../jest/mocks/ioService';
 
@@ -186,10 +185,6 @@ globalThis.__ = {
     if (bean === 'lib.enonic.libStatic.AppHelper') {
       return {
         isDevMode: () => globalThis._devMode,
-        getFingerprint: (application: string) => {
-          // log.debug('getFingerprint(%s) --> %s', application, FINGERPRINT);
-          return FINGERPRINT;
-        },
       };
     }
     if (bean === 'lib.enonic.libStatic.etag.EtagService') {
@@ -228,6 +223,6 @@ mock.module('/lib/xp/portal', () => ({
     params,
   }: AssetUrlParams) => {
     const query = params ? `?${new URLSearchParams(params as Record<string,string>).toString()}` : '';
-    return `${BASEURL}/_/asset/${app.name}:${FINGERPRINT}${query}`;
+    return `${BASEURL}/_/asset/${app.name}:1234567890123456${query}`;
   }),
 }));
