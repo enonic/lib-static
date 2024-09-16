@@ -38,14 +38,7 @@ export class LibStaticResource implements LibStaticResourceInterface {
   public getTimestamp(): number {
     return this.native.getTimestamp();
   }
-  /* coverage ignore end */
 
-  public isDirectory(): boolean {
-    // return false;
-    return this.native.isDirectory();
-  }
-
-  /* coverage ignore start */
   public readString(): string {
     return this.native.readString();
   }
@@ -57,18 +50,11 @@ export class LibStaticResource implements LibStaticResourceInterface {
 const ioService = __.newBean<{
   getMimeType: (name: string|ResourceKey) => string,
   getResource: (key: string|ResourceKey) => LibStaticResource,
-  isDirectory: (key: string|ResourceKey) => boolean,
   // readText: (stream: ByteSource) => string,
 }>('lib.enonic.libStatic.IoService');
 
 export const getMimeType = (name: string|ResourceKey) => {
     return ioService.getMimeType(name);
-};
-
-export const isDirectory = (key: string | ResourceKey) => {
-  const res = ioService.isDirectory(key);
-  log.info('isDirectory key:%s res:%s', key, res);
-  return res;
 };
 
 export const getResource = (key: string|ResourceKey) => {

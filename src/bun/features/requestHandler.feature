@@ -24,12 +24,12 @@ Scenario: Responds with 200 ok when resource found
     | etag          | "etag-index-css"                    |
     | cache-control | public, max-age=31536000, immutable |
 
-Scenario: Responds with 200 ok when index is enabled, rawPath has trailing slash and resource isDirectory
+Scenario: Responds with 200 ok when index is enabled, rawPath has trailing slash
   Given enonic xp is running in production mode
   Given the following resources:
-    | path                      | exist | isDir | type      | content       | etag            |
-    | /static/folder/index.html | true  | false | text/html | <html></html> | etag-index-html |
-    | /static/folder            | true  | true  |           |               |                 |
+    | path                      | exist | type      | content       | etag            |
+    | /static/folder/index.html | true  | text/html | <html></html> | etag-index-html |
+    | /static/folder            | true  |           |               |                 |
   And the following request:
     | property    | value                                                                        |
     | contextPath | /webapp/com.example.myproject/_/service/com.example.myproject/static         |
@@ -70,12 +70,12 @@ Scenario: [DEV] Responds with 404 bad request with body and contentType when req
     | contentType | text/plain; charset=utf-8                                                                        |
     | body        | Invalid request without rawPath: {}! request.rawPath is needed when index is set to "index.html" |
 
-Scenario: [PROD] Responds with 400 Bad request when request.path is missing and index is enabled, rawPath has no trailing slash and resource isDirectory
+Scenario: [PROD] Responds with 400 Bad request when index is enabled, rawPath has no trailing slash and request.path is missing
   Given enonic xp is running in production mode
   Given the following resources:
-    | path                      | exist | isDir | type      | content       | etag            |
-    | /static/folder/index.html | true  | false | text/html | <html></html> | etag-index-html |
-    | /static/folder            | true  | true  |           |               |                 |
+    | path                      | exist |  type      | content       | etag            |
+    | /static/folder/index.html | true  |  text/html | <html></html> | etag-index-html |
+    | /static/folder            | false |            |               |                 |
   And the following request:
     | property    | value                                                                       |
     | contextPath | /webapp/com.example.myproject/_/service/com.example.myproject/static        |
@@ -87,12 +87,12 @@ Scenario: [PROD] Responds with 400 Bad request when request.path is missing and 
     | property    | value         |
     | status      | 400           |
 
-Scenario: [DEV] Responds with 400 Bad request when request.path is missing and index is enabled, rawPath has no trailing slash and resource isDirectory
+Scenario: [DEV] Responds with 400 Bad request when index is enabled, rawPath has no trailing slash and request.path is missing
   Given enonic xp is running in development mode
   Given the following resources:
-    | path                      | exist | isDir | type      | content       | etag            |
-    | /static/folder/index.html | true  | false | text/html | <html></html> | etag-index-html |
-    | /static/folder            | true  | true  |           |               |                 |
+    | path                      | exist | type      | content       | etag            |
+    | /static/folder/index.html | true  | text/html | <html></html> | etag-index-html |
+    | /static/folder            | false |           |               |                 |
   And the following request:
     | property    | value                                                                       |
     | contextPath | /webapp/com.example.myproject/_/service/com.example.myproject/static        |
@@ -107,12 +107,12 @@ Scenario: [DEV] Responds with 400 Bad request when request.path is missing and i
   And the response body should start with "Invalid request without path: "
 
 
-Scenario: Responds with 301 Moved Permanently when index is enabled, rawPath has no trailing slash and resource isDirectory
+Scenario: Responds with 301 Moved Permanently when index is enabled, rawPath has no trailing slash, but index is found
   Given enonic xp is running in production mode
   Given the following resources:
-    | path                      | exist | isDir | type      | content       | etag            |
-    | /static/folder/index.html | true  | false | text/html | <html></html> | etag-index-html |
-    | /static/folder            | true  | true  |           |               |                 |
+    | path                      | exist | type      | content       | etag            |
+    | /static/folder/index.html | true  | text/html | <html></html> | etag-index-html |
+    | /static/folder            | false |           |               |                 |
   And the following request:
     | property    | value                                                                       |
     | contextPath | /webapp/com.example.myproject/_/service/com.example.myproject/static        |
@@ -161,8 +161,9 @@ Scenario: [DEV] Responds with 400 bad request with body and contentType when pat
 Scenario: Responds with 404 when resource doesn't exist
   Given enonic xp is running in production mode
   Given the following resources:
-    | path              | exist |
-    | /static/index.css | false |
+    | path                         | exist |
+    | /static/index.css            | false |
+    | /static/index.css/index.html | false |
   And the following request:
     | property    | value                                                                                               |
     | contextPath | /webapp/com.example.myproject/_/service/com.example.myproject/static                                |
@@ -242,9 +243,9 @@ Scenario: Responds with safe cache-control when resource is /favicon.ico
     | contentType | image/x-icon          |
     | body        | faviconContent        |
   And the response should have the following headers:
-    | header        | value                                         |
-    | cache-control | public, max-age=10, stale-while-revalidate=50 |
-    | etag          | "etag-favicon-ico"                            |
+    | header        | value                                                        |
+    | cache-control | public, max-age=10, stale-while-revalidate=50, s-maxage=3600 |
+    | etag          | "etag-favicon-ico"                                           |
 
 Scenario: Responds with crawler cache-control when resource is /sitemap.xml
   Given enonic xp is running in production mode
@@ -296,30 +297,30 @@ Scenario: Responds with prevent cache-control when resource is /BingSiteAuth.xml
     | cache-control | public, max-age=0, must-revalidate |
     | etag          | "etag-bingsiteauth-xml"            |
 
-Scenario: Responds with safe cache-control when resource path ends with .webmanifest
+Scenario: Responds with safe cache-control when resource path starts with /.well-known/
   Given enonic xp is running in production mode
   Given the following resources:
-    | path                     | exist | type            | etag                  | content        |
-    | /static/whatever.webmanifest | true  | application/xml | etag-whatever-webmanifest | whateverWebmanifestContent |
+    | path                         | exist | type       | etag          | content         |
+    | /static/.well-known/whatever | true  | text/plain | etag-whatever | whateverContent |
   And the following request:
     | property    | value                                                                                                          |
     | contextPath | /webapp/com.example.myproject/_/service/com.example.myproject/static                                           |
-    | rawPath     | /webapp/com.example.myproject/_/service/com.example.myproject/static/whatever.webmanifest                      |
-    | path        | /webapp/com.example.myproject/_/service/com.example.myproject/static/whatever.webmanifest                      |
-    | url         | http://localhost:8080/webapp/com.example.myproject/_/service/com.example.myproject/static/whatever.webmanifest |
+    | rawPath     | /webapp/com.example.myproject/_/service/com.example.myproject/static/.well-known/whatever                      |
+    | path        | /webapp/com.example.myproject/_/service/com.example.myproject/static/.well-known/whatever                      |
+    | url         | http://localhost:8080/webapp/com.example.myproject/_/service/com.example.myproject/static/.well-known/whatever |
   # When the resources are info logged
   # When the request is info logged
   When requestHandler is called
   # Then the response is info logged
   Then the response should have the following properties:
-    | property    | value                  |
-    | status      | 200                    |
-    | contentType | application/xml        |
-    | body        | whateverWebmanifestContent |
+    | property    | value           |
+    | status      | 200             |
+    | contentType | text/plain      |
+    | body        | whateverContent |
   And the response should have the following headers:
-    | header        | value                                         |
-    | cache-control | public, max-age=10, stale-while-revalidate=50 |
-    | etag          | "etag-whatever-webmanifest"                   |
+    | header        | value                                                        |
+    | cache-control | public, max-age=10, stale-while-revalidate=50, s-maxage=3600 |
+    | etag          | "etag-whatever"                                              |
 
 Scenario: Responds with 500 internal server error when root parameter is empty
   Given enonic xp is running in production mode

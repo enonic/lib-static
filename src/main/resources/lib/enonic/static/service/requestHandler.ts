@@ -5,7 +5,7 @@ import {
   RESPONSE_CACHE_CONTROL_DIRECTIVE,
 } from '/lib/enonic/static/constants';
 import { read } from '/lib/enonic/static/etagReader';
-import { getResource, isDirectory } from '/lib/enonic/static/io';
+import { getResource } from '/lib/enonic/static/io';
 import { getIfNoneMatchHeader } from '/lib/enonic/static/request/getIfNoneMatchHeader';
 import { getMimeType } from '/lib/enonic/static/io';
 import { responseOrThrow } from '/lib/enonic/static/response/responseOrThrow';
@@ -68,38 +68,45 @@ export const requestHandler: RequestHandler = ({
         return errorResponse;
       }
 
-      const resourceMatchingUrl = getResource(absResourcePathWithoutTrailingSlash);
-      const pathToResource = resourceMatchingUrl.getKey().getPath();
+      const resource = getResource(absResourcePathWithoutTrailingSlash);
 
-      if (indexAndNoTrailingSlash && isDirectory(pathToResource)) {
-        if(!request.path) {
-          const msg = `Invalid request without path: ${JSON.stringify(request)}! request.path is needed when index is enabled and the request path does not end with a slash.`;
-          if(isDev()) {
-            return badRequestResponse({
-              body: msg,
-              contentType: 'text/plain; charset=utf-8'
-            });
-          }
-          log.warning(msg);
-          return badRequestResponse();
-        }
-        return movedPermanentlyResponse({
-          location: `${request.path}/`
+      if (indexAndNoTrailingSlash && !resource.exists()) {
+        request.rawPath += `/${index}`;
+        const indexAbsPath = prefixWithRoot({
+          path: relativePathFn(request),
+          root
         });
+        const indexResource = getResource(indexAbsPath);
+        if (indexResource.exists()) {
+          if(!request.path) {
+            const msg = `Invalid request without path: ${JSON.stringify(request)}! request.path is needed when index is enabled and the request path does not end with a slash.`;
+            if(isDev()) {
+              return badRequestResponse({
+                body: msg,
+                contentType: 'text/plain; charset=utf-8'
+              });
+            }
+            log.warning(msg);
+            return badRequestResponse();
+          }
+          return movedPermanentlyResponse({
+            location: `${request.path}/`
+          });
+        }
       }
 
-      if (!resourceMatchingUrl.exists()) {
+      if (!resource.exists()) {
         return notFoundResponse();
       }
 
       const contentType = contentTypeFn({
         path: absResourcePathWithoutTrailingSlash,
-        resource: resourceMatchingUrl
+        resource
       });
 
       if(isDev()) {
         return okResponse({
-          body: resourceMatchingUrl.getStream(),
+          body: resource.getStream(),
           contentType,
           headers: {
             [HTTP2_RESPONSE_HEADER.CACHE_CONTROL]: RESPONSE_CACHE_CONTROL_DIRECTIVE.NO_STORE
@@ -112,7 +119,7 @@ export const requestHandler: RequestHandler = ({
         [HTTP2_RESPONSE_HEADER.CACHE_CONTROL]: cacheControlFn({
           contentType,
           path: relativePath,
-          resource: resourceMatchingUrl,
+          resource
         })
       };
 
@@ -131,7 +138,7 @@ export const requestHandler: RequestHandler = ({
       }
 
       return okResponse({
-        body: resourceMatchingUrl.getStream(),
+        body: resource.getStream(),
         contentType,
         headers
       });

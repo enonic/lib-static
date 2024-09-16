@@ -88,7 +88,6 @@ const resources = {
     bytes: undefined,
     etag: undefined,
     exists: false,
-    isDirectory: true,
     mimeType: undefined,
     // timestamp: -1,
     // size: -1,

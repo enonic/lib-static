@@ -30,13 +30,12 @@ declare module globalThis {
     bytes?: string
     exists?: boolean
     etag?: string
-    isDirectory?: boolean
     mimeType?: string
   }>
 }
 
 
-const LOG_LEVEL: 'debug' | 'error' | 'info' | 'warn' | 'silent' = 'info';
+const LOG_LEVEL: 'debug' | 'error' | 'info' | 'warn' | 'silent' = 'silent';
 
 
 globalThis._resources = {

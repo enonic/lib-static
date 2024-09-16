@@ -28,7 +28,6 @@ declare module globalThis {
     bytes?: string
     exists?: boolean
     etag?: string
-    isDirectory?: boolean
     mimeType?: string
   }>
 }
@@ -62,14 +61,13 @@ export const steps: StepDefinitions = ({
     content: string
     exist: string
     etag: string
-    isDir: string
     path: string
     type: string
   }[]) => {
     Object.keys(globalThis._resources).forEach((key) => {
       delete globalThis._resources[key];
     });
-    table.forEach(({ path, exist, type, etag, content, isDir }) => {
+    table.forEach(({ path, exist, type, etag, content }) => {
       globalThis._resources[path] = {
         exists: exist !== 'false',
       };
@@ -81,9 +79,6 @@ export const steps: StepDefinitions = ({
       }
       if (type) {
         globalThis._resources[path].mimeType = type;
-      }
-      if (isDir) {
-        globalThis._resources[path].isDirectory = isDir === 'true';
       }
     });
     // log.info('resources:%s', globalThis._resources);
