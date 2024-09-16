@@ -42,7 +42,6 @@ export default function buildServerConfig(): Options {
 
     external: [
       '/lib/cache',
-      '/lib/enonic/asset',
       '/lib/enonic/static',
       /^\/lib\/guillotine/,
       '/lib/graphql',
