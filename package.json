@@ -15,9 +15,9 @@
     "type": "git",
     "url": "git+https://github.com/enonic/lib-static.git"
   },
-  "author": "Espen Norderud",
+  "author": "Christian Andreas Westgaard <cwe@enonic.com>",
   "contributors": [
-    "Christian Andreas Westgaard <cwe@enonic.com>"
+    "Espen Norderud"
   ],
   "license": "Apache-2.0",
   "bugs": {
