@@ -3,7 +3,6 @@ import type { RequestHandler } from '/lib/enonic/static/types';
 import {
   HTTP2_RESPONSE_HEADER,
   RESPONSE_CACHE_CONTROL_DIRECTIVE,
-  RESPONSE_NOT_MODIFIED,
 } from '/lib/enonic/static/constants';
 import { read } from '/lib/enonic/static/etagReader';
 import { getResource, isDirectory } from '/lib/enonic/static/io';
@@ -16,6 +15,7 @@ import {
   badRequestResponse,
   movedPermanentlyResponse,
   notFoundResponse,
+  notModifiedResponse,
   okResponse
 } from '/lib/enonic/static/response/responses';
 import { prefixWithRoot } from '/lib/enonic/static/resource/path/prefixWithRoot';
@@ -119,13 +119,15 @@ export const requestHandler: RequestHandler = ({
       if (etag) {
         const etagWithDblFnutts = read(absResourcePathWithoutTrailingSlash);
         const ifNoneMatchRequestHeader = getIfNoneMatchHeader({ request })
+        headers[HTTP2_RESPONSE_HEADER.ETAG] = etagWithDblFnutts;
         if (
           ifNoneMatchRequestHeader
           && ifNoneMatchRequestHeader === etagWithDblFnutts
         ) {
-          return RESPONSE_NOT_MODIFIED;
+          return notModifiedResponse({
+            headers
+          });
         }
-        headers[HTTP2_RESPONSE_HEADER.ETAG] = etagWithDblFnutts;
       }
 
       return okResponse({

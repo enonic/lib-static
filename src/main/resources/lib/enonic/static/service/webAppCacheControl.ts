@@ -21,7 +21,10 @@ export const webAppCacheControl: CacheControlResolver = ({
 
   switch (path) {
     case '/favicon.ico':
+    case '/apple-touch-icon.png':
     case '/manifest.json':
+    case '/manifest.webmanifest':
+    case '/site.webmanifest':
       return RESPONSE_CACHE_CONTROL.SAFE;
     case '/sitemap.xml':
     case '/robots.txt':
@@ -31,11 +34,8 @@ export const webAppCacheControl: CacheControlResolver = ({
   }
 
   if (path && path.startsWith('/')) {
-    if(path.endsWith('.webmanifest')) {
-      return RESPONSE_CACHE_CONTROL.SAFE;
-    }
     if (path.startsWith('/.well-known/')) {
-      return RESPONSE_CACHE_CONTROL.EDGE;
+      return RESPONSE_CACHE_CONTROL.SAFE;
     }
   }
 
