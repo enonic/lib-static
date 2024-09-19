@@ -244,7 +244,7 @@ Scenario: Responds with safe cache-control when resource is /favicon.ico
     | body        | faviconContent        |
   And the response should have the following headers:
     | header        | value                                                        |
-    | cache-control | public, max-age=10, stale-while-revalidate=50, s-maxage=3600 |
+    | cache-control | public, max-age=10, s-maxage=3600, stale-while-revalidate=50 |
     | etag          | "etag-favicon-ico"                                           |
 
 Scenario: Responds with crawler cache-control when resource is /sitemap.xml
@@ -268,9 +268,9 @@ Scenario: Responds with crawler cache-control when resource is /sitemap.xml
     | contentType | application/xml       |
     | body        | sitemapXmlContent     |
   And the response should have the following headers:
-    | header        | value               |
-    | cache-control | public, max-age=600 |
-    | etag          | "etag-sitemap-xml"  |
+    | header        | value                                           |
+    | cache-control | public, max-age=3600, stale-while-revalidate=60 |
+    | etag          | "etag-sitemap-xml"                              |
 
 Scenario: Responds with prevent cache-control when resource is /BingSiteAuth.xml
   Given enonic xp is running in production mode
@@ -319,7 +319,7 @@ Scenario: Responds with safe cache-control when resource path starts with /.well
     | body        | whateverContent |
   And the response should have the following headers:
     | header        | value                                                        |
-    | cache-control | public, max-age=10, stale-while-revalidate=50, s-maxage=3600 |
+    | cache-control | public, max-age=10, s-maxage=3600, stale-while-revalidate=50 |
     | etag          | "etag-whatever"                                              |
 
 Scenario: Responds with 500 internal server error when root parameter is empty
