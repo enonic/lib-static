@@ -4,7 +4,7 @@ import type {
   list,
 } from '@enonic-types/lib-vhost';
 
-import { jest } from '@jest/globals';
+import {jest} from '@jest/globals';
 
 
 export function mockLibXpVhost({
@@ -19,6 +19,6 @@ export function mockLibXpVhost({
     list: jest.fn<typeof list>(() => ({
       vhosts
     })),
-  }), { virtual: true });
+  }), {virtual: true});
 
 }

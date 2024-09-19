@@ -11,7 +11,7 @@ import {
 describe('io', () => {
   describe('getMimeType', () => {
     it('should return the mime type of a file', () => {
-      import('../../../../main/resources/lib/enonic/static/io').then(({ getMimeType }) => {
+      import('../../../../main/resources/lib/enonic/static/io').then(({getMimeType}) => {
         expect(getMimeType('/static/assets/index.html')).toBe('text/html');
         expect(getMimeType('/static/assets/200.css')).toBe('text/css');
         expect(getMimeType('unknown')).toBe('application/octet-stream');
@@ -21,7 +21,7 @@ describe('io', () => {
 
   describe('getResource', () => {
     it('should return a resource', () => {
-      import('../../../../main/resources/lib/enonic/static/io').then(({ getResource }) => {
+      import('../../../../main/resources/lib/enonic/static/io').then(({getResource}) => {
         const resource = getResource('/static/assets/index.html');
         expect(resource.exists()).toBe(true);
         expect(resource.getSize()).toBe(STATIC_ASSETS_INDEX_HTML.length);

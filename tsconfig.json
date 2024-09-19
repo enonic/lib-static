@@ -33,12 +33,12 @@
     "lib": [
       "es2023" // string.replaceAll
     ],
-
+    "module": "ESNext",
     "paths": {
       "/lib/enonic/static/*": ["./src/main/resources/lib/enonic/static/*"]
     },
-
-    "strict": false,
+    "strict": true,
+    "target": "ESNext",
 
     // By default all visible ”@types” packages are included in your compilation.
     // Packages in node_modules/@types of any enclosing folder are considered visible.

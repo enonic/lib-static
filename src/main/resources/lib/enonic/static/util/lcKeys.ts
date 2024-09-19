@@ -1,11 +1,11 @@
-import { mapKeys } from '/lib/enonic/static/util/mapKeys';
+import {mapKeys} from '/lib/enonic/static/util/mapKeys';
 
 
-export function lcKeys(obj: object) {
+export function lcKeys(obj: object): object {
 	return mapKeys(obj,({
 		key,
 		result,
-		value
+		value,
 	}) => {
 		result[String(key).toLowerCase()] = value;
 	});

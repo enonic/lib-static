@@ -1,30 +1,30 @@
-import type { StepDefinitions } from 'jest-cucumber';
+import type {StepDefinitions} from 'jest-cucumber';
 import type {
 	Request,
   RequestHandlerParams,
 	Response,
 } from '../../main/resources/lib/enonic/static/types';
-import type { App, DoubleUnderscore, Log } from '../../jest/global.d';
+import type {App, DoubleUnderscore, Log} from '../../jest/global.d';
 
-import { describe } from '@jest/globals';
+import {describe} from '@jest/globals';
 import {
   expect,
-  test
+  test,
 } from 'bun:test';
 import {
   autoBindSteps,
   loadFeature,
 } from 'jest-cucumber';
-import { requestHandler } from '../../main/resources/lib/enonic/static/service/requestHandler';
+import {requestHandler} from '../../main/resources/lib/enonic/static/service/requestHandler';
 
 
 // Avoid type errors
-declare module globalThis {
-  var app: App
-  var log: Log
-  var __: DoubleUnderscore
-  var _devMode: boolean;
-  var _resources: Record<string, {
+declare namespace globalThis {
+  let app: App
+  let log: Log
+  let __: DoubleUnderscore
+  let _devMode: boolean;
+  let _resources: Record<string, {
     bytes?: string
     exists?: boolean
     etag?: string
@@ -36,7 +36,7 @@ const feature = loadFeature('./src/bun/features/requestHandler.feature', {
   runner: {
     describe,
     test,
-  }
+  },
 });
 
 export const steps: StepDefinitions = ({
@@ -47,7 +47,7 @@ export const steps: StepDefinitions = ({
 }) => {
   let request: Partial<Request> = {};
   let response: Response;
-  let params: RequestHandlerParams = {};
+  const params: RequestHandlerParams = {};
 
   given('enonic xp is running in development mode', () => {
     globalThis._devMode = true;
@@ -67,7 +67,7 @@ export const steps: StepDefinitions = ({
     Object.keys(globalThis._resources).forEach((key) => {
       delete globalThis._resources[key];
     });
-    table.forEach(({ path, exist, type, etag, content }) => {
+    table.forEach(({path, exist, type, etag, content}) => {
       globalThis._resources[path] = {
         exists: exist !== 'false',
       };
@@ -86,7 +86,7 @@ export const steps: StepDefinitions = ({
 
   given('the following request:', (table: {property: string, value: string}[]) => {
     request = {};
-    table.forEach(({ property, value }) => {
+    table.forEach(({property, value}) => {
       request[property] = value;
     });
     params.request = request;
@@ -94,7 +94,7 @@ export const steps: StepDefinitions = ({
 
   given('the following request headers:', (table: {header: string, value: string}[]) => {
     request.headers = {};
-    table.forEach(({ header, value }) => {
+    table.forEach(({header, value}) => {
       request.headers[header] = value;
     });
     params.request = request;
@@ -113,7 +113,7 @@ export const steps: StepDefinitions = ({
 	});
 
   when('requestHandler is called with the following parameters:', (table: {param: string, value: string}[]) => {
-    table.forEach(({ param, value }) => {
+    table.forEach(({param, value}) => {
       params[param] = value;
     });
     response = requestHandler(params);
@@ -124,7 +124,7 @@ export const steps: StepDefinitions = ({
 	});
 
   then('the response should have the following properties:', (table: {property: string, value: string}[]) => {
-    table.forEach(({ property, value }) => {
+    table.forEach(({property, value}) => {
       // if (value === 'undefined') {
       //   value = undefined;
       // }
@@ -142,7 +142,7 @@ export const steps: StepDefinitions = ({
 	});
 
   then('the response should have the following headers:', (table: {header: string, value: string}[]) => {
-    table.forEach(({ header, value }) => {
+    table.forEach(({header, value}) => {
       let v: unknown = value;
       if (value === 'undefined') {
         v = undefined;
@@ -160,4 +160,4 @@ export const steps: StepDefinitions = ({
 
 }; // steps
 
-autoBindSteps(feature, [ steps ]);
+autoBindSteps(feature, [steps]);

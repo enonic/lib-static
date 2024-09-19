@@ -1,8 +1,8 @@
 import type {
   ByteSource,
-  ResourceKey
+  ResourceKey,
 } from '/lib/xp/io';
-import type { LibStaticResourceInterface } from '/lib/enonic/static/types';
+import type {LibStaticResourceInterface} from '/lib/enonic/static/types';
 
 
 export class LibStaticResource implements LibStaticResourceInterface {
@@ -48,16 +48,16 @@ export class LibStaticResource implements LibStaticResourceInterface {
 
 
 const ioService = __.newBean<{
-  getMimeType: (name: string|ResourceKey) => string,
-  getResource: (key: string|ResourceKey) => LibStaticResource,
+  getMimeType: (name: string) => string,
+  getResource: (key: string) => LibStaticResource,
   // readText: (stream: ByteSource) => string,
 }>('lib.enonic.libStatic.IoService');
 
-export const getMimeType = (name: string|ResourceKey) => {
+export const getMimeType = (name: string): string => {
     return ioService.getMimeType(name);
 };
 
-export const getResource = (key: string|ResourceKey) => {
+export const getResource = (key: string): LibStaticResource => {
     const native = ioService.getResource(key);
     return new LibStaticResource(native);
 };

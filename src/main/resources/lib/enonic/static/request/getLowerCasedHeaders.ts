@@ -1,13 +1,13 @@
-import type { Request } from '/lib/enonic/static/types';
+import type {Request} from '/lib/enonic/static/types';
 
-import { lcKeys } from '/lib/enonic/static/util/lcKeys';
+import {lcKeys} from '/lib/enonic/static/util/lcKeys';
 
 
 export function getLowerCasedHeaders({
-  request
+  request,
 }: {
   request: Request
-}) {
+}): object {
   const {
     headers: mixedCaseRequestHeaders = {},
   } = request;

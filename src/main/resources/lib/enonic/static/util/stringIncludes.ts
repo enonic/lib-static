@@ -1,7 +1,7 @@
 export function stringIncludes(
 	string :string,
 	searchString :string,
-	position?: number
+	position?: number,
 ) :boolean {
 	if ((searchString as unknown) instanceof RegExp) {
 		throw new TypeError('second argument must not be a RegExp');

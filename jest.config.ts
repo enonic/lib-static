@@ -1,4 +1,4 @@
-import type { Config } from '@jest/types';
+import type {Config} from '@jest/types';
 
 
 const DIR_SRC = 'src/main/resources';
@@ -26,7 +26,7 @@ const commonConfig: Config.InitialProjectOptions = {
   // Example: ["<rootDir>/build/", "<rootDir>/node_modules/"].
   coveragePathIgnorePatterns: [
     '<rootDir>/node_modules/',
-    `<rootDir>/${DIR_SRC_JEST}/`
+    `<rootDir>/${DIR_SRC_JEST}/`,
   ],
 
   // Insert Jest's globals (expect, test, describe, beforeEach etc.) into the
@@ -53,7 +53,7 @@ const serverSideConfig: Config.InitialProjectOptions = {
     app: {
       name: 'com.example.myproject',
       config: {},
-      version: '1.0.0'
+      version: '1.0.0',
     },
   },
 
@@ -67,7 +67,7 @@ const serverSideConfig: Config.InitialProjectOptions = {
   // "ts" and/or "tsx" to the beginning of the array.
   moduleFileExtensions: [
     'ts',
-    'js' // Validation Error: moduleFileExtensions must include 'js'
+    'js', // Validation Error: moduleFileExtensions must include 'js'
   ],
 
   // modulePathIgnorePatterns: [
@@ -99,7 +99,7 @@ const serverSideConfig: Config.InitialProjectOptions = {
   // the testing environment before executing setupFilesAfterEnv and before
   // the test code itself.
   setupFiles: [
-    `<rootDir>/${DIR_SRC_JEST}/setupFile.ts`
+    `<rootDir>/${DIR_SRC_JEST}/setupFile.ts`,
   ],
 
   // Run serverside tests without DOM globals such as document and window
@@ -131,8 +131,8 @@ const serverSideConfig: Config.InitialProjectOptions = {
     "\\.[jt]sx?$": [
       'ts-jest',
       {
-        tsconfig: `${DIR_SRC_JEST}/tsconfig.json`
-      }
+        tsconfig: `${DIR_SRC_JEST}/tsconfig.json`,
+      },
     ],
   },
   // transformIgnorePatterns: ['<rootDir>/node_modules/'], // Ignore all node_modules

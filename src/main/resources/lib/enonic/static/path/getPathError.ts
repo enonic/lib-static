@@ -1,6 +1,6 @@
 import {
   REGEX_PATH_DOUBLE_DOT,
-  REGEX_PATH_ILLEGAL_CHARS
+  REGEX_PATH_ILLEGAL_CHARS,
 } from '/lib/enonic/static/constants';
 
 export const ERROR_MESSAGE_PATH_SLASH_OR_EMPTY = 'resolves to the JAR root / empty or all-spaces';

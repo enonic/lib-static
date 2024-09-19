@@ -1,6 +1,6 @@
-import type { Resource } from '@enonic-types/lib-io';
-import type { Request } from '/lib/enonic/static/types/Request';
-import type { Response } from '/lib/enonic/static/types/Response';
+import type {Resource} from '@enonic-types/lib-io';
+import type {Request} from '/lib/enonic/static/types/Request';
+import type {Response} from '/lib/enonic/static/types/Response';
 
 export interface CacheControlResolverParams {
   contentType?: string
