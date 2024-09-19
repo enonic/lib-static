@@ -37,7 +37,7 @@
     "@types/node": "^22.5.5",
     "bun": "^1.1.26",
     "concurrently": "^9.0.1",
-    "eslint": "^8.57.0",
+    "eslint": "^9.10.0",
     "glob": "^11.0.0",
     "jest-cucumber": "^4.5.0",
     "jest-environment-jsdom": "^29.7.0",
