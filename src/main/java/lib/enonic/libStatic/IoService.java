@@ -9,11 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Supplier;
 
-import org.osgi.framework.Bundle;
-import org.osgi.framework.FrameworkUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.io.ByteSource;
 import com.google.common.net.MediaType;
 
@@ -28,13 +23,9 @@ import com.enonic.xp.util.MediaTypes;
 public class IoService
     implements ScriptBean
 {
-    private static final Logger LOG = LoggerFactory.getLogger( IoService.class );
-
     private Supplier<ResourceService> resourceServiceSupplier;
 
     private ResourceKey parentResourceKey;
-
-    private Bundle bundle;
 
     public String getMimeType( final Object key )
     {
@@ -79,7 +70,6 @@ public class IoService
     {
         this.resourceServiceSupplier = context.getService( ResourceService.class );
         this.parentResourceKey = context.getResourceKey();
-        this.bundle = FrameworkUtil.getBundle( this.getClass() );
     }
 
     private static class ResourceWrapper
