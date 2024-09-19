@@ -1,11 +1,16 @@
 {
   "compilerOptions": {
-    // "moduleResolution": "node",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "paths": {
       // Doesn't work for bun?
       // "/lib/enonic/static/*": ["../main/resources/lib/enonic/static/*"]
     },
     "strict": true,
+    "target": "ESNext",
+    "types": [
+      "node"
+    ]
   },
   "include": [
     "**/*.ts"

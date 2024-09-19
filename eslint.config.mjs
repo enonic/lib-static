@@ -1,40 +1,51 @@
-import eslint from '@eslint/js';
-import tseslint from 'typescript-eslint';
+import enonicConfig from '@enonic/eslint-config';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
-export default tseslint.config(
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-  // If ignores is used without any other keys in the configuration object,
-  // then the patterns act as global ignores.
+export default [
+  ...enonicConfig,
   {
-    // An array of glob patterns indicating the files that the configuration
-    // object should not apply to. If not specified, the configuration
-    // object applies to all files matched by files.
-    ignores: [
-      'build/**/*.*',
-    ],
-  },
-
-  eslint.configs.recommended,
-  ...tseslint.configs.recommended,
-
-  {
-    // An array of glob patterns indicating the files that the configuration
-    // object should apply to. If not specified, the configuration object
-    // applies to all files matched by any other configuration object.
-    files: [
-      './src/**/*.ts',
-      // './src/**/*.tsx'
-    ],
-
-
+    languageOptions: {
+      parserOptions: {
+        project: true,
+        tsconfigRootDir: __dirname,
+      }
+    },
     rules: {
-      '@typescript-eslint/no-unused-vars': [
-        "warn",
+      '@typescript-eslint/no-namespace': [
+        'error',
         {
-          "argsIgnorePattern": "^_"
-        }
-      ]
+          allowDeclarations: true,
+          // allowDefinitionFiles: true,
+        },
+      ],
+      // '@typescript-eslint/no-unnecessary-type-assertion': 'warn',
+      '@typescript-eslint/no-unsafe-assignment': 'warn',
+      '@typescript-eslint/no-unsafe-call': 'warn',
+      '@typescript-eslint/no-unsafe-member-access': 'warn',
+      '@typescript-eslint/no-unsafe-return': 'warn',
     }
-  }
+  },
+  {
+    ignores: [
+      "build/**/*",
+      "coverage/**/*",
+      "node_modules/**/*",
 
-);
+      // TODO:
+      // "src/bun/**/*",
+      "src/jest/**/*",
+      "src/test/**/*",
+      "src/main/resources/**/*.d.ts",
+      "tsup/**/*.d.ts",
+
+      // These cause: Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser
+      "eslint.config.mjs",
+      "tsup.config.ts",
+      "bin/**/*",
+    ]
+  }
+];

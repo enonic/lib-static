@@ -2,9 +2,9 @@ import type {
   ByteSource,
   ResourceKey
 } from '@enonic-types/lib-io';
-import type { Log } from '../global.d';
+import type {Log} from '../global.d';
 
-import { Resource } from '../Resource';
+import {Resource} from '../Resource';
 
 
 // Avoid type errors

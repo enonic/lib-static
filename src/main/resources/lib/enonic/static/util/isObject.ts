@@ -1,2 +1,3 @@
-export const isObject = (value: object | unknown): value is object =>
-	Object.prototype.toString.call(value).slice(8,-1) === 'Object';
+export const isObject = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}

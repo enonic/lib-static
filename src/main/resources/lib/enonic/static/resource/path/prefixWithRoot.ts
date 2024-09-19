@@ -1,13 +1,13 @@
-import { GETTER_ROOT } from '/lib/enonic/static/constants';
+import {GETTER_ROOT} from '/lib/enonic/static/constants';
 
 
 export function prefixWithRoot({
   root = GETTER_ROOT,
-  path
+  path,
 }: {
   path: string,
   root?: string
-}) {
+}): string {
   // NOTE: For security reasons it's very important that GETTER_ROOT is the root
   // of the path, or all resources could be exposed.
   if (!root || root.replace(/\/+/g, '') === '') {

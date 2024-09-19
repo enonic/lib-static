@@ -1,4 +1,4 @@
-import type { Response } from '/lib/enonic/static/types';
+import type {Response} from '/lib/enonic/static/types';
 
 
 export function okResponse({
@@ -28,7 +28,7 @@ export function movedPermanentlyResponse({
 }): Response {
   return {
     headers: {
-      location
+      location,
     },
     status: 301,
   }

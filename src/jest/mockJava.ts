@@ -3,15 +3,15 @@ import type {
   // getResource as getResourceValue,
   ResourceKey
 } from '@enonic-types/lib-io';
-import type { App, DoubleUnderscore, Log } from './global.d';
+import type {App, DoubleUnderscore, Log} from './global.d';
 
-import { jest } from '@jest/globals';
-import { isObject } from './isObject';
-// import { mockLibXpVhost } from './mockLibXpVhost';
-// import { Resource } from './Resource';
-import { mockEtagService } from './mocks/etagService';
-import { mockIoService } from './mocks/ioService';
-import { glob } from 'fs';
+import {jest} from '@jest/globals';
+import {isObject} from './isObject';
+// import {mockLibXpVhost} from './mockLibXpVhost';
+// import {Resource} from './Resource';
+import {mockEtagService} from './mocks/etagService';
+import {mockIoService} from './mocks/ioService';
+import {glob} from 'fs';
 // import {
 //   STATIC_ASSETS_200_CSS,
 //   STATIC_ASSETS_INDEX_HTML
@@ -97,6 +97,6 @@ export function mockJava({
   }
 
   jest.mock('/lib/xp/portal', () => ({
-  }), { virtual: true });
+  }), {virtual: true});
   // mockLibXpVhost();
 } // mockJava

@@ -1,7 +1,7 @@
-import type { Options } from '.';
+import type {Options} from '.';
 
 
-import { globSync } from 'glob';
+import {globSync} from 'glob';
 import {
   AND_BELOW,
   DIR_SRC,
@@ -14,8 +14,8 @@ export default function buildServerConfig(): Options {
     `${DIR_SRC}/${AND_BELOW}/*.${GLOB_EXTENSIONS_SERVER}`,
     {
       absolute: false,
-      ignore: globSync(`${DIR_SRC}/${AND_BELOW}/*.d.ts`)
-    }
+      ignore: globSync(`${DIR_SRC}/${AND_BELOW}/*.d.ts`),
+    },
   ).map(s => s.replaceAll('\\', '/'));
   // console.log('FILES_SERVER', FILES_SERVER);
 
@@ -67,7 +67,7 @@ export default function buildServerConfig(): Options {
     shims: false,
     splitting: false,
     sourcemap: false,
-    target: 'es5'
+    target: 'es5',
   };
 }
 

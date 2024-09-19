@@ -15,7 +15,7 @@ export const webAppCacheControl: CacheControlResolver = ({
 }) => {
   // log.debug(`webAppCacheControl contentType:%s path:%s`, contentType, path);
 
-  if (contentType === CONTENT_TYPE.HTML) {
+  if (contentType === CONTENT_TYPE.HTML as string) {
     return RESPONSE_CACHE_CONTROL.PREVENT;
   }
 
