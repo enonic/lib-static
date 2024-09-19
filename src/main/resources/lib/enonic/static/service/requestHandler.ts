@@ -21,6 +21,7 @@ import {
 import { prefixWithRoot } from '/lib/enonic/static/resource/path/prefixWithRoot';
 import { checkPath } from '/lib/enonic/static/resource/path/checkPath';
 import { isDev } from '/lib/enonic/static/runMode';
+import { stringEndsWith } from '../util/stringEndsWith';
 
 
 export const requestHandler: RequestHandler = ({
@@ -49,7 +50,7 @@ export const requestHandler: RequestHandler = ({
           log.warning(msg);
           return badRequestResponse();
         }
-        if (request.rawPath.endsWith('/')) {
+        if (stringEndsWith(request.rawPath, '/')) {
           request.rawPath += index;
         } else {
           indexAndNoTrailingSlash = true;
