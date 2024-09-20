@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.23">
-<title>Api</title>
+<title>Custom content type handling</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -435,17 +435,72 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
-<body class="article">
+<body id="example-content" class="article">
 <div id="header">
-<h1>Api</h1>
+<h1>Custom content type handling</h1>
 </div>
 <div id="content">
-<div class="ulist">
-<ul>
-<li>
-<p><a href="api/requestHandler.ahtml">requestHandler</a></p>
-</li>
-</ul>
+<div class="paragraph">
+<p>By default, lib-static detects <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types">MIME-type</a> automatically. But you can use the <code>contentType</code> <a href="options#example-options">option</a> to override it. Either way, the result is a string returned with <a href="../api/#behaviour">the response object</a>.</p>
+</div>
+<div class="paragraph">
+<p>If set as the <strong>boolean</strong> <code>false</code>, the detection and handling is switched off and no <code>Content-Type</code> header is returned:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight nowrap"><code class="language-javascript" data-lang="javascript">const getStatic = libStatic.buildGetter({
+    root: 'my/folder',
+    contentType: false // &lt;-- Empty string does the same
+});</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If set as a (non-empty) <strong>string</strong>, there will be no processing, but that string will be returned as a fixed content type (a bad idea for handling multiple resource types, of course):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight nowrap"><code class="language-javascript" data-lang="javascript">const getStatic = libStatic.buildGetter({
+    root: 'my/folder',
+    contentType: "everything/thismimetype"
+});</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If set as an <strong>object</strong>, keys are file types (that is, the extensions of the requested asset file names, so beware of file extensions changing during compilation. To be clear, you want the post-compilation extension) and values are the returned MIME-type strings:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight nowrap"><code class="language-javascript" data-lang="javascript">const getStatic = libStatic.buildGetter({
+    root: 'my/folder',
+    contentType: {
+        json: "application/json",
+        mp3: "audio/mpeg",
+        TTF: "font/ttf"
+    }
+});</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For any extension not found in that object, it will fall back to automatically detecting the type, so you can override only the ones you&#8217;re interested in and leave the rest.</p>
+</div>
+<div class="paragraph">
+<p>It can also be set as a <strong>function</strong>: <code>(path, resource) &#8658; mimeTypeString?</code> for fine-grained control: for each circumstance, return a specific mime-type string value, or <code>false</code> to leave the <code>contentType</code> out of the response, or <code>null</code> to fall back to lib-static&#8217;s built-in detection:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight nowrap"><code class="language-javascript" data-lang="javascript">const getStatic = libStatic.buildGetter({
+    root: 'my/folder',
+    contentType: function(path, resource) {
+        if (path.endsWith('.myspoon') &amp;&amp; resource.getSize() &gt; 10000000) {
+            return "media/toobig";
+        }
+        return null;
+    }
+});</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>👉 <a href="../api/index#options">Options API reference</a></p>
 </div>
 </div>
 <div id="footer">

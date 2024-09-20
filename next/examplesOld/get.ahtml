@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.23">
-<title>Api</title>
+<title>Low-level: .get</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -435,17 +435,136 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
-<body class="article">
+<body id="example-get" class="article toc2 toc-right">
 <div id="header">
-<h1>Api</h1>
+<h1>Low-level: .get</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel3">
+<li><a href="#a_similarities">a) Similarities</a></li>
+<li><a href="#b_differences">b) Differences</a></li>
+<li><a href="#c_examples">c) Examples</a></li>
+</ul>
+</div>
 </div>
 <div id="content">
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Lib-static exposes a second function <code>.get</code> (in addition to <code>.buildGetter</code>), for doing a direct resource fetch when the resource path is already known/resolved. The idea is to allow closer control with each call: implement your own logic and handling around it.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+For most scenarios though, you&#8217;ll probably want to use <a href="../api/buildGetter#api-buildgetter"><code>.buildGetter</code></a>.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="a_similarities"><a class="link" href="#a_similarities">a) Similarities</a></h4>
 <div class="ulist">
 <ul>
 <li>
-<p><a href="api/requestHandler.ahtml">requestHandler</a></p>
+<p>Just like the getter function returned by <code>.buildGetter</code>, <code>.get</code> also returns a <a href="../api/index#behaviour">full response object</a> with status, body, content type and a generated ETag, and has error detection and corresponding responses (statuses 400, 404 and 500).</p>
+</li>
+<li>
+<p>The <a href="../api/index#options">options</a> are also mostly the same.</p>
 </li>
 </ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="b_differences"><a class="link" href="#b_differences">b) Differences</a></h4>
+<div class="paragraph">
+<p><code>.get</code> is different from <code>.buildGetter</code> in these ways:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>.get</code> is intended for lower-level usage (wraps less functionality, but gives the opportunity for even more controlled usage).</p>
+</li>
+<li>
+<p>Only one call: whereas <code>.buildGetter</code> sets up a reusable getter function, <code>.get</code> <em>is</em> the getter function.</p>
+</li>
+<li>
+<p>No root folder is set up with <code>.get</code>. In every call, instead of the <code>request</code> argument, <code>.get</code> takes a full, absolute resource <code>path</code> (relative to JAR root) string. This allows <em>any valid path</em> inside the JAR except the root <code>/</code> itself - including source code! <strong>Be careful</strong> how you resolve the <code>path</code> string in the controller to avoid security flaws, such as opening a service to reading <em>any file in the JAR</em>, etc.</p>
+</li>
+<li>
+<p>Since <code>.get</code> doesn&#8217;t resolve the resource path from the request, there&#8217;s no <code>getCleanPath</code> override option here.</p>
+</li>
+<li>
+<p>There is no check in <code>.get</code> for matching ETag (<code>If-None-Match</code> header), and no functionality to return a body-less status 304. <code>.get</code> always tries to fetch the resource.</p>
+</li>
+<li>
+<p>There is no <a href="../api/index#index-fallback">index fallback</a> functionality in <code>.get</code>.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="c_examples"><a class="link" href="#c_examples">c) Examples</a></h4>
+<div class="paragraph">
+<p>An example service <em>getSingleStatic.es6</em> that always returns a particular asset <em>/public/my-folder/another-asset.css</em> from the JAR:</p>
+</div>
+<div class="listingblock">
+<div class="title">src/main/resources/services/getSingleStatic/getSingleStatic.es6</div>
+<div class="content">
+<pre class="highlight nowrap"><code class="language-javascript" data-lang="javascript">const libStatic = require('lib/enonic/static');
+
+exports.get = (request) =&gt; {
+    return libStatic.get('public/my-folder/another-asset.css');
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This is equivalent with using the <code>path</code> attribute:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight nowrap"><code class="language-javascript" data-lang="javascript">    // ...
+
+    return libStatic.get({
+        path: 'public/my-folder/another-asset.css'
+    });
+
+    // ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>It&#8217;s also open to the same <a href="../api/index#options">options</a> as <code>.buildGetter</code> - except for <code>getCleanPath</code> which doesn&#8217;t exist for <code>.get</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight nowrap"><code class="language-javascript" data-lang="javascript">    // ...
+
+    return libStatic.get('public/my-folder/another-asset.css',
+        {
+            // ... options ...
+        }
+    );
+
+    // OR if you prefer:
+
+    return libStatic.get(
+        {
+            path: 'public/my-folder/another-asset.css',
+            // ... more options ...
+        }
+    );
+
+    // ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>👉 <a href="../api/get#api-get">.get API reference</a></p>
+</div>
 </div>
 </div>
 <div id="footer">

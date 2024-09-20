@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.23">
-<title>Api</title>
+<title>Path resolution and other endpoints</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -435,17 +435,144 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
-<body class="article">
+<body id="example-path" class="article toc2 toc-right">
 <div id="header">
-<h1>Api</h1>
+<h1>Path resolution and other endpoints</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#example-getcleanpath">a) Override: getCleanPath</a></li>
+<li><a href="#example-gotchas">b) Gotchas</a></li>
+</ul>
+</div>
 </div>
 <div id="content">
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Usually, the path to the resource file (relative to the root folder) is <a href="service#example-service-urls">determined from the request</a>. Out of the box, this depends on a few things:</p>
+</div>
 <div class="ulist">
 <ul>
 <li>
-<p><a href="api/requestHandler.ahtml">requestHandler</a></p>
+<p>The controller must be able to accept requests from sub-URI. For example, the controller handling requests to a root URI <code>/my/endpoint/</code> must also respond to <code>/my/endpoint/subpath</code>, <code>/my/endpoint/other/path</code>, etc.</p>
+</li>
+<li>
+<p>The incoming <code>request</code> in the controller object must contain a <code>rawPath</code> and <code>contextPath</code> attribute to compare, and the contextPath value must be the prefix in the rawPath value. For example, from this request&#8230;&#8203;</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight nowrap"><code class="language-javascript" data-lang="javascript">{
+  rawPath:     "/_/service/my.xp.app/servemyfolder/some/subdir/some.file",
+  contextPath: "/_/service/my.xp.app/servemyfolder"
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>&#8230;&#8203;the relative resource path is resolved to <code>"/some/subdir/some.file"</code>. And to recap: lib-static will look for <code>&lt;root&gt;/some/subdir/some.file</code>, where <code>root</code> is the folder that was set in <code>libStatic.buildGetter</code>.</p>
+</div>
 </li>
 </ul>
+</div>
+<div class="paragraph">
+<p>&#8203;<br></p>
+</div>
+<div class="paragraph">
+<p>All the previous examples use lib-static in <a href="https://developer.enonic.com/docs/xp/stable/runtime/engines/http-service">XP services</a>, because services act exactly like this. The premises are fulfilled out of the box here, so the path resolution works without further setup.</p>
+</div>
+<div class="paragraph">
+<p>However, lib-static can be used in other contexts than in services, where these premises may not be true and you may need to roll your own path resolution:</p>
+</div>
+<div class="paragraph">
+<p>&#8203;<br></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="example-getcleanpath"><a class="link" href="#example-getcleanpath">a) Override: getCleanPath</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You can <strong>override the default file path resolution</strong> by implementing a <code>request &#8658; string</code> function, and add that as a <code>getCleanPath</code> option in <code>.buildGetter</code>.</p>
+</div>
+<div class="paragraph">
+<p>👉 <a href="../api/index#options">Options API reference</a></p>
+</div>
+<div class="paragraph">
+<p>For example, a simplified version of the default could be implemented like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight nowrap"><code class="language-javascript" data-lang="javascript">exports.get = libStatic.buildGetter({
+    root: 'my/folder',
+    getCleanPath: request =&gt; {
+        const prefix = request.contextPath;
+        return request.rawPath.substring(prefix.length);
+    }
+});</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>&#8203;<br></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="example-gotchas"><a class="link" href="#example-gotchas">b) Gotchas</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When writing a good <code>getCleanPath</code> function, here are some <strong>rules of thumb</strong>:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><code>request &#8658; string</code> function, where the string is the final resolved relative path under <code>&lt;root&gt;</code></p>
+</li>
+<li>
+<p>In order for index fallbacks to work properly:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>URIs with a trailing slash should also return the trailing slash in the string,</p>
+</li>
+<li>
+<p>And vice versa: URIs without a trailing slash should not return one,</p>
+</li>
+<li>
+<p>URIs to the endpoint itself should return an empty string (unless there&#8217;s a trailing slash, in which case only a slash should be returned),</p>
+</li>
+<li>
+<p>For consistency, URIs to other content below the endpoint should return a path beginning with a slash.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Use <code>request.rawPath</code> as the basis. Don&#8217;t use <code>request.path</code>.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>The <code>.path</code> attribute has a less reliable behavior for lib-static&#8217;s purpose: vhosting is kept, url entities may be escaped (which may evade some built-in security checks or fail to find files/folders with special characters in their names), and trailing slashes are stripped away (which makes index fallbacks impossible). The <code>.rawPath</code> attribute deals with these issues.</p>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+XP version <strong>7.7.1</strong> is the first version where these issues are handled well. On earlier versions, trailing slashes are stripped from <code>.rawPath</code> too, so index fallback can&#8217;t be expected to work. Upgrade XP if necessary.
+</td>
+</tr>
+</table>
+</div>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>The next examples show how to achieve this in contexts outside of services:</p>
+</div>
+</div>
 </div>
 </div>
 <div id="footer">

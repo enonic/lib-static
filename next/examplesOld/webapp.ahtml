@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.23">
-<title>Api</title>
+<title>Webapp with lib-router</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -435,17 +435,225 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
-<body class="article">
+<body id="example-webapp" class="article toc2 toc-right">
 <div id="header">
-<h1>Api</h1>
+<h1>Webapp with lib-router</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel3">
+<li><a href="#index-fallback-route">a) Special case - webapp route with root-index-fallback</a></li>
+<li><a href="#b_special_case_avoid_overlapping_with_assets_files">b) Special case - avoid overlapping with /assets/ files</a></li>
+</ul>
+</div>
 </div>
 <div id="content">
-<div class="ulist">
-<ul>
-<li>
-<p><a href="api/requestHandler.ahtml">requestHandler</a></p>
-</li>
-</ul>
+<div id="preamble">
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+This example depends on <a href="https://market.enonic.com/vendors/enonic/router-lib">lib-router</a> version 3.0.0 or higher.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Lib-static can also be used to serve assets on URIs directly below an <a href="https://developer.enonic.com/docs/xp/stable/runtime/engines/webapp-engine#webapp_js">XP webapp</a>. For example, let&#8217;s make a simple webapp accessible at URL <code>&lt;webappRoot&gt;</code> that serves its own frontend assets at <code>&lt;webappRoot&gt;/static/*</code>.</p>
+</div>
+<div class="paragraph">
+<p><a href="https://market.enonic.com/vendors/enonic/router-lib">Lib-router</a> is used to <strong>add sub-routes under the webapp&#8217;s root URL</strong>, for example the route <code>&lt;webappUrl&gt;/static</code>. Lib-router can extract deeper sub-URIs below that, for example <code>&lt;webappUrl&gt;/static/css/styles.css</code>. This sub-URI is then isolated (<code>"css/styles.css"</code>) and added to the <code>request</code> object, under <code>request.pathParams</code> - as <code>.libRouterPath</code> in the example below.</p>
+</div>
+<div class="paragraph">
+<p><strong>Bottom line:</strong> Combined with lib-router like this, <a href="path.ahtml#example-getcleanpath">.getCleanPath</a> can just fetch and return <code>request.pathParams.libRouterPath</code>, and the <code>.getCleanPath</code> <a href="path.ahtml#example-gotchas">gotchas</a> are automatically handled (except for index fallback at the root - more on that <a href="#index-fallback-route">here</a>).</p>
+</div>
+<div class="listingblock">
+<div class="title">src/main/resources/webapp/webapp.js:</div>
+<div class="content">
+<pre class="highlight nowrap"><code class="language-javascript" data-lang="javascript">const libStatic = require('/lib/enonic/static');
+
+const libRouter = require('/lib/router')();
+
+// Asking lib-router to handle all requests from here on
+exports.all = function(request) {
+    return libRouter.dispatch(request);
+};
+
+// Set up a lib-static getter that fetches files below the 'static' folder...
+const getStatic = libStatic.buildGetter(
+    {
+        root: 'static',
+        getCleanPath: request =&gt; request.pathParams.libRouterPath
+    }
+);
+
+// ...which will respond at the route &lt;webappRoot&gt;/static/.+
+// The .+ part is a mandatory sub-URI below static/,
+// and is inserted into request.pathParams.libRouterPath:
+libRouter.get(
+    '/static/{libRouterPath:.+}',
+    request =&gt; getStatic(request)
+);
+
+
+// The main webapp, at &lt;webappRoot&gt;:
+libRouter.get(
+
+    // lib-router 3.+ syntax for matching the webapp root,
+    // with an optional trailing slash:
+    '/?',
+
+    request =&gt; {
+
+        // In order to ensure that the relative urls below work,
+        // webapp root without a trailing slash is redirected to the same address WITH a slash:
+        if (!(req.rawPath || '').endsWith('/')) {
+            return {
+                redirect: req.path + '/'
+            }
+        }
+
+        return {
+            body: '
+                &lt;html&gt;
+                    &lt;head&gt;
+                        &lt;title&gt;Webapp&lt;/title&gt;
+                        &lt;link href="static/styles.css" rel="stylesheet" type="text/css" /&gt;
+                    &lt;/head&gt;
+
+                    &lt;body&gt;
+                        &lt;h1&gt;My webapp&lt;/h1&gt;
+                        &lt;img src="static/images/my-logo.jpg" /&gt;
+                    &lt;/body&gt;
+                &lt;/html&gt;'
+        };
+    }
+);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>&#8203;<br></p>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="index-fallback-route"><a class="link" href="#index-fallback-route">a) Special case - webapp route with root-index-fallback</a></h4>
+<div class="paragraph">
+<p>The way lib-router works, only defining <code>'/static/{libRouterPath:.+}'</code> will make it respond to sub-URIs after <code>static/</code> - that is, <em>both the slash and some sub-URI is required</em>. So in the example above, lib-static&#8217;s <a href="../api/index.ahtml#index-fallback">index fallback functionality</a> is supported <em>below</em> the actual route (for example, <code>&lt;webappRoot&gt;/static/subfolder</code> would serve a file <em>/static/subfolder/index.html</em> if it existed), but the route will not match <code>&lt;webappRoot&gt;/static</code> or <code>&lt;webappRoot&gt;/static/</code> (so they will just return a 404).</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s say we for some reason wanted that route to use index fallback at the root of <code>/static</code>, not only handle the sub-URIs. More precisely, we want to expand the example above so that lib-static can make <code>&lt;webappRoot&gt;/static</code> redirect to <code>&lt;webappRoot&gt;/static/</code>, and <code>&lt;webappRoot&gt;/static/</code> respond with (the contents of) a file <code>static/index.html</code>.</p>
+</div>
+<div class="paragraph">
+<p>For this, we&#8217;ll add a second route at the root (stay with me here), by <strong>setting up lib-router with an array</strong> instead of a string. The added item has an optional trailing slash <code>/?</code>, so it&#8217;s activated at <code>/static</code> as well as <code>/static/</code>:</p>
+</div>
+<div class="listingblock">
+<div class="title">src/main/resources/webapp/webapp.js:</div>
+<div class="content">
+<pre class="highlight nowrap"><code class="language-javascript" data-lang="javascript">// ...
+
+libRouter.get(
+    [
+        '/static/?',
+        '/static/{libRouterPath:.+}',
+    ]
+    request =&gt; getStatic(request)
+);
+
+// ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now, on <code>&lt;webappRoot&gt;/static</code> and <code>&lt;webappRoot&gt;/static/</code>, lib-router matches with the new item in the route array, <code>'/static/?'</code>. But since <code>libRouterPath</code> is not defined in that item, it means <code>request.pathParams.libRouterPath</code> will be <code>undefined</code> at the root. So according to the <a href="path.ahtml#example-gotchas">criteria</a> for <code>getCleanPath</code>, <strong>we must also update the <code>getCleanPath</code> function</strong> in the lib-static getter.</p>
+</div>
+<div class="paragraph">
+<p>In order to return <code>""</code> for <code>&lt;webappRoot&gt;/static</code>, and <code>"/"</code> for <code>&lt;webappRoot&gt;/static/</code>, what <code>getCleanPath</code> needs to do is to return <code>request.pathParams.libRouterPath</code> if it a value, and if not, return an empty string at <code>&lt;webappRoot&gt;/static</code> and a slash at <code>&lt;webappRoot&gt;/static/</code>. The easiest is to just see if <code>request.rawPath</code> ends with a slash or not.</p>
+</div>
+<div class="paragraph">
+<p>The final adjustment to the webapp looks like this:</p>
+</div>
+<div class="listingblock">
+<div class="title">src/main/resources/webapp/webapp.js:</div>
+<div class="content">
+<pre class="highlight nowrap"><code class="language-javascript" data-lang="javascript">// ...
+
+const getStatic = libStatic.buildGetter(
+    {
+        root: 'static',
+        getCleanPath: request =&gt; (
+            request.pathParams.libRouterPath ||
+            (request.rawPath.endsWith("/")
+                    ? "/"
+                    : ""
+            )
+        ),
+    }
+);
+
+libRouter.get(
+    [
+        '/static/?',
+        '/static/{libRouterPath:.+}',
+    ]
+    request =&gt; getStatic(request)
+);
+
+// ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now, a file static/index.html will be served at <code>&lt;webappRoot&gt;/static/</code>, with automatic redirect from <code>&lt;webappRoot&gt;/static</code>.</p>
+</div>
+<div class="paragraph">
+<p>&#8203;<br></p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="b_special_case_avoid_overlapping_with_assets_files"><a class="link" href="#b_special_case_avoid_overlapping_with_assets_files">b) Special case - avoid overlapping with /assets/ files</a></h4>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The following applies to XP 7, and may be subject to change in XP 8 (but not before, since it&#8217;s breaking behaviour).
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>In the current versions of enonic XP, the webapp engine is set up so that if some path <code>&lt;webappRoot&gt;/my/path.ext</code> matches a file in the <em>assets</em> folder, <em>src/main/resources/assets/my/path.ext</em>, then the engine will give that <strong>priority over the webapp.js controller and directly serve that file instead</strong>.</p>
+</div>
+<div class="paragraph">
+<p>In other words, if a file called <em>assets/subpath</em> exists, and you use the examples and patterns above to define your own route <code>libRouter.get('subpath'), &#8230;&#8203;</code> then at <code>&lt;webappRoot&gt;/subpath</code> your route will be ignored and you will get the file from the asset service instead. Confusion may ensue.</p>
+</div>
+<div class="paragraph">
+<p>So <strong>avoid defining routes that may overlap with sub-paths to existing files under <em>src/main/resources/assets/*</em></strong>.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The same thing goes for the pattern <code>_/asset/*</code> (which is <a href="https://developer.enonic.com/docs/xp/stable/runtime/engines/asset-service#asset_files">better documented</a>).</p>
+</div>
+<div class="paragraph">
+<p>For example, <code>&lt;webappRoot&gt;/_/asset/my/path.ext</code> will serve <em>/assets/my/path.ext</em> and ignore your <code>libRouter.get('/_/asset/{subUri: .+}'), &#8230;&#8203;</code>.</p>
+</div>
+<div class="paragraph">
+<p>But starting with an underscore, this is far easier to handle - just avoid defining routes starting with <code>_/asset/</code>, or with an underscore in the first place.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
 </div>
 </div>
 <div id="footer">

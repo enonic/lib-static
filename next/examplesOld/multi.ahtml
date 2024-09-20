@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.23">
-<title>Api</title>
+<title>Multiple instances</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -435,17 +435,16 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
-<body class="article">
+<body id="example-multi" class="article">
 <div id="header">
-<h1>Api</h1>
+<h1>Multiple instances</h1>
 </div>
 <div id="content">
-<div class="ulist">
-<ul>
-<li>
-<p><a href="api/requestHandler.ahtml">requestHandler</a></p>
-</li>
-</ul>
+<div class="paragraph">
+<p>Lib-static can be set up to respond with several instances in parallel, thereby defining different rules for different files/folders/scenarios.</p>
+</div>
+<div class="paragraph">
+<p>👉 <a href="../concepts/mutability#separate-instances">Usage example below</a>.</p>
 </div>
 </div>
 <div id="footer">

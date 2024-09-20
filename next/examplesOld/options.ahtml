@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.23">
-<title>Api</title>
+<title>Options and syntax</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -435,17 +435,42 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
-<body class="article">
+<body id="example-options" class="article">
 <div id="header">
-<h1>Api</h1>
+<h1>Options and syntax</h1>
 </div>
 <div id="content">
-<div class="ulist">
-<ul>
-<li>
-<p><a href="api/requestHandler.ahtml">requestHandler</a></p>
-</li>
-</ul>
+<div class="paragraph">
+<p>The behaviour of the returned getter function from <code>.buildGetter</code> can be controlled with more <a href="../api/index#options">options</a>, in addition to the <code>root</code>.</p>
+</div>
+<div class="paragraph">
+<p>If you set <code>root</code> with a pure string as the first argument, add a second argument object for the options. If you use the named-parameter way to set <code>root</code>, the options must be in the same first-argument object - in practice, just <em>never use two objects as parameters</em>.</p>
+</div>
+<div class="paragraph">
+<p>These are valid and equivalent:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight nowrap"><code class="language-javascript" data-lang="javascript">libStatic.buildGetter({
+    root: 'my/folder',
+    option1: "option value 1",
+    option2: "option value 2"
+});</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>&#8230;&#8203;and:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight nowrap"><code class="language-javascript" data-lang="javascript">libStatic.buildGetter('my/folder', {
+    option1: "option value 1",
+    option2: "option value 2"
+});</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>👉 <a href="../api/index#options">Options API reference</a></p>
 </div>
 </div>
 <div id="footer">

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.23">
-<title>Api</title>
+<title>XP controller mapping</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -437,15 +437,43 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="article">
 <div id="header">
-<h1>Api</h1>
+<h1>XP controller mapping</h1>
 </div>
 <div id="content">
-<div class="ulist">
-<ul>
-<li>
-<p><a href="api/requestHandler.ahtml">requestHandler</a></p>
-</li>
-</ul>
+<div class="paragraph">
+<p>Using <a href="path.ahtml#example-getcleanpath">.getCleanPath</a>, lib-static can be used to serve assets from <a href="https://developer.enonic.com/docs/xp/stable/cms/mappings">mapped controllers</a>.</p>
+</div>
+<div class="paragraph">
+<p>This example uses regular expressions to support the <code>.getCleanPath</code> <a href="path.ahtml#example-gotchas">criteria</a>, and will serve assets (including index fallbacks) from the root <em>my/folder</em> on the endpoint <code>&lt;siteUrl&gt;/static</code>:</p>
+</div>
+<div class="listingblock">
+<div class="title">src/main/resources/site/site.xml:</div>
+<div class="content">
+<pre class="highlight nowrap"><code class="language-xml" data-lang="xml">&lt;mapping controller="/controllers/static.js" order="50"&gt;
+    &lt;pattern&gt;/static(/.*)?$&lt;/pattern&gt;
+&lt;/mapping&gt;</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">src/main/resources/controllers/static.js:</div>
+<div class="content">
+<pre class="highlight nowrap"><code class="language-javascript" data-lang="javascript">const getStatic = libStatic.buildGetter({
+        root: `my/folder`,
+        getCleanPath: request =&gt; {
+            const basePath = `${libPortal.getSite()._path}/static`;
+            const pattern = new RegExp(`${basePath}(/.*)?$`);
+            const matched = (request.rawPath || '').match(pattern);
+
+            if (!matched) {
+                throw Error(`basePath ($basePath}) was not found in request.rawPath (${request.rawPath}`);
+            }
+
+            return matched[1] || '';
+        },
+    });
+
+exports.get = request =&gt; getStatic(request);</code></pre>
+</div>
 </div>
 </div>
 <div id="footer">
