@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.23">
-<title>Usage examples</title>
+<title>Api</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -435,66 +435,22 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
-<body class="article toc2 toc-right">
+<body class="article">
 <div id="header">
-<div id="toc" class="toc2">
-<div id="toctitle">Table of Contents</div>
-<ul class="sectlevel1">
-<li><a href="#examples">Usage examples</a></li>
-</ul>
-</div>
+<h1>Api</h1>
 </div>
 <div id="content">
-<div class="sect1">
-<h2 id="examples"><a class="link" href="#examples">Usage examples</a></h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>Using low-level API functions <a href="../api/buildgetter.ahtml">buildGetter</a> or <a href="../api/get.ahtml">get</a>:</p>
-</div>
-<div class="olist arabic">
-<ol class="arabic">
+<div class="ulist">
+<ul>
 <li>
-<p><a href="service.ahtml">A simple service</a></p>
+<p><a href="api/requestHandler.ahtml">requestHandler</a></p>
 </li>
-<li>
-<p><a href="urls.ahtml">Resource URLs</a></p>
-</li>
-<li>
-<p><a href="options.ahtml">Options and syntax</a></p>
-</li>
-<li>
-<p><a href="path.ahtml">Path resolution and other endpoints</a></p>
-</li>
-<li>
-<p><a href="mapping.ahtml">XP controller mapping</a></p>
-</li>
-<li>
-<p><a href="webapp.ahtml">Webapp with lib-router</a></p>
-</li>
-<li>
-<p><a href="content.ahtml">Custom content type handling</a></p>
-</li>
-<li>
-<p><a href="cache.ahtml">Custom Cache-Control headers</a></p>
-</li>
-<li>
-<p><a href="etag.ahtml">ETag switch</a></p>
-</li>
-<li>
-<p><a href="errors.ahtml">Errors: throw instead of return</a></p>
-</li>
-<li>
-<p><a href="multi.ahtml">Multiple instances</a>
-12 <a href="get.ahtml">Low-level: .get</a></p>
-</li>
-</ol>
-</div>
-</div>
+</ul>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-09-20 07:59:29 UTC
+Last updated 2024-09-20 08:05:44 UTC
 </div>
 </div>
 </body>

@@ -16,7 +16,7 @@
     },
     {
       "title": "Examples",
-      "document": "examples/index"
+      "document": "examples"
     },
     {
       "title": "API",
@@ -49,10 +49,6 @@
           "document": "mutability"
         }
       ]
-    },
-    {
-      "title": "TODO: Later versions",
-      "document": "todo"
     }
   ]
 }
