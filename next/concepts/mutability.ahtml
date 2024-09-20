@@ -455,6 +455,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="paragraph">
 <p><strong>Mutable assets</strong> on the other hand are any files whose content <em>may</em> change and still keep the same filename/path/URL.</p>
 </div>
+<div class="paragraph">
+<p>Some relevant sources: <a href="https://web.dev/http-cache/">web.dev</a>, <a href="https://engineering.fb.com/2017/01/26/web/this-browser-tweak-saved-60-of-requests-to-facebook/">facebook</a>, <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching">mozilla</a>, <a href="https://imagekit.io/blog/ultimate-guide-to-http-caching-for-static-assets/">imagekit</a>, <a href="https://freecontent.manning.com/caching-assets/">freecontent.manning.com</a>.</p>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -592,7 +595,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-09-20 07:04:53 UTC
+Last updated 2024-09-20 07:59:29 UTC
 </div>
 </div>
 </body>

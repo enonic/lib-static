@@ -442,16 +442,15 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
 <li><a href="#intro">Intro</a></li>
-<li><a href="#concepts">Concepts</a></li>
 <li><a href="#get-started">Getting started</a>
 <ul class="sectlevel2">
 <li><a href="#install">Install</a></li>
 <li><a href="#import">Import</a></li>
 </ul>
 </li>
-<li><a href="#service">Service</a></li>
 <li><a href="#api">API</a></li>
-<li><a href="#custom_examples">Custom examples</a></li>
+<li><a href="#examples">Examples</a></li>
+<li><a href="#concepts">Concepts</a></li>
 </ul>
 </div>
 </div>
@@ -468,28 +467,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h2 id="intro"><a class="link" href="#intro">Intro</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p><a href="https://enonic.com/developer-tour">Enonic XP</a> library for serving assets from a folder in the application resource structure. The aim is <em>"perfect client-side and network caching"</em> via response headers - with basic error handling included, and a simple basic usage but highly configurable (modelled akin to <a href="https://www.npmjs.com/package/serve-static">serve-static</a>).</p>
+<p><a href="https://enonic.com/developer-tour">Enonic XP</a> library for serving assets from a folder in the application resource structure. The aim is <em>"perfect client-side and network caching"</em> via response headers - with basic error handling included.</p>
 </div>
 <div class="paragraph">
 <p>Intended for setting up XP endpoints that serve static files in a cache-optimized way. Optimally, these should be <strong>immutable files</strong> (files whose content aren&#8217;t meant to change, that is, can be trusted to never change without changing the file name), but lib-static also handles ETags which provide caching with dynamic files too (<a href="concepts/mutability#mutable-assets">more about handling mutability</a>).</p>
-</div>
-<div class="paragraph">
-<p>Some relevant sources: <a href="https://web.dev/http-cache/">web.dev</a>, <a href="https://engineering.fb.com/2017/01/26/web/this-browser-tweak-saved-60-of-requests-to-facebook/">facebook</a>, <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching">mozilla</a>, <a href="https://imagekit.io/blog/ultimate-guide-to-http-caching-for-static-assets/">imagekit</a>, <a href="https://freecontent.manning.com/caching-assets/">freecontent.manning.com</a>.</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="concepts"><a class="link" href="#concepts">Concepts</a></h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><a href="concepts/why.ahtml">Why use lib-static instead of portal.assetUrl?</a></p>
-</li>
-<li>
-<p><a href="concepts/mutability.ahtml">Assets and mutability</a></p>
-</li>
-</ul>
 </div>
 <div class="paragraph">
 <p>&#8203;<br></p>
@@ -523,6 +504,17 @@ repositories {
 <div class="paragraph">
 <p>In any <a href="https://developer.enonic.com/docs/xp/stable/framework/controllers">XP controller</a>, import the library:</p>
 </div>
+<div class="paragraph">
+<p>Ecma/TypeScript:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight nowrap"><code class="language-typescript" data-lang="typescript">import {requestHandler} from '/lib/enonic/static';</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>JavaScript:</p>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight nowrap"><code class="language-javascript" data-lang="javascript">const libStatic = require('/lib/enonic/static');</code></pre>
@@ -532,88 +524,42 @@ repositories {
 </div>
 </div>
 <div class="sect1">
-<h2 id="service"><a class="link" href="#service">Service</a></h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><a href="service/standard.ahtml">Standard service</a></p>
-</li>
-<li>
-<p><a href="service/custom.ahtml">Custom service</a></p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
 <h2 id="api"><a class="link" href="#api">API</a></h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><a href="api/buildgetter.ahtml">buildGetter</a></p>
-</li>
-<li>
-<p><a href="api/get.ahtml">get</a></p>
-</li>
-<li>
-<p><a href="api/getStaticUrl.ahtml">getStaticUrl</a></p>
+<p><a href="api/requestHandler.ahtml">requestHandler</a></p>
 </li>
 </ul>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="custom_examples"><a class="link" href="#custom_examples">Custom examples</a></h2>
+<h2 id="examples"><a class="link" href="#examples">Examples</a></h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p>Using low-level API functions <a href="api/buildgetter.ahtml">buildGetter</a> or <a href="api/get.ahtml">get</a>:</p>
+
 </div>
-<div class="olist arabic">
-<ol class="arabic">
+</div>
+<div class="sect1">
+<h2 id="concepts"><a class="link" href="#concepts">Concepts</a></h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
 <li>
-<p><a href="examples/service.ahtml">A simple service</a></p>
+<p><a href="concepts/why.ahtml">Why use lib-static instead of portal.assetUrl?</a></p>
 </li>
 <li>
-<p><a href="examples/urls.ahtml">Resource URLs</a></p>
+<p><a href="concepts/mutability.ahtml">Assets and mutability</a></p>
 </li>
-<li>
-<p><a href="examples/options.ahtml">Options and syntax</a></p>
-</li>
-<li>
-<p><a href="examples/path.ahtml">Path resolution and other endpoints</a></p>
-</li>
-<li>
-<p><a href="examples/mapping.ahtml">XP controller mapping</a></p>
-</li>
-<li>
-<p><a href="examples/webapp.ahtml">Webapp with lib-router</a></p>
-</li>
-<li>
-<p><a href="examples/content.ahtml">Custom content type handling</a></p>
-</li>
-<li>
-<p><a href="examples/cache.ahtml">Custom Cache-Control headers</a></p>
-</li>
-<li>
-<p><a href="examples/etag.ahtml">ETag switch</a></p>
-</li>
-<li>
-<p><a href="examples/errors.ahtml">Errors: throw instead of return</a></p>
-</li>
-<li>
-<p><a href="examples/multi.ahtml">Multiple instances</a>
-12 <a href="examples/get.ahtml">Low-level: .get</a></p>
-</li>
-</ol>
+</ul>
 </div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-09-20 07:04:53 UTC
+Last updated 2024-09-20 07:59:29 UTC
 </div>
 </div>
 </body>

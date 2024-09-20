@@ -5,8 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.23">
-<meta name="author" content="A specific-recource getter method, returns a link:../api/index#behaviour[response object] for the particular asset that&#8217;s named in the argument string.">
-<title>.get</title>
+<title>requestHandler</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -436,16 +435,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
-<body id="api-get" class="article toc2 toc-right">
+<body class="article toc2 toc-right">
 <div id="header">
-<h1>.get</h1>
-<div class="details">
-<span id="author" class="author">A specific-recource getter method, returns a link:../api/index#behaviour[response object] for the particular asset that&#8217;s named in the argument string.</span><br>
-</div>
+<h1>requestHandler</h1>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#params">Params:</a></li>
+<li><a href="#parameters">Parameters</a></li>
+<li><a href="#full_example">Full example</a></li>
 </ul>
 </div>
 </div>
@@ -453,47 +450,210 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>Three optional and equivalent syntaxes:</p>
-</div>
-<div class="paragraph">
-<p><code>const response = libStatic.get(path);</code></p>
-</div>
-<div class="paragraph">
-<p><code>const response = libStatic.get(path, options);</code></p>
-</div>
-<div class="paragraph">
-<p><code>const response = libStatic.get(optionsWithPath);</code></p>
+<p>This function</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="params"><a class="link" href="#params">Params:</a></h2>
+<h2 id="parameters"><a class="link" href="#parameters">Parameters</a></h2>
 <div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><code>path</code> (string): path and full file name to an asset file, relative to the JAR root (or relative to <em>build/resources/main</em> in XP dev mode, see <a href="buildGetter#buildgetter-params">the 'root' param explanation</a> above. Cannot contain <code>..</code> or any of the characters <code>: | &lt; &gt; ' " ´ * ?</code> or backslash or backtick.</p>
-</li>
-<li>
-<p><code>options</code> (object): add an <a href="../api/index#options">options object</a> after <code>path</code> to control behaviour for this specific response.</p>
-</li>
-<li>
-<p><code>optionsWithPath</code> (object): same as above, an <a href="../api/index#options">options object</a> but when used as the first and only argument, this object <em>must</em> include a <code>{ path: &#8230;&#8203;, }</code> attribute too - a path string same as above. This is simply for convenience if you prefer named parameters instead of a positional <code>path</code> argument. If both are supplied, the positional <code>path</code> argument is used.</p>
-</li>
-</ul>
+<table class="tableblock frame-none grid-none stretch">
+<colgroup>
+<col style="width: 1%;">
+<col style="width: 1%;">
+<col style="width: 98%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">params</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">object</p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Input parameters as JSON</p>
+</div>
+<table class="tableblock frame-ends grid-none stretch">
+<caption class="title">Properties</caption>
+<colgroup>
+<col style="width: 1%;">
+<col style="width: 1%;">
+<col style="width: 1%;">
+<col style="width: 1%;">
+<col style="width: 96%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Attributes</th>
+<th class="tableblock halign-left valign-top">Default</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">request</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Request</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;required&gt;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">null</p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>The request object</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">cacheControl</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">({contentType?: string, path?: string, resource?: Resource}) &#8658; string | null</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">webAppCacheControl</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;optional&gt;</p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Function that returns the cache control header value</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentType</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(path?: string, resource?: Resource) &#8658; string | null</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;optional&gt;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">getMimeType()</p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Function that returns the content type header value</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">etag</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;optional&gt;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Whether to include ETag header</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">index</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">string</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;optional&gt;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">'index.html'</p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Default file to serve when requesting a directory</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">relativePath</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(Request) &#8658; string</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;optional&gt;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">getRelativeResourcePath()</p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Function that returns the relative path to the resource</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">root</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">string</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;optional&gt;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">'/static'</p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Root path to serve files from</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">throwErrors</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;optional&gt;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Whether to throw errors or return a response object</p>
+</div></div></td>
+</tr>
+</tbody>
+</table></div></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph lead">
+<p>Returns</p>
 </div>
 <div class="paragraph">
-<p>If <code>path</code> (either as a string argument or as an attribute in a <code>options</code> object) resolves to (or outside) the JAR root, contains <code>..</code> or any of the characters <code>: | &lt; &gt; ' " ´ * ?</code> or backslash or backtick, or is missing or empty, an error is thrown.</p>
+<p><strong>Response</strong> : The response object.</p>
 </div>
-<div class="paragraph">
-<p>👉 <a href="../examples/get#example-get">Usage examples</a></p>
+<div class="paragraph lead">
+<p>Example</p>
+</div>
+<div class="listingblock">
+<div class="title">src/main/resources/webapp/webapp.ts</div>
+<div class="content">
+<pre class="highlight"><code class="language-TypeScript" data-lang="TypeScript">import type {Request, Response} from '/lib/enonic/static';
+import {requestHandler} from '/lib/enonic/static';
+
+import Router from '/lib/router';
+const router = Router();
+
+router.get('{path:.*}', (request: Request): Response =&gt; requestHandler({request}));
+
+export const all = (request: Request) =&gt; router.dispatch(request);</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="full_example"><a class="link" href="#full_example">Full example</a></h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="title">src/main/resources/webapp/webapp.ts</div>
+<div class="content">
+<pre class="highlight"><code class="language-TypeScript" data-lang="TypeScript">import type {Request, Response} from '/lib/enonic/static';
+import {
+  RESPONSE_CACHE_CONTROL,
+  requestHandler,
+  webAppCacheControl
+  } from '/lib/enonic/static';
+
+import Router from '/lib/router';
+const router = Router();
+
+router.get('{path:.*}', (request: Request): Response =&gt; requestHandler({
+  request,
+  cacheControl: ({contentType, path, resource}) =&gt; {
+    // First do custom cache control:
+    if (path.startsWith('/favicon')) {
+      // Currently: public, max-age=10, s-maxage=3600, stale-while-revalidate=50
+      return RESPONSE_CACHE_CONTROL.SAFE;
+    }
+    // Then fallback to the default cache control
+    return webAppCacheControl({
+      contentType,
+      path,
+      resource
+    });
+  },
+  contentType: ({path, resource: _resource}) =&gt; {
+    if (path.endsWith('.css')) {
+      return 'text/css';
+    }
+    return 'application/octet-stream';
+  },
+  etag: true, // This is the default
+  index: 'index.html', // This is the default
+  relativePath: (request) =&gt; {
+    // Simplification of the default implementation:
+    return request.rawPath.substring(request.contextPath.length);
+  },
+  root: '/static',
+  throwErrors: true
+}));
+
+export const all = (request: Request) =&gt; router.dispatch(request);</code></pre>
+</div>
 </div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-09-20 07:04:53 UTC
+Last updated 2024-09-20 07:59:29 UTC
 </div>
 </div>
 </body>

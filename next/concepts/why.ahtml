@@ -453,7 +453,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Caching behaviour:</strong> With <code>assetUrl</code>, you get a URL where the current installation/version of the app is baked in as a hash. It will change whenever the app is updated, forcing browsers to skip their locally cached resources and request new ones, even if the resource wasn&#8217;t changed during the update. Using lib-static with <a href="mutability#mutable-assets">immutable assets</a> retains stable URLs and has several ways to adapt the header to direct browsers' caching behaviour more effectively, even for mutable assets.</p>
+<p><strong>Caching behaviour:</strong> With <code>assetUrl</code>, you get a URL where the current installation/version of the app is baked in as a fingerprint. It will change whenever the app is updated, forcing browsers to skip their locally cached resources and request new ones, even if the resource wasn&#8217;t changed during the update. Using lib-static with <a href="mutability#mutable-assets">immutable assets</a> retains stable URLs and has several ways to adapt the header to direct browsers' caching behaviour more effectively, even for mutable assets.</p>
 </li>
 <li>
 <p><strong>Endpoint URLs:</strong> make your resource endpoints anywhere,</p>
@@ -465,7 +465,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p><strong>Control resource folders:</strong> As long as the resources are built into the app JAR, resources can be served from anywhere - even with multiple lib-static instances at once: serve from multiple specific-purpose folders, or use multi-instances to specify multiple rules from the same folder.</p>
 </li>
 <li>
-<p>Security issues around this are handled in the standard usage: a set root folder is required (and not at the JAR root), and URL navigation out from it is prevented. But if you still REALLY want to circumvent this, there is a lower-level API too.</p>
+<p>Security issues around this are handled in the standard usage: a set root folder is required (and not at the JAR root), and URL navigation out from it is prevented.</p>
 </li>
 <li>
 <p><strong>Error handling:</strong> 500-type errors can be set to throw instead of returning an error response - leaving the handling to you.</p>
@@ -479,7 +479,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-09-20 07:04:53 UTC
+Last updated 2024-09-20 07:59:29 UTC
 </div>
 </div>
 </body>
