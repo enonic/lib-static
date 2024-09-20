@@ -5,6 +5,8 @@
 
 **Mutable assets** on the other hand are any files whose content _may_ change and still keep the same filename/path/URL.
 
+Some relevant sources: link:https://web.dev/http-cache/[web.dev], link:https://engineering.fb.com/2017/01/26/web/this-browser-tweak-saved-60-of-requests-to-facebook/[facebook], link:https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching[mozilla], link:https://imagekit.io/blog/ultimate-guide-to-http-caching-for-static-assets/[imagekit], link:https://freecontent.manning.com/caching-assets/[freecontent.manning.com].
+
 
 [[mutable-headers]]
 == Headers

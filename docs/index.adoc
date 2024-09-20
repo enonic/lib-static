@@ -8,16 +8,9 @@
 [[intro]]
 == Intro
 
-link:https://enonic.com/developer-tour[Enonic XP] library for serving assets from a folder in the application resource structure. The aim is _"perfect client-side and network caching"_ via response headers - with basic error handling included, and a simple basic usage but highly configurable (modelled akin to link:https://www.npmjs.com/package/serve-static[serve-static]).
+link:https://enonic.com/developer-tour[Enonic XP] library for serving assets from a folder in the application resource structure. The aim is _"perfect client-side and network caching"_ via response headers - with basic error handling included.
 
 Intended for setting up XP endpoints that serve static files in a cache-optimized way. Optimally, these should be **immutable files** (files whose content aren't meant to change, that is, can be trusted to never change without changing the file name), but lib-static also handles ETags which provide caching with dynamic files too (link:concepts/mutability#mutable-assets[more about handling mutability]).
-
-Some relevant sources: link:https://web.dev/http-cache/[web.dev], link:https://engineering.fb.com/2017/01/26/web/this-browser-tweak-saved-60-of-requests-to-facebook/[facebook], link:https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching[mozilla], link:https://imagekit.io/blog/ultimate-guide-to-http-caching-for-static-assets/[imagekit], link:https://freecontent.manning.com/caching-assets/[freecontent.manning.com].
-
-== Concepts
-
-* <<concepts/why#, Why use lib-static instead of portal.assetUrl?>>
-* <<concepts/mutability#, Assets and mutability>>
 
 {zwsp} +
 
@@ -43,35 +36,26 @@ repositories {
 === Import
 In any link:https://developer.enonic.com/docs/xp/stable/framework/controllers[XP controller], import the library:
 
+Ecma/TypeScript:
+[source,typescript,options="nowrap"]
+----
+import {requestHandler} from '/lib/enonic/static';
+----
+
+JavaScript:
 [source,javascript,options="nowrap"]
 ----
 const libStatic = require('/lib/enonic/static');
 ----
 
-== Service
-
-* <<service/standard#, Standard service>>
-* <<service/custom#, Custom service>>
 
 == API
 
-* <<api/buildgetter#, buildGetter>>
-* <<api/get#, get>>
-* <<api/getStaticUrl#, getStaticUrl>>
+* <<api/requestHandler#, requestHandler>>
 
-== Custom examples
+== Examples
 
-Using low-level API functions <<api/buildgetter#, buildGetter>> or <<api/get#, get>>:
+== Concepts
 
-1. <<examples/service#, A simple service>>
-2. <<examples/urls#, Resource URLs>>
-3. <<examples/options#, Options and syntax>>
-4. <<examples/path#, Path resolution and other endpoints>>
-5. <<examples/mapping#, XP controller mapping>>
-6. <<examples/webapp#, Webapp with lib-router>>
-7. <<examples/content#, Custom content type handling>>
-8. <<examples/cache#, Custom Cache-Control headers>>
-9. <<examples/etag#, ETag switch>>
-10. <<examples/errors#, Errors: throw instead of return>>
-11. <<examples/multi#, Multiple instances>>
-12 <<examples/get#, Low-level: .get>>
+* <<concepts/why#, Why use lib-static instead of portal.assetUrl?>>
+* <<concepts/mutability#, Assets and mutability>>
