@@ -16,43 +16,31 @@
     },
     {
       "title": "Examples",
-      "document": "examples/index"
+      "document": "examples"
     },
     {
       "title": "API",
-      "document": "api/index",
+      "document": "api",
       "menuItems": [
         {
-          "title": "buildGetter",
-          "document": "api/buildGetter"
+          "title": "requestHandler",
+          "document": "api/requestHandler"
         },
-        {
-          "title": "get",
-          "document": "api/get"
-        },
-        {
-          "title": "getStaticUrl",
-          "document": "api/getStaticUrl"
-        }
       ]
     },
     {
       "title": "Concepts",
-      "document": "concepts/index",
+      "document": "concepts",
       "menuItems": [
         {
           "title": "Why use lib-static instead of portal.assetUrl?",
-          "document": "why"
+          "document": "concepts/why"
         },
         {
           "title": "Assets and mutability",
-          "document": "mutability"
+          "document": "concepts/mutability"
         }
       ]
-    },
-    {
-      "title": "TODO: Later versions",
-      "document": "todo"
     }
   ]
 }

@@ -1,6 +1,0 @@
-[[example-multi]]
-= Multiple instances
-
-Lib-static can be set up to respond with several instances in parallel, thereby defining different rules for different files/folders/scenarios.
-
-👉 link:../concepts/mutability#separate-instances[Usage example below].
