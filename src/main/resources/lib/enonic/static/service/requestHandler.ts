@@ -5,7 +5,7 @@ import {
   CONTENT_ENCODING,
   HTTP2_REQUEST_HEADER,
   HTTP2_RESPONSE_HEADER,
-  RESPONSE_CACHE_CONTROL_DIRECTIVE,
+  RESPONSE_CACHE_CONTROL,
   VARY,
 } from '/lib/enonic/static/constants';
 import {read} from '/lib/enonic/static/etagReader';
@@ -117,7 +117,7 @@ export const requestHandler: RequestHandler = ({
           body: resource.getStream(),
           contentType,
           headers: {
-            [HTTP2_RESPONSE_HEADER.CACHE_CONTROL]: RESPONSE_CACHE_CONTROL_DIRECTIVE.NO_STORE,
+            [HTTP2_RESPONSE_HEADER.CACHE_CONTROL]: RESPONSE_CACHE_CONTROL.DEV,
           },
         });
       }

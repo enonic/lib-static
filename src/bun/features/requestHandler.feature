@@ -393,7 +393,7 @@ Scenario: Responds with 404 when resource doesn't exist
     | property    | value |
     | status      | 404   |
 
-Scenario: Responds with no-store and no etag when resource found in development mode
+Scenario: Responds with private, no-store and no etag when resource found in development mode
   Given enonic xp is running in development mode
   Given the following resources:
     | path                        | exist | type     | etag           | content               |
@@ -413,9 +413,9 @@ Scenario: Responds with no-store and no etag when resource found in development 
     | status      | 200                   |
     | contentType | text/css              |
   And the response should have the following headers:
-    | header        | value     |
-    | etag          | undefined |
-    | cache-control | no-store  |
+    | header        | value             |
+    | etag          | undefined         |
+    | cache-control | private, no-store |
 
 Scenario: Responds with 304 Not modified when if-none-match matches etag
   Given enonic xp is running in production mode
