@@ -1,8 +1,12 @@
 import type {RequestHandler} from '/lib/enonic/static/types';
 
 import {
+  CONTENT_CODING,
+  CONTENT_ENCODING,
+  HTTP2_REQUEST_HEADER,
   HTTP2_RESPONSE_HEADER,
   RESPONSE_CACHE_CONTROL_DIRECTIVE,
+  VARY,
 } from '/lib/enonic/static/constants';
 import {read} from '/lib/enonic/static/etagReader';
 import {getResource} from '/lib/enonic/static/io';
@@ -21,7 +25,9 @@ import {
 import {prefixWithRoot} from '/lib/enonic/static/resource/path/prefixWithRoot';
 import {checkPath} from '/lib/enonic/static/resource/path/checkPath';
 import {isDev} from '/lib/enonic/static/runMode';
-import {stringEndsWith} from '../util/stringEndsWith';
+import {stringEndsWith} from '/lib/enonic/static/util/stringEndsWith';
+import {stringIncludes} from '/lib/enonic/static/util/stringIncludes';
+import {getLowerCasedHeaders} from '/lib/enonic/static/request/getLowerCasedHeaders';
 
 
 export const requestHandler: RequestHandler = ({
@@ -32,6 +38,7 @@ export const requestHandler: RequestHandler = ({
   relativePath: relativePathFn = getRelativeResourcePath,
   request,
   root,
+  staticCompress = true,
   throwErrors,
 }) => {
   return responseOrThrow({
@@ -69,7 +76,7 @@ export const requestHandler: RequestHandler = ({
         return errorResponse;
       }
 
-      const resource = getResource(absResourcePathWithoutTrailingSlash);
+      let resource = getResource(absResourcePathWithoutTrailingSlash);
 
       if (indexAndNoTrailingSlash && !resource.exists()) {
         request.rawPath += `/${index}`;
@@ -124,8 +131,15 @@ export const requestHandler: RequestHandler = ({
         }),
       };
 
+      if (staticCompress) {
+        headers[HTTP2_RESPONSE_HEADER.VARY] = VARY.ACCEPT_ENCODING;
+      }
+
+      const lowerCasedRequestHeaders = getLowerCasedHeaders({request});
+
+      let etagWithDblFnutts: string;
       if (etag) {
-        const etagWithDblFnutts = read(absResourcePathWithoutTrailingSlash);
+        etagWithDblFnutts = read(absResourcePathWithoutTrailingSlash);
         const ifNoneMatchRequestHeader = getIfNoneMatchHeader({request});
         headers[HTTP2_RESPONSE_HEADER.ETAG] = etagWithDblFnutts;
         if (
@@ -137,6 +151,45 @@ export const requestHandler: RequestHandler = ({
           });
         }
       }
+
+      const trimmedAndLowercasedAcceptEncoding: string = (lowerCasedRequestHeaders[HTTP2_REQUEST_HEADER.ACCEPT_ENCODING] as string | undefined || '')
+        .trim()
+        .toLowerCase();
+
+        if (staticCompress && trimmedAndLowercasedAcceptEncoding) {
+
+        if (
+          stringIncludes(trimmedAndLowercasedAcceptEncoding, CONTENT_CODING.BR)
+          && !stringIncludes(trimmedAndLowercasedAcceptEncoding, `${CONTENT_CODING.BR};q=0,`)
+          && !stringEndsWith(trimmedAndLowercasedAcceptEncoding, `${CONTENT_CODING.BR};q=0`)
+        ) {
+            const resourceBr = getResource(`${absResourcePathWithoutTrailingSlash}.br`);
+            if (resourceBr.exists()) {
+              headers[HTTP2_RESPONSE_HEADER.CONTENT_ENCODING] = CONTENT_ENCODING.BR;
+              if (etagWithDblFnutts) {
+                headers[HTTP2_RESPONSE_HEADER.ETAG] = etagWithDblFnutts.replace(/"$/, '-br"');
+              }
+              resource = resourceBr;
+            }
+          } // brotli
+
+          if (
+            !headers[HTTP2_RESPONSE_HEADER.CONTENT_ENCODING] // prefer brotli
+            && stringIncludes(trimmedAndLowercasedAcceptEncoding, CONTENT_CODING.GZIP)
+            && !stringIncludes(trimmedAndLowercasedAcceptEncoding, `${CONTENT_CODING.GZIP};q=0,`)
+            && !stringEndsWith(trimmedAndLowercasedAcceptEncoding, `${CONTENT_CODING.GZIP};q=0`)
+          ) {
+            const resourceGz = getResource(`${absResourcePathWithoutTrailingSlash}.gz`);
+            if (resourceGz.exists()) {
+              headers[HTTP2_RESPONSE_HEADER.CONTENT_ENCODING] = CONTENT_ENCODING.GZIP;
+              if (etagWithDblFnutts) {
+                headers[HTTP2_RESPONSE_HEADER.ETAG] = etagWithDblFnutts.replace(/"$/, '-gzip"');
+              }
+              resource = resourceGz;
+            }
+          } // gzip
+
+      } // if doStaticCompression && acceptEncoding
 
       return okResponse({
         body: resource.getStream(),

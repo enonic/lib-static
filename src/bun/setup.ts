@@ -21,6 +21,7 @@ declare namespace globalThis {
   let log: Log
   let __: DoubleUnderscore
   let _devMode: boolean;
+  let _logLevel: 'debug' | 'error' | 'info' | 'warn' | 'silent';
   let _resources: Record<string, {
     bytes?: string
     exists?: boolean
@@ -28,10 +29,6 @@ declare namespace globalThis {
     mimeType?: string
   }>
 }
-
-
-const LOG_LEVEL: 'debug' | 'error' | 'info' | 'warn' | 'silent' = 'silent';
-
 
 globalThis._resources = {
   '/com.enonic.lib.static.json': {
@@ -100,34 +97,63 @@ export function rpad(
 		: s + new Array(w - s.length + 1).join(z);
 }
 
-function logWith({
+export function logWith({
   color,
-  // level = 'debug',
+  level = globalThis._logLevel || 'silent',
   name,
+  prefix = name,
   format,
+  pad = 6,
   values,
 }: {
-  color: string,
-  // level?: 'debug' | 'error' | 'info' | 'warn' | 'silent',
-  name: 'debug' | 'error' | 'info' | 'warn',
-  format: string,
+  color: string
+  level?: 'debug' | 'error' | 'info' | 'warn' | 'silent'
+  name: 'debug' | 'error' | 'info' | 'warn'
+  prefix?: string
+  pad?: number
+  format: string
   values: unknown[]
 }): void {
   if (
-    LOG_LEVEL === 'silent' ||
-    (LOG_LEVEL === 'info' && name === 'debug') ||
-    (LOG_LEVEL === 'warn' && (name === 'debug' || name === 'info')) ||
-    (LOG_LEVEL === 'error' && (name === 'debug' || name === 'info' || name === 'warn'))
+    level === 'silent' ||
+    (level === 'info' && name === 'debug') ||
+    (level === 'warn' && (name === 'debug' || name === 'info')) ||
+    (level === 'error' && (name === 'debug' || name === 'info' || name === 'warn'))
   ) {
     return;
   }
-  const prefix = `${color}${rpad(name.toUpperCase(), 6)}${format}${reset}`;
+  const p = `${color}${rpad(prefix, pad)}${format}${reset}`;
   if (values.length) {
-    console[name](prefix, ...colorize(values, color));
+    console[name](p, ...colorize(values, color));
   } else {
-    console[name](prefix);
+    console[name](p);
   }
 }
+
+export const testLogger = {
+  debug: (format: string, ...s: unknown[]): void => {
+    logWith({
+      color: grey,
+      name: 'debug',
+      prefix: '[BUN TEST DEBUG]',
+      level: 'debug',
+      pad: 16,
+      format,
+      values: s,
+    });
+  },
+  info: (format: string, ...s: unknown[]): void => {
+    logWith({
+      color: white,
+      name: 'info',
+      prefix: '[BUN TEST INFO]',
+      level: 'info',
+      pad: 16,
+      format,
+      values: s,
+    });
+  },
+};
 /* coverage ignore end */
 
 
@@ -141,6 +167,7 @@ globalThis.log = {
     logWith({
       color: grey,
       name: 'debug',
+      prefix: 'DEBUG',
       format,
       values: s,
     });
@@ -150,6 +177,7 @@ globalThis.log = {
     logWith({
       color: brightRed,
       name: 'error',
+      prefix: 'ERROR',
       format,
       values: s,
     });
@@ -159,6 +187,7 @@ globalThis.log = {
     logWith({
       color: white,
       name: 'info',
+      prefix: 'INFO',
       format,
       values: s,
     });
@@ -168,6 +197,7 @@ globalThis.log = {
     logWith({
       color: brightYellow,
       name: 'warn',
+      prefix: 'WARN',
       format,
       values: s,
     });

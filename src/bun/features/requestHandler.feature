@@ -1,5 +1,8 @@
 Feature: requestHandler
 
+Background: State is reset before each test
+  Given the parameters are reset
+
 Scenario: Responds with 200 ok when resource found
   Given enonic xp is running in production mode
   Given the following resources:
@@ -47,6 +50,219 @@ Scenario: Responds with 200 ok when index is enabled, rawPath has trailing slash
     | header        | value                              |
     | cache-control | public, max-age=0, must-revalidate |
     | etag          | "etag-index-html"                  |
+
+Scenario: prefers brotli even though it comes last and have lowest qvalue weight
+  Given enonic xp is running in production mode
+  Given the following resources:
+    | path                 | exist | mimeType | content               | etag                         |
+    | /static/index.css    | true  | text/css | body { color: green } | etag-index-css               |
+    | /static/index.css.br | true  | text/css | brContent             | br-etag-should-not-be-used   |
+    | /static/index.css.gz | true  | text/css | gzipContent           | gzip-etag-should-not-be-used |
+  And the following request:
+    | property    | value                                                                          |
+    | contextPath | /webapp/com.example.myproject/_/service/com.example.myproject/static           |
+    | rawPath     | /webapp/com.example.myproject/_/service/com.example.myproject/static/index.css |
+  And the following request headers:
+    | header           | value                                                  |
+    | accept-encoding  | gzip, deflate;q=0.9, identity;q=0.8, *;q=0.7, br;q=0.1 |
+  When requestHandler is called
+  Then the response should have the following properties:
+    | property    | value     |
+    | body        | brContent |
+    | status      | 200       |
+    | contentType | text/css  |
+  And the response should have the following headers:
+    | header           | value                               |
+    | cache-control    | public, max-age=31536000, immutable |
+    | content-encoding | br                                  |
+    | etag             | "etag-index-css-br"                 |
+    | vary             | Accept-Encoding                     |
+
+Scenario: returns gzip compressed content gzip, but no brotli in accept-encoding header
+  Given enonic xp is running in production mode
+  Given the following resources:
+    | path                 | exist | mimeType | content               | etag                         |
+    | /static/index.css    | true  | text/css | body { color: green } | etag-index-css               |
+    | /static/index.css.br | true  | text/css | brContent             | br-etag-should-not-be-used   |
+    | /static/index.css.gz | true  | text/css | gzipContent           | gzip-etag-should-not-be-used |
+  And the following request:
+    | property    | value                                                                          |
+    | contextPath | /webapp/com.example.myproject/_/service/com.example.myproject/static           |
+    | rawPath     | /webapp/com.example.myproject/_/service/com.example.myproject/static/index.css |
+  And the following request headers:
+    | header           | value                                            |
+    | accept-encoding  | deflate;q=1.0, identity;q=0.9, *;q=0.8, gzip=0.1 |
+  When requestHandler is called
+  Then the response should have the following properties:
+    | property    | value       |
+    | body        | gzipContent |
+    | status      | 200         |
+    | contentType | text/css    |
+  And the response should have the following headers:
+    | header           | value                               |
+    | cache-control    | public, max-age=31536000, immutable |
+    | content-encoding | gzip                                |
+    | etag             | "etag-index-css-gzip"               |
+    | vary             | Accept-Encoding                     |
+
+Scenario: returns gzip when br file is missing
+  Given enonic xp is running in production mode
+  Given the following resources:
+    | path                 | exist | mimeType | content               | etag                         |
+    | /static/index.css    | true  | text/css | body { color: green } | etag-index-css               |
+    | /static/index.css.br | false |          |                       |                              |
+    | /static/index.css.gz | true  | text/css | gzipContent           | gzip-etag-should-not-be-used |
+  And the following request:
+    | property    | value                                                                          |
+    | contextPath | /webapp/com.example.myproject/_/service/com.example.myproject/static           |
+    | rawPath     | /webapp/com.example.myproject/_/service/com.example.myproject/static/index.css |
+  And the following request headers:
+    | header           | value                                                        |
+    | accept-encoding  | br;q=1.0, gzip;q=0.1, deflate;q=0.6, identity;q=0.4, *;q=0.2 |
+  When requestHandler is called
+  Then the response should have the following properties:
+    | property    | value       |
+    | body        | gzipContent |
+    | status      | 200         |
+    | contentType | text/css    |
+  And the response should have the following headers:
+    | header           | value                               |
+    | cache-control    | public, max-age=31536000, immutable |
+    | content-encoding | gzip                                |
+    | etag             | "etag-index-css-gzip"               |
+    | vary             | Accept-Encoding                     |
+
+Scenario: Does NOT set vary when staticCompress = false
+  # Running in development mode to avoid cached configuration
+  Given enonic xp is running in production mode
+  And the following resources:
+    | path                 | exist | mimeType | content               | etag                         |
+    | /static/index.css    | true  | text/css | body { color: green } | etag-index-css               |
+    | /static/index.css.br | true  | text/css | brContent             | br-etag-should-not-be-used   |
+    | /static/index.css.gz | true  | text/css | gzipContent           | gzip-etag-should-not-be-used |
+  And the following request:
+    | property    | value                                                                          |
+    | contextPath | /webapp/com.example.myproject/_/service/com.example.myproject/static           |
+    | rawPath     | /webapp/com.example.myproject/_/service/com.example.myproject/static/index.css |
+  And the following request headers:
+    | header           | value                          |
+    | accept-encoding  | br, gzip, deflate, identity, * |
+  When requestHandler is called with the following parameters:
+    | param          | value |
+    | staticCompress | false |
+  Then the response should have the following properties:
+    | property    | value                 |
+    | body        | body { color: green } |
+    | status      | 200                   |
+    | contentType | text/css              |
+  And the response should have the following headers:
+    | header           | value                               |
+    | cache-control    | public, max-age=31536000, immutable |
+    | content-encoding | undefined                           |
+    | etag             | "etag-index-css"                    |
+    | vary             | undefined                           |
+
+Scenario: Does not use compression when trimmed accept-encoding endswith gzip;q=0 and includes br;q=0,
+  Given enonic xp is running in production mode
+  Given the following resources:
+    | path                 | exist | mimeType | content               | etag                         |
+    | /static/index.css    | true  | text/css | body { color: green } | etag-index-css               |
+    | /static/index.css.br | true  | text/css | brContent             | br-etag-should-not-be-used   |
+    | /static/index.css.gz | true  | text/css | gzipContent           | gzip-etag-should-not-be-used |
+  And the following request:
+    | property    | value                                                                          |
+    | contextPath | /webapp/com.example.myproject/_/service/com.example.myproject/static           |
+    | rawPath     | /webapp/com.example.myproject/_/service/com.example.myproject/static/index.css |
+  And the request header "accept-encoding" is "br;q=0, deflate;q=0.6, identity;q=0.4, *;q=0.1, gzip;q=0 "
+  When requestHandler is called
+  Then the response should have the following properties:
+    | property    | value                 |
+    | body        | body { color: green } |
+    | status      | 200                   |
+    | contentType | text/css              |
+  And the response should have the following headers:
+    | header           | value                               |
+    | cache-control    | public, max-age=31536000, immutable |
+    | content-encoding | undefined                           |
+    | etag             | "etag-index-css"                    |
+    | vary             | Accept-Encoding                     |
+
+Scenario: Does not use compression when trimmed accept-encoding endswith br;q=0 and includes gzip;q=0,
+  Given enonic xp is running in production mode
+  Given the following resources:
+    | path                 | exist | mimeType | content               | etag                         |
+    | /static/index.css    | true  | text/css | body { color: green } | etag-index-css               |
+    | /static/index.css.br | true  | text/css | brContent             | br-etag-should-not-be-used   |
+    | /static/index.css.gz | true  | text/css | gzipContent           | gzip-etag-should-not-be-used |
+  And the following request:
+    | property    | value                                                                          |
+    | contextPath | /webapp/com.example.myproject/_/service/com.example.myproject/static           |
+    | rawPath     | /webapp/com.example.myproject/_/service/com.example.myproject/static/index.css |
+  And the request header "accept-encoding" is "gzip;q=0, deflate;q=0.6, identity;q=0.4, *;q=0.1, br;q=0 "
+  When requestHandler is called
+  Then the response should have the following properties:
+    | property    | value                 |
+    | body        | body { color: green } |
+    | status      | 200                   |
+    | contentType | text/css              |
+  And the response should have the following headers:
+    | header           | value                               |
+    | cache-control    | public, max-age=31536000, immutable |
+    | content-encoding | undefined                           |
+    | etag             | "etag-index-css"                    |
+    | vary             | Accept-Encoding                     |
+
+Scenario: handles camelcase request headers
+  Given enonic xp is running in production mode
+  Given the following resources:
+    | path                 | exist | mimeType | content               | etag                         |
+    | /static/index.css    | true  | text/css | body { color: green } | etag-index-css               |
+    | /static/index.css.br | true  | text/css | brContent             | br-etag-should-not-be-used   |
+    | /static/index.css.gz | true  | text/css | gzipContent           | gzip-etag-should-not-be-used |
+  And the following request:
+    | property    | value                                                                          |
+    | contextPath | /webapp/com.example.myproject/_/service/com.example.myproject/static           |
+    | rawPath     | /webapp/com.example.myproject/_/service/com.example.myproject/static/index.css |
+  And the following request headers:
+    | header           | value                   |
+    | Accept-Encoding  | gzip, deflate, br, zstd |
+  When requestHandler is called
+  Then the response should have the following properties:
+    | property    | value      |
+    | body        | brContent  |
+    | status      | 200        |
+    | contentType | text/css   |
+  And the response should have the following headers:
+    | header           | value                               |
+    | cache-control    | public, max-age=31536000, immutable |
+    | content-encoding | br                                  |
+    | etag             | "etag-index-css-br"                 |
+    | vary             | Accept-Encoding                     |
+
+Scenario: handles camelcase accept-encoding header
+  Given enonic xp is running in production mode
+  Given the following resources:
+    | path                 | exist | mimeType | content               | etag                         |
+    | /static/index.css    | true  | text/css | body { color: green } | etag-index-css               |
+    | /static/index.css.br | true  | text/css | brContent             | br-etag-should-not-be-used   |
+    | /static/index.css.gz | true  | text/css | gzipContent           | gzip-etag-should-not-be-used |
+  And the following request:
+    | property    | value                                                                          |
+    | contextPath | /webapp/com.example.myproject/_/service/com.example.myproject/static           |
+    | rawPath     | /webapp/com.example.myproject/_/service/com.example.myproject/static/index.css |
+  And the request header "accept-encoding" is "GzIp, DeFlAtE, bR, zStD"
+  When requestHandler is called
+  Then the response should have the following properties:
+    | property    | value      |
+    | body        | brContent  |
+    | status      | 200        |
+    | contentType | text/css   |
+  And the response should have the following headers:
+    | header           | value                               |
+    | cache-control    | public, max-age=31536000, immutable |
+    | content-encoding | br                                  |
+    | etag             | "etag-index-css-br"                 |
+    | vary             | Accept-Encoding                     |
 
 Scenario: [PROD] Responds with 404 bad request with just status when request.rawPath is missing
   Given enonic xp is running in production mode

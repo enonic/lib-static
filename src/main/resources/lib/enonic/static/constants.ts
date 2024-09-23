@@ -57,13 +57,49 @@ export const enum RESPONSE_CACHE_CONTROL_DIRECTIVE {
 }
 
 export const enum HTTP2_REQUEST_HEADER {
+  ACCEPT_ENCODING = 'accept-encoding',
   CACHE_CONTROL = 'cache-control',
   IF_NONE_MATCH = 'if-none-match'
 }
 
 export const enum HTTP2_RESPONSE_HEADER {
   CACHE_CONTROL = 'cache-control',
+  CONTENT_ENCODING = 'content-encoding',
   ETAG = 'etag',
+  VARY = 'vary'
+}
+
+// https://www.iana.org/assignments/http-parameters/http-parameters.xhtml#content-coding
+export const enum CONTENT_CODING {
+  AES128GCM = 'aes128gcm',
+  BR = 'br',
+  COMPRESS = 'compress',
+  DCB = 'dcb',
+  DCZ = 'dcz',
+  DEFLATE = 'deflate',
+  EXI = 'exi',
+  GZIP = 'gzip',
+  IDENTITY = 'identity',
+  PACK200_GZIP = 'pack200-gzip',
+  ZSTD = 'zstd'
+}
+
+// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Encoding
+export const enum CONTENT_ENCODING {
+  BR = 'br',
+  COMPRESS = 'compress',
+  DEFLATE = 'deflate',
+  GZIP = 'gzip',
+  ZSTD = 'zstd'
+}
+
+// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Vary
+// https://developer.mozilla.org/en-US/docs/Web/HTTP/Content_negotiation
+// https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching#vary
+export const enum VARY {
+  ACCEPT = 'Accept',
+  ACCEPT_ENCODING = 'Accept-Encoding',
+  ACCEPT_LANGUAGE = 'Accept-Language',
 }
 
 export const enum RESPONSE_CACHE_CONTROL {

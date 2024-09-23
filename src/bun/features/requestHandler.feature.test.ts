@@ -16,6 +16,7 @@ import {
   loadFeature,
 } from 'jest-cucumber';
 import {requestHandler} from '../../main/resources/lib/enonic/static/service/requestHandler';
+import {testLogger} from '../setup';
 
 
 // Avoid type errors
@@ -40,14 +41,14 @@ const feature = loadFeature('./src/bun/features/requestHandler.feature', {
 });
 
 export const steps: StepDefinitions = ({
-  // and,
+  and,
   given,
   then,
   when,
 }) => {
   let request: Partial<Request> = {};
   let response: Response;
-  const params: RequestHandlerParams = {};
+  let params: RequestHandlerParams = {};
 
   given('enonic xp is running in development mode', () => {
     globalThis._devMode = true;
@@ -61,13 +62,14 @@ export const steps: StepDefinitions = ({
     content: string
     exist: string
     etag: string
+    mimeType: string
     path: string
     type: string
   }[]) => {
     Object.keys(globalThis._resources).forEach((key) => {
       delete globalThis._resources[key];
     });
-    table.forEach(({path, exist, type, etag, content}) => {
+    table.forEach(({path, exist, type, etag, content, mimeType}) => {
       globalThis._resources[path] = {
         exists: exist !== 'false',
       };
@@ -77,12 +79,23 @@ export const steps: StepDefinitions = ({
       if (etag) {
         globalThis._resources[path].etag = etag;
       }
+      if (mimeType) {
+        globalThis._resources[path].mimeType = mimeType;
+      }
       if (type) {
         globalThis._resources[path].mimeType = type;
       }
     });
     // log.info('resources:%s', globalThis._resources);
 	});
+
+  given('the request is reset', () => {
+    request = {};
+  });
+
+  given('the parameters are reset', () => {
+    params = {};
+  });
 
   given('the following request:', (table: {property: string, value: string}[]) => {
     request = {};
@@ -100,12 +113,19 @@ export const steps: StepDefinitions = ({
     params.request = request;
 	});
 
+  and(/the request header "(.+)" is "(.+)"$/, (header: string, value: string) => {
+    if (!request.headers) {
+      request.headers = {};
+    }
+    request.headers[header] = value;
+  });
+
   when('the resources are info logged', () => {
-    log.info('resources:%s', globalThis._resources);
+    testLogger.info('resources:%s', globalThis._resources);
 	});
 
   when('the request is info logged', () => {
-    log.info('request:%s', request);
+    testLogger.info('request:%s', request);
 	});
 
   when('requestHandler is called', () => {
@@ -114,13 +134,17 @@ export const steps: StepDefinitions = ({
 
   when('requestHandler is called with the following parameters:', (table: {param: string, value: string}[]) => {
     table.forEach(({param, value}) => {
-      params[param] = value;
+      let v: unknown = value;
+      if (param === 'staticCompress') {
+        v = value === 'true';
+      }
+      params[param] = v;
     });
     response = requestHandler(params);
   });
 
   then('the response is info logged', () => {
-    log.info('response:%s', response);
+    testLogger.info('response:%s', response);
 	});
 
   then('the response should have the following properties:', (table: {property: string, value: string}[]) => {
