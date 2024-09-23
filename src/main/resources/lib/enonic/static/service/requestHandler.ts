@@ -10,7 +10,6 @@ import {
 } from '/lib/enonic/static/constants';
 import {read} from '/lib/enonic/static/etagReader';
 import {getResource} from '/lib/enonic/static/io';
-import {getIfNoneMatchHeader} from '/lib/enonic/static/request/getIfNoneMatchHeader';
 import {getMimeType} from '/lib/enonic/static/io';
 import {responseOrThrow} from '/lib/enonic/static/response/responseOrThrow';
 import {getRelativeResourcePath} from '/lib/enonic/static/path/getRelativeResourcePath';
@@ -140,7 +139,7 @@ export const requestHandler: RequestHandler = ({
       let etagWithDblFnutts: string;
       if (etag) {
         etagWithDblFnutts = read(absResourcePathWithoutTrailingSlash);
-        const ifNoneMatchRequestHeader = getIfNoneMatchHeader({request});
+        const ifNoneMatchRequestHeader = lowerCasedRequestHeaders[HTTP2_REQUEST_HEADER.IF_NONE_MATCH];
         headers[HTTP2_RESPONSE_HEADER.ETAG] = etagWithDblFnutts;
         if (
           ifNoneMatchRequestHeader
