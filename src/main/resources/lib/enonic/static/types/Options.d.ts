@@ -29,6 +29,7 @@ export interface RequestHandlerParams {
   index?: string|false
   relativePath?: RelativePathResolver
   root?: string
+  staticCompress?: boolean
   throwErrors?: boolean
 }
 
