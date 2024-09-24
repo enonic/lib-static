@@ -11,7 +11,6 @@ export function checkPath({
   absResourcePathWithoutTrailingSlash: string
 }): Response | void {
   const pathError = getPathError(absResourcePathWithoutTrailingSlash.replace(/^\/+/, ''));
-  log.debug('checkPath: pathError: %s', pathError);
 
   if (pathError) {
     if (isDev()) {
