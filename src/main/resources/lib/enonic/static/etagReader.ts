@@ -10,24 +10,11 @@ const etagService = __.newBean<{
  *      to the file, and without app name).
  *      No checking is done here for fine-grained 400, 404 errors etc, so path should be already checked, trimmed,
  *      verified for existing resource etc.
- * @param etagOverrideOption (boolean?) By default (undefined/null...), etag will be processed in XP dev mode runtime
- *      but skipped in XP prod mode. etagOverrideOption=true enforces etag processing in XP dev mode too,
- *      while false turns etag processing completely off.
  * @return (object) etag value, if anything was processed, undefined if not.
  * @throws (error) if any error occurred during java processing. Java error message.
  */
-export const read = (path: string, etagOverrideOption?: boolean): string|undefined => {
-    // true: 1, false: -1, other: 0
-    const etagOverride = (etagOverrideOption)
-        ? 1
-        : etagOverrideOption === false
-            ? -1
-            : 0;
-    log.debug('read: etagOverride: %s', etagOverride);
-
-    const {error, etag} = __.toNativeObject(etagService.getEtag(`${app.name}:${path}`, etagOverride));
-    log.debug('read: error: %s', error);
-    log.debug('read: etag: %s', etag);
+export const read = (path: string): string|undefined => {
+    const {error, etag} = __.toNativeObject(etagService.getEtag(`${app.name}:${path}`));
 
     if (error) {
         throw Error(error);
