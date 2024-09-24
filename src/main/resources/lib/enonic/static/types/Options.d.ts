@@ -19,6 +19,24 @@ export type ContentTypeResolver = (params: ContentTypeResolverParams) => string 
 
 export type RelativePathResolver = (req: Request) => string;
 
+export interface NotFoundHandlerParams {
+  path: string
+  // Required
+  request: Request
+  // Optional
+  cacheControl?: CacheControlResolver
+  contentType?: ContentTypeResolver
+  etag?: boolean
+  index?: string|false
+  // notFound?: NotFoundHandler
+  // relativePath?: RelativePathResolver
+  root?: string
+  staticCompress?: boolean
+  throwErrors?: boolean
+}
+
+export type NotFoundHandler = (params: NotFoundHandlerParams) => Response;
+
 export interface RequestHandlerParams {
   // Required
   request: Request
@@ -27,6 +45,7 @@ export interface RequestHandlerParams {
   contentType?: ContentTypeResolver
   etag?: boolean
   index?: string|false
+  notFound?: NotFoundHandler
   relativePath?: RelativePathResolver
   root?: string
   staticCompress?: boolean

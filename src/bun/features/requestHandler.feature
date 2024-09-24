@@ -393,6 +393,31 @@ Scenario: Responds with 404 when resource doesn't exist
     | property    | value |
     | status      | 404   |
 
+Scenario: Let's SPA handle 404 when using spaNotFoundHandler
+  Given enonic xp is running in production mode
+  Given the following resources:
+    | path                                     | exist | content | mimeType  | etag      |
+    | /static/index.html                       | true  | spaApp  | text/html | indexEtag |
+    | /static/notResourceNorSpaPage            | false |         |           |           |
+    | /static/notResourceNorSpaPage/index.html | false |         |           |           |
+  And the following request:
+    | property    | value                                                                                                           |
+    | contextPath | /webapp/com.example.myproject/_/service/com.example.myproject/static                                            |
+    | rawPath     | /webapp/com.example.myproject/_/service/com.example.myproject/static/notResourceNorSpaPage                      |
+    | url         | http://localhost:8080/webapp/com.example.myproject/_/service/com.example.myproject/static/notResourceNorSpaPage |
+  And the spaNotFoundHandler is used
+  When requestHandler is called
+  Then the response should have the following properties:
+    | property    | value     |
+    | status      | 200       |
+    | body        | spaApp    |
+    | contentType | text/html |
+  And the response should have the following headers:
+    | header        | value                              |
+    | cache-control | public, max-age=0, must-revalidate |
+    | etag          | "indexEtag"                        |
+    | vary          | Accept-Encoding                    |
+
 Scenario: Responds with private, no-store and no etag when resource found in development mode
   Given enonic xp is running in development mode
   Given the following resources:

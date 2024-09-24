@@ -34,6 +34,7 @@ export const requestHandler: RequestHandler = ({
   contentType: contentTypeFn = ({path}) => getMimeType(path),
   etag = true,
   index = 'index.html',
+  notFound = notFoundResponse,
   relativePath: relativePathFn = getRelativeResourcePath,
   request,
   root,
@@ -103,10 +104,25 @@ export const requestHandler: RequestHandler = ({
       }
 
       if (!resource.exists()) {
-        return notFoundResponse();
+        return notFound({
+          path: relativePath,
+          // Same as requestHandler except for notFound
+          cacheControl: cacheControlFn,
+
+          // @ts-expect-error Seems like a bug in TypeScript type-checking
+          contentType: contentTypeFn,
+
+          etag,
+          index,
+          request,
+          relativePath: relativePathFn,
+          root,
+          staticCompress,
+          throwErrors,
+        });
       }
 
-      const contentType = contentTypeFn({
+      const contentTypeString = contentTypeFn({
         path: absResourcePathWithoutTrailingSlash,
         resource,
       });
@@ -114,7 +130,7 @@ export const requestHandler: RequestHandler = ({
       if(isDev()) {
         return okResponse({
           body: resource.getStream(),
-          contentType,
+          contentType: contentTypeString,
           headers: {
             [HTTP2_RESPONSE_HEADER.CACHE_CONTROL]: RESPONSE_CACHE_CONTROL.DEV,
           },
@@ -124,7 +140,7 @@ export const requestHandler: RequestHandler = ({
       // Production
       const headers = {
         [HTTP2_RESPONSE_HEADER.CACHE_CONTROL]: cacheControlFn({
-          contentType,
+          contentType: contentTypeString,
           path: relativePath,
           resource,
         }),
@@ -192,7 +208,7 @@ export const requestHandler: RequestHandler = ({
 
       return okResponse({
         body: resource.getStream(),
-        contentType,
+        contentType: contentTypeString,
         headers,
       });
     }, // fn

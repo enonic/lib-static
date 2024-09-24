@@ -7,6 +7,7 @@ export type {
   ContentTypeResolver,
   ContentTypeResolverPositional,
   ParseStringAndOptionsCommonReturnValues,
+  NotFoundHandler,
   RequestHandler,
   RequestHandlerParams,
 } from '/lib/enonic/static/types/Options';

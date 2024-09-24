@@ -16,6 +16,7 @@ import {
   loadFeature,
 } from 'jest-cucumber';
 import {requestHandler} from '../../main/resources/lib/enonic/static/service/requestHandler';
+import {spaNotFoundHandler} from '../../main/resources/lib/enonic/static/service/spaNotFoundHandler';
 import {testLogger} from '../setup';
 
 
@@ -25,6 +26,7 @@ declare namespace globalThis {
   let log: Log
   let __: DoubleUnderscore
   let _devMode: boolean;
+  let _logLevel: 'debug' | 'info' | 'warn' | 'error' | 'silent';
   let _resources: Record<string, {
     bytes?: string
     exists?: boolean
@@ -56,6 +58,10 @@ export const steps: StepDefinitions = ({
 
   given('enonic xp is running in production mode', () => {
     globalThis._devMode = false;
+  });
+
+  given(/^loglevel is set to "(.*)"$/, (level) => {
+    globalThis._logLevel = level;
   });
 
   given('the following resources:', (table: {
@@ -127,6 +133,10 @@ export const steps: StepDefinitions = ({
   when('the request is info logged', () => {
     testLogger.info('request:%s', request);
 	});
+
+  given('the spaNotFoundHandler is used', () => {
+    params.notFound = spaNotFoundHandler;
+  });
 
   when('requestHandler is called', () => {
     response = requestHandler(params);
