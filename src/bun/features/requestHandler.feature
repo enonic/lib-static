@@ -2,6 +2,7 @@ Feature: requestHandler
 
 Background: State is reset before each test
   Given the parameters are reset
+  And loglevel is set to "silent"
 
 Scenario: Responds with 200 ok when resource found
   Given enonic xp is running in production mode
@@ -263,6 +264,22 @@ Scenario: handles camelcase accept-encoding header
     | content-encoding | br                                  |
     | etag             | "etag-index-css-br"                 |
     | vary             | Accept-Encoding                     |
+
+Scenario: Should return 404 when excess slashes
+  Given enonic xp is running in production mode
+  Given the following resources:
+    | path                           | exist |
+    | /static///index.css            | false |
+    | /static///index.css/index.html | false |
+  Given the following request:
+    | property    | value                                                                            |
+    | contextPath | /webapp/com.example.myproject/_/service/com.example.myproject/static             |
+    | rawPath     | /webapp/com.example.myproject/_/service/com.example.myproject/static///index.css |
+    | path        | /webapp/com.example.myproject/_/service/com.example.myproject/static/index.css   |
+  When requestHandler is called
+  Then the response should have the following properties:
+    | property    | value |
+    | status      | 404   |
 
 Scenario: [PROD] Responds with 404 bad request with just status when request.rawPath is missing
   Given enonic xp is running in production mode

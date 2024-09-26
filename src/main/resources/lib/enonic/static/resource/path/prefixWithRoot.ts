@@ -5,7 +5,7 @@ export function prefixWithRoot({
   root = GETTER_ROOT,
   path,
 }: {
-  path: string,
+  path: string, // Can be empty string, or just a slash, or a full path starting with a slash
   root?: string
 }): string {
   // NOTE: For security reasons it's very important that GETTER_ROOT is the root
@@ -15,7 +15,7 @@ export function prefixWithRoot({
     log.error(errorMessage);
     throw new Error(errorMessage);
   }
-  return `/${root}/${path}`
-    .replace(/\/\/+/g, '/') // Replace multiple slashes with a single slash
+  const slashRoot = root.startsWith('/') ? root : `/${root}`;
+  return `${slashRoot}${path}`
     .replace(/\/$/, ''); // Remove trailing slash
 }
