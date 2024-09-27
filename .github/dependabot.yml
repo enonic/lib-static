@@ -15,9 +15,9 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 10
     assignees:
-      - "espen42"
+      - "alansemenov"
     reviewers:
-      - "espen42"
+      - "alansemenov"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
