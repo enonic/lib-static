@@ -33,7 +33,7 @@
     "@enonic/eslint-config": "^2.0.0",
     "@eslint/js": "^9.11.1",
     "@item-enonic-types/lib-router": "^3.0.0",
-    "@swc/core": "^1.7.26",
+    "@swc/core": "^1.7.28",
     "@types/bun": "^1.1.10",
     "@types/node": "^22.6.1",
     "@typescript-eslint/parser": "^8.7.0",
