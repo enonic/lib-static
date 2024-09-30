@@ -14,7 +14,7 @@
     "cov": "jest --no-cache --coverage",
     "lint": "eslint --cache",
     "test": "jest --no-cache",
-    "types": "tsc -p types/tsconfig.build.json && ts-node types/process.ts"
+    "types": "tsc -p types/tsconfig.build.json && bun types/process.ts"
   },
   "repository": {
     "type": "git",

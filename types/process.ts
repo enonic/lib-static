@@ -5,24 +5,8 @@ import {
   writeFileSync,
 } from 'fs';
 import {join} from 'path';
-<<<<<<< HEAD
 import {exit} from 'process';
 import propertiesReader from 'properties-reader';
-=======
-import { exit } from 'process';
-import propertiesReader from 'properties-reader';
-
-function readGradleProperty(filePath: string, propertyName: string): string | undefined {
-  try {
-    const properties = propertiesReader(filePath);
-    const propertyValue = properties.get(propertyName);
-    return propertyValue;
-  } catch (error) {
-    console.error(`Error reading Gradle property: ${error}`);
-    return undefined;
-  }
-}
->>>>>>> 4de01d6 (Read version from gradle.properties)
 
 function readGradleProperty(filePath: string, propertyName: string): string | null | undefined {
   try {
