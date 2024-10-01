@@ -10,6 +10,7 @@ import {describe} from '@jest/globals';
 import {
   expect,
   test,
+  // @ts-expect-error Not using types: bun to avoid Duplicate identifier 'fetch'
 } from 'bun:test';
 import {
   autoBindSteps,
@@ -17,6 +18,7 @@ import {
 } from 'jest-cucumber';
 import {requestHandler} from '../../main/resources/lib/enonic/static/service/requestHandler';
 import {spaNotFoundHandler} from '../../main/resources/lib/enonic/static/service/spaNotFoundHandler';
+import {mappedRelativePath} from '../../main/resources/lib/enonic/static';
 import {testLogger} from '../setup';
 
 
@@ -50,6 +52,7 @@ export const steps: StepDefinitions = ({
 }) => {
   let request: Partial<Request> = {};
   let response: Response;
+  // @ts-expect-error Too lazy to type this
   let params: RequestHandlerParams = {};
 
   given('enonic xp is running in development mode', () => {
@@ -100,6 +103,7 @@ export const steps: StepDefinitions = ({
   });
 
   given('the parameters are reset', () => {
+    // @ts-expect-error Too lazy to type this
     params = {};
   });
 
@@ -108,6 +112,7 @@ export const steps: StepDefinitions = ({
     table.forEach(({property, value}) => {
       request[property] = value;
     });
+    // @ts-expect-error Too lazy to type this
     params.request = request;
 	});
 
@@ -116,6 +121,7 @@ export const steps: StepDefinitions = ({
     table.forEach(({header, value}) => {
       request.headers[header] = value;
     });
+    // @ts-expect-error Too lazy to type this
     params.request = request;
 	});
 
@@ -141,6 +147,11 @@ export const steps: StepDefinitions = ({
   when('requestHandler is called', () => {
     response = requestHandler(params);
 	});
+
+  when(/^requestHandler is called with mappedRelativePath "(.*)"$/, (base) => {
+    params.relativePath = mappedRelativePath(base);
+    response = requestHandler(params);
+  });
 
   when('requestHandler is called with the following parameters:', (table: {param: string, value: string}[]) => {
     table.forEach(({param, value}) => {

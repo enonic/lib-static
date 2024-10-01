@@ -1,8 +1,8 @@
-import type { Options } from './tsup';
+import type {Options} from './tsup';
 
 
-import { defineConfig } from 'tsup';
-import { DIR_DST } from './tsup/constants';
+import {defineConfig} from 'tsup';
+import {DIR_DST} from './tsup/constants';
 
 
 export default defineConfig(async (options: Options) => {

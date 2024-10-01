@@ -12,7 +12,7 @@ import {read} from '/lib/enonic/static/etagReader';
 import {getResource} from '/lib/enonic/static/io';
 import {getMimeType} from '/lib/enonic/static/io';
 import {responseOrThrow} from '/lib/enonic/static/response/responseOrThrow';
-import {getRelativeResourcePath} from '/lib/enonic/static/path/getRelativeResourcePath';
+import {getRelative} from '/lib/enonic/static/resource/path/getRelative';
 import {webAppCacheControl} from '/lib/enonic/static/service/webAppCacheControl';
 import {
   badRequestResponse,
@@ -35,7 +35,7 @@ export const requestHandler: RequestHandler = ({
   etag = true,
   index = 'index.html',
   notFound = notFoundResponse,
-  relativePath: relativePathFn = getRelativeResourcePath,
+  relativePath: relativePathFn = getRelative,
   request,
   root,
   staticCompress = true,
