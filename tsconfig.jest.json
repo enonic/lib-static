@@ -1,29 +1,23 @@
 {
+  // "extends": "tsconfig.xp.json", // TODO
+
   // Specifies an array of filenames or patterns to include in the program.
   // These filenames are resolved relative to the directory containing the
   // tsconfig.json file.
   "include": [
-    "**/*.ts",
+    "src/main/resources/**/*.ts", // TS6307 Projects must list all files or use an 'include' pattern.
+    // "../main/resources/types/**/*.d.ts",
+    "./src/jest/**/*.ts",
   ],
 
-  // Specifies an array of filenames or patterns that should be skipped when
-  // resolving include.
-  // Important: exclude only changes which files are included as a result of
-  // the include setting. A file specified by exclude can still become part of
-  // your codebase due to an import statement in your code, a types inclusion,
-  // a /// <reference directive, or being specified in the files list.
-  // It is not a mechanism that prevents a file from being included in the
-  // codebase - it simply changes what the include setting finds.
-  "exclude": [
-    "**/*.d.ts",
-  ],
+  // "exclude": [],
 
   "compilerOptions": {
-    // "allowJs": true,
-    // "checkJs": false,
+    // "allowJs": true, // node_modules/jest-runner/build/index.js
+    "composite": true,
     "esModuleInterop": true,
-
     "lib": [
+      "DOM", // console used in setupFile
       "ES2015", // String.prototype.endsWith // TODO Check that this works in Nashorn
     ],
     // "module": "ES6",
@@ -31,15 +25,14 @@
     // A series of entries which re-map imports to lookup locations relative
     // to the baseUrl if set, or to the tsconfig file itself otherwise.
     "paths": {
-      // "/lib/enonic/static/*": ["./lib/enonic/static/*"],
-      "/lib/router": ["../../../node_modules/@item-enonic-types/lib-router"],
-      "/lib/xp/*": ["../../../node_modules/@enonic-types/lib-*"],
-      // "/types": ["lib/enonic/static/types/index.d.ts"],
-      "/*": ["./*"],
+      "/lib/enonic/static/*": ["./src/main/resources/lib/enonic/static/*"],
+      "/lib/xp/*": ["./node_modules/@enonic-types/lib-*"],
+      // "/types": ["../../main/resources/types/index.ts"],
+      // "/*": ["../main/resources/*"],
     },
 
     "skipLibCheck": true,
-    // "strict": true, // There are 47 type errors with this enabled
+    "sourceMap": true, // Important to get correct line numbers when running coverage tests
     // "target": "ES2015",
 
     // By default all visible ”@types” packages are included in your compilation.
@@ -56,7 +49,8 @@
       // app, exports, log, require, resolve
       // https://developer.enonic.com/docs/xp/stable/framework/java-bridge
       // __.newBean, __.toNativeObject, __.nullOrValue
-      "@enonic-types/global"
+      "@enonic-types/global",
+      "node", // console
     ],
   }
 }

@@ -6,8 +6,8 @@ import {
   // jest,
   mock,
   // test as it
+  // @ts-expect-error Not using types: bun to avoid Duplicate identifier 'fetch'
 } from 'bun:test';
-// @ts-expect-error types are not available
 import {stringify} from 'q-i';
 import {isObject} from '../jest/isObject';
 // import {Resource} from '../jest/Resource';
@@ -74,8 +74,11 @@ function colorize(a: unknown[], color = brightYellow): string[] {
     if (typeof i === 'string') {
       return `${green}${i}${color}`;
     }
-    if (typeof i === 'undefined' || i === null) {
-      return `${yellow}${i}${color}`;
+    if (typeof i === 'undefined') {
+      return `${yellow}undefined${color}`;
+    }
+    if (i === null) {
+      return `${yellow}null${color}`;
     }
     if (typeof i === 'boolean') {
       return `${magenta}${i}${color}`;
@@ -162,7 +165,6 @@ globalThis.log = {
   // error: () => {},
   // info: () => {},
   // warning: () => {},
-  // @ts-expect-error I'm too lazy to fix this
   debug: (format: string, ...s: unknown[]): void => {
     logWith({
       color: grey,
@@ -172,7 +174,6 @@ globalThis.log = {
       values: s,
     });
   },
-  // @ts-expect-error I'm too lazy to fix this
   error: (format: string, ...s: unknown[]): void => {
     logWith({
       color: brightRed,
@@ -182,7 +183,6 @@ globalThis.log = {
       values: s,
     });
   },
-  // @ts-expect-error I'm too lazy to fix this
   info: (format: string, ...s: unknown[]): void => {
     logWith({
       color: white,
@@ -192,7 +192,6 @@ globalThis.log = {
       values: s,
     });
   },
-  // @ts-expect-error I'm too lazy to fix this
   warning: (format: string, ...s: unknown[]): void => {
     logWith({
       color: brightYellow,

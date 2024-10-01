@@ -591,3 +591,25 @@ Scenario: Responds with 500 internal server error when root parameter is empty
     | status      | 500                       |
     | contentType | text/plain; charset=utf-8 |
   And the response body should start with "Server error (logged with error ID:"
+
+Scenario: Handles site mappings using mappedRelativePath
+  Given enonic xp is running in production mode
+  Given the following resources:
+    | path                  | exist | type     | etag           | content               |
+    | /static/css/style.css | true  | text/css | etag-index-css | body { color: green } |
+  And the following request:
+    | property    | value                                                                                   |
+    | contextPath | /admin/site/preview/my-project/draft/my-site                                            |
+    | path        | /admin/site/preview/my-project/draft/my-site/_static/css/style.css                      |
+    | rawPath     | /admin/site/preview/my-project/draft/my-site/_static/css/style.css                      |
+    | url         | http://localhost:8080/admin/site/preview/my-project/draft/my-site/_static/css/style.css |
+  When requestHandler is called with mappedRelativePath "/_static"
+  Then the response should have the following properties:
+    | property    | value                 |
+    | body        | body { color: green } |
+    | status      | 200                   |
+    | contentType | text/css              |
+  And the response should have the following headers:
+    | header        | value                               |
+    | etag          | "etag-index-css"                    |
+    | cache-control | public, max-age=31536000, immutable |

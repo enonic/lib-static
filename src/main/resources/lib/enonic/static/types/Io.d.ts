@@ -1,6 +1,7 @@
 import type {
   ByteSource,
-  Resource as ResourceInterface
+  Resource as ResourceInterface,
+  ResourceKey,
 } from '@enonic-types/lib-io';
 
 

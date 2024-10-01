@@ -6,7 +6,10 @@
     "build:server": "npx tsup -d build/resources/main",
     "check": "concurrently -c auto -g --timings npm:check:types npm:lint",
     "check:types": "concurrently -g -r --timings npm:check:types:*",
-    "check:types:server": "npx tsc --noEmit -p src/main/resources/tsconfig.json",
+    "check:types:bun": "npx tsc --noEmit -p tsconfig.bun.json",
+    "check:types:node": "npx tsc --noEmit -p tsconfig.node.json",
+    "check:types:jest": "npx tsc --noEmit -p tsconfig.jest.json",
+    "check:types:server": "npx tsc --noEmit -p tsconfig.xp.json",
     "cov": "jest --no-cache --coverage",
     "lint": "eslint --cache",
     "test": "jest --no-cache"

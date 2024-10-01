@@ -3,10 +3,7 @@ export type {Resource} from '@enonic-types/lib-io';
 export type {LibStaticResourceInterface} from '/lib/enonic/static/types/Io';
 export type {
   CacheControlResolver,
-  CacheControlResolverPositional,
   ContentTypeResolver,
-  ContentTypeResolverPositional,
-  ParseStringAndOptionsCommonReturnValues,
   NotFoundHandler,
   RequestHandler,
   RequestHandlerParams,

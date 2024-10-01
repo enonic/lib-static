@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "paths": {
+      // This one does work when running bun, (the one directly in tsconfig.json does)
+      // But it works when checking types.
+      "/lib/enonic/static/*": ["./src/main/resources/lib/enonic/static/*"],
+      "/lib/xp/*": ["./node_modules/@enonic-types/lib-*"],
+    },
+    "skipLibCheck": true,
+    // "strict": true, // TODO
+    "target": "ESNext",
+    "types": [
+      // "bun", // TS2300: Duplicate identifier 'fetch'
+      "node",
+    ]
+  },
+  "include": [
+    "src/main/resources/**/*.ts", // TS6307 Projects must list all files or use an 'include' pattern.
+    "src/jest/**/*.ts", // TS6307 Projects must list all files or use an 'include' pattern.
+    "src/bun/**/*.ts"
+  ]
+}

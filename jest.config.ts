@@ -131,7 +131,7 @@ const serverSideConfig: Config.InitialProjectOptions = {
     "\\.[jt]sx?$": [
       'ts-jest',
       {
-        tsconfig: `${DIR_SRC_JEST}/tsconfig.json`,
+        tsconfig: 'tsconfig.jest.json',
       },
     ],
   },
