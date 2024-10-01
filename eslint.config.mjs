@@ -5,8 +5,7 @@ import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// const LEVEL = 'warn';
-const LEVEL = 'off';
+const LEVEL = 'warn';
 
 export default [
   ...enonicConfig,
