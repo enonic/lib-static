@@ -1,0 +1,33 @@
+{
+  "author": "Christian Andreas Westgaard <cwe@enonic.com>",
+  "bugs": {
+    "url": "https://github.com/enonic/lib-static/issues"
+  },
+  "dependencies": {
+    "@enonic-types/core": "^%XP_VERSION%"
+  },
+  "description": "Type definition for the Enonic XP library for serving static assets",
+  "files": [
+    "*"
+  ],
+  "homepage": "https://github.com/enonic/lib-static#readme",
+  "keywords": [
+    "enonic",
+    "enonic-xp",
+    "lib-static",
+    "static",
+    "types",
+    "typescript"
+  ],
+  "license": "Apache-2.0",
+  "name": "@enonic-types/lib-static",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/enonic/lib-static.git"
+  },
+  "types": "index.d.ts",
+  "version": "%VERSION%"
+}
