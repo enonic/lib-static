@@ -27,6 +27,7 @@
   ],
 
   "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
     "composite": true,
     // Do NOT add this as it will resolve tsup to the local tsup folder, rather
     // than the tsup node_module.
