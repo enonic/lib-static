@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.xp.json",
+  "compilerOptions": {
+
+    // When this is true, some kinda caching seems to happen,
+    // because rebuilding after deleting the build directory fails!
+    "composite": false,
+
+    "emitDeclarationOnly": true,
+    "declaration": true,
+    "declarationDir": "./build/types",
+    "outDir": "./build/types",
+    "rootDir": "./src/main/resources/lib/enonic/static",
+
+    // This also seems to affect caching.
+    "tsBuildInfoFile": null,
+  },
+  "exclude": [
+    // Not excluding *.d.ts files like in ../tsconfig.xp.json
+  ]
+}
