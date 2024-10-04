@@ -23,7 +23,7 @@
     // "allowJs": true,
     // "checkJs": false,
     "esModuleInterop": true,
-    "declaration": false,
+    // "declaration": false, // error TS6304: Composite projects may not disable declaration emit.
 
     "lib": [
       "ES2015", // String.prototype.endsWith // TODO Check that this works in Nashorn
