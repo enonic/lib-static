@@ -4,7 +4,7 @@ This function
 
 == Parameters
 
-[%header,cols="1%,1%,98%a"]
+[%header,cols="1%,1%,1%,98%a"]
 [frame="none"]
 [grid="none"]
 |===
