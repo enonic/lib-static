@@ -459,7 +459,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="sectionbody">
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-typescript" data-lang="typescript">type CacheControlResolver = (params: &lt;a href="#CacheControlResolverParams"&gt;CacheControlResolverParams&lt;/a&gt;) =&amp;gt; string | null</code></pre>
+<pre class="highlight"><code class="language-typescript" data-lang="typescript">type CacheControlResolver = (params: CacheControlResolverParams) =&gt; string | null</code></pre>
 </div>
 </div>
 </div>
@@ -483,7 +483,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="sectionbody">
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-typescript" data-lang="typescript">type ContentTypeResolver = (params: ContentTypeResolverParams) =&amp;gt; string | null</code></pre>
+<pre class="highlight"><code class="language-typescript" data-lang="typescript">type ContentTypeResolver = (params: ContentTypeResolverParams) =&gt; string | null</code></pre>
 </div>
 </div>
 </div>
@@ -506,7 +506,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="sectionbody">
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-typescript" data-lang="typescript">type NotFoundHandler = (params: NotFoundHandlerParams) =&amp;gt; Response</code></pre>
+<pre class="highlight"><code class="language-typescript" data-lang="typescript">type NotFoundHandler = (params: NotFoundHandlerParams) =&gt; Response</code></pre>
 </div>
 </div>
 </div>
@@ -536,7 +536,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="sectionbody">
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-typescript" data-lang="typescript">type RelativePathResolver = (req: Request) =&amp;gt; string</code></pre>
+<pre class="highlight"><code class="language-typescript" data-lang="typescript">type RelativePathResolver = (req: Request) =&gt; string</code></pre>
 </div>
 </div>
 </div>
@@ -546,7 +546,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="sectionbody">
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-typescript" data-lang="typescript">type RequestHandler = (request: Request, options?: RequestHandlerOptions) =&amp;gt; Response</code></pre>
+<pre class="highlight"><code class="language-typescript" data-lang="typescript">type RequestHandler = (request: Request, options?: RequestHandlerOptions) =&gt; Response</code></pre>
 </div>
 </div>
 </div>
@@ -574,7 +574,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-10-07 10:15:55 UTC
+Last updated 2024-10-07 10:18:30 UTC
 </div>
 </div>
 </body>
