@@ -20,16 +20,16 @@ This function handles requests for static resources.
 [grid="none"]
 [caption=""]
 |===
-| Name         | Type    | Attributes | Default | Description
-| cacheControl | CacheControlResolver | defaultCacheControl | <optional> | Function that returns the cache control header value
-| contentType  | ContentTypeResolver | <optional> | getMimeType()  | Function that returns the content type header value
-| etag | boolean | <optional> | true | Whether to include ETag header
-| index | string | <optional> | 'index.html' | Default file to serve when requesting a directory
-| notFound | NotFoundHandler | <optional> | notFoundResponse | Function that returns the response object when the resource is not found
-| relativePath | RelativePathResolver | <optional> | getRelativeResourcePath() | Function that returns the relative path to the resource
-| root | string | <optional> | '/static' | Root path to serve files from
-| staticCompress | boolean | <optional> | true | Whether to serve precompressed files (*.br, *.gz) if available and supported by the browser
-| throwErrors | boolean | <optional> | true | Whether to throw errors or return a response object
+| Name           | Type                 | Default                 | Description
+| cacheControl   | CacheControlResolver | defaultCacheControl     | Function that returns the cache control header value
+| contentType    | ContentTypeResolver  | getMimeType             | Function that returns the content type header value
+| etag           | boolean              | true                    | Whether to include ETag header
+| index          | string               | 'index.html'            | Default file to serve when requesting a directory
+| notFound       | NotFoundHandler      | notFoundResponse        | Function that returns the response object when the resource is not found
+| relativePath   | RelativePathResolver | getRelativeResourcePath | Function that returns the relative path to the resource
+| root           | string               | '/static'               | Root path to serve files from
+| staticCompress | boolean              | true                    | Whether to serve precompressed files (*.br, *.gz) if available and supported by the browser
+| throwErrors    | boolean              | true                    | Whether to throw errors or return a response object
 |===
 
 [.lead]
