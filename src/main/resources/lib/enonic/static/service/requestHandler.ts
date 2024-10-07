@@ -13,7 +13,7 @@ import {getResource} from '/lib/enonic/static/io';
 import {getMimeType} from '/lib/enonic/static/io';
 import {responseOrThrow} from '/lib/enonic/static/response/responseOrThrow';
 import {getRelative} from '/lib/enonic/static/resource/path/getRelative';
-import {webAppCacheControl} from '/lib/enonic/static/service/webAppCacheControl';
+import {defaultCacheControl} from '/lib/enonic/static/service/defaultCacheControl';
 import {
   badRequestResponse,
   movedPermanentlyResponse,
@@ -30,7 +30,7 @@ import {getLowerCasedHeaders} from '/lib/enonic/static/request/getLowerCasedHead
 
 
 export const requestHandler: RequestHandler = ({
-  cacheControl: cacheControlFn = webAppCacheControl,
+  cacheControl: cacheControlFn = defaultCacheControl,
   contentType: contentTypeFn = ({path}) => getMimeType(path),
   etag = true,
   index = 'index.html',
