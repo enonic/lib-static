@@ -448,9 +448,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#import">Import</a></li>
 </ul>
 </li>
+<li><a href="#concepts">Concepts</a></li>
 <li><a href="#api">API</a></li>
 <li><a href="#examples">Examples</a></li>
-<li><a href="#concepts">Concepts</a></li>
 </ul>
 </div>
 </div>
@@ -524,6 +524,21 @@ repositories {
 </div>
 </div>
 <div class="sect1">
+<h2 id="concepts"><a class="link" href="#concepts">Concepts</a></h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><a href="concepts/why.ahtml">Why use lib-static instead of portal.assetUrl?</a></p>
+</li>
+<li>
+<p><a href="concepts/mutability.ahtml">Assets and mutability</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="api"><a class="link" href="#api">API</a></h2>
 <div class="sectionbody">
 <div class="ulist">
@@ -544,25 +559,10 @@ repositories {
 
 </div>
 </div>
-<div class="sect1">
-<h2 id="concepts"><a class="link" href="#concepts">Concepts</a></h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><a href="concepts/why.ahtml">Why use lib-static instead of portal.assetUrl?</a></p>
-</li>
-<li>
-<p><a href="concepts/mutability.ahtml">Assets and mutability</a></p>
-</li>
-</ul>
-</div>
-</div>
-</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-10-07 11:03:20 UTC
+Last updated 2024-10-07 11:09:10 UTC
 </div>
 </div>
 </body>

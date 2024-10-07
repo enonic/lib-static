@@ -1,20 +1,6 @@
 {
   "menuItems": [
     {
-      "title": "Examples",
-      "document": "examples"
-    },
-    {
-      "title": "API",
-      "document": "api",
-      "menuItems": [
-        {
-          "title": "requestHandler",
-          "document": "api/requestHandler"
-        },
-      ]
-    },
-    {
       "title": "Concepts",
       "document": "concepts",
       "menuItems": [
@@ -27,6 +13,20 @@
           "document": "concepts/mutability"
         }
       ]
+    },
+    {
+      "title": "API",
+      "document": "api",
+      "menuItems": [
+        {
+          "title": "requestHandler",
+          "document": "api/requestHandler"
+        }
+      ]
+    },
+    {
+      "title": "Examples",
+      "document": "examples"
     }
   ]
 }

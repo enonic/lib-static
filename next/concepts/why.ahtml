@@ -435,18 +435,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
-<body class="article toc2 toc-right">
+<body id="why" class="article">
 <div id="header">
-<div id="toc" class="toc2">
-<div id="toctitle">Table of Contents</div>
-<ul class="sectlevel2">
-<li><a href="#why">Why use lib-static instead of portal.assetUrl?</a></li>
-</ul>
-</div>
+<h1>Why use lib-static instead of portal.assetUrl?</h1>
 </div>
 <div id="content">
-<div class="sect2">
-<h3 id="why"><a class="link" href="#why">Why use lib-static instead of portal.assetUrl?</a></h3>
 <div class="paragraph">
 <p>Enonic XP already comes with an <a href="https://developer.enonic.com/docs/xp/stable/runtime/engines/asset-service">asset service</a>, where you can just put resources in the <em>/assets</em> root folder and use <code>portal.assetUrl(resourcePath)</code> to generate URLs from where to fetch them. Lib-static basically does the same thing, but with more features and control:</p>
 </div>
@@ -476,10 +469,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </ul>
 </div>
 </div>
-</div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-10-07 11:03:20 UTC
+Last updated 2024-10-07 11:09:10 UTC
 </div>
 </div>
 </body>
