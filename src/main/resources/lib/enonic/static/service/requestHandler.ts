@@ -29,18 +29,20 @@ import {stringIncludes} from '/lib/enonic/static/util/stringIncludes';
 import {getLowerCasedHeaders} from '/lib/enonic/static/request/getLowerCasedHeaders';
 
 
-export const requestHandler: RequestHandler = ({
-  cacheControl: cacheControlFn = defaultCacheControl,
-  contentType: contentTypeFn = ({path}) => getMimeType(path),
-  etag = true,
-  index = 'index.html',
-  notFound = notFoundResponse,
-  relativePath: relativePathFn = getRelative,
+export const requestHandler: RequestHandler = (
   request,
-  root,
-  staticCompress = true,
-  throwErrors,
-}) => {
+  {
+    cacheControl: cacheControlFn = defaultCacheControl,
+    contentType: contentTypeFn = ({path}) => getMimeType(path),
+    etag = true,
+    index = 'index.html',
+    notFound = notFoundResponse,
+    relativePath: relativePathFn = getRelative,
+    root,
+    staticCompress = true,
+    throwErrors,
+  } = {},
+) => {
   return responseOrThrow({
     throwErrors,
     fn: () => {

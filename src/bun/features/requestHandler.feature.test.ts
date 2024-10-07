@@ -1,7 +1,7 @@
 import type {StepDefinitions} from 'jest-cucumber';
 import type {
 	Request,
-  RequestHandlerParams,
+  RequestHandlerOptions,
 	Response,
 } from '../../main/resources/lib/enonic/static/types';
 import type {App, DoubleUnderscore, Log} from '../../jest/global.d';
@@ -50,10 +50,9 @@ export const steps: StepDefinitions = ({
   then,
   when,
 }) => {
-  let request: Partial<Request> = {};
+  let request: Request = {} as Request;
   let response: Response;
-  // @ts-expect-error Too lazy to type this
-  let params: RequestHandlerParams = {};
+  let options: RequestHandlerOptions = {};
 
   given('enonic xp is running in development mode', () => {
     globalThis._devMode = true;
@@ -99,21 +98,18 @@ export const steps: StepDefinitions = ({
 	});
 
   given('the request is reset', () => {
-    request = {};
+    request = {} as Request;
   });
 
-  given('the parameters are reset', () => {
-    // @ts-expect-error Too lazy to type this
-    params = {};
+  given('the options are reset', () => {
+    options = {};
   });
 
   given('the following request:', (table: {property: string, value: string}[]) => {
-    request = {};
+    request = {} as Request;
     table.forEach(({property, value}) => {
       request[property] = value;
     });
-    // @ts-expect-error Too lazy to type this
-    params.request = request;
 	});
 
   given('the following request headers:', (table: {header: string, value: string}[]) => {
@@ -121,8 +117,6 @@ export const steps: StepDefinitions = ({
     table.forEach(({header, value}) => {
       request.headers[header] = value;
     });
-    // @ts-expect-error Too lazy to type this
-    params.request = request;
 	});
 
   and(/the request header "(.+)" is "(.+)"$/, (header: string, value: string) => {
@@ -141,27 +135,27 @@ export const steps: StepDefinitions = ({
 	});
 
   given('the spaNotFoundHandler is used', () => {
-    params.notFound = spaNotFoundHandler;
+    options.notFound = spaNotFoundHandler;
   });
 
   when('requestHandler is called', () => {
-    response = requestHandler(params);
+    response = requestHandler(request, options);
 	});
 
   when(/^requestHandler is called with mappedRelativePath "(.*)"$/, (base) => {
-    params.relativePath = mappedRelativePath(base);
-    response = requestHandler(params);
+    options.relativePath = mappedRelativePath(base);
+    response = requestHandler(request, options);
   });
 
-  when('requestHandler is called with the following parameters:', (table: {param: string, value: string}[]) => {
-    table.forEach(({param, value}) => {
+  when('requestHandler is called with the following options:', (table: {option: string, value: string}[]) => {
+    table.forEach(({option, value}) => {
       let v: unknown = value;
-      if (param === 'staticCompress') {
+      if (option === 'staticCompress') {
         v = value === 'true';
       }
-      params[param] = v;
+      options[option] = v;
     });
-    response = requestHandler(params);
+    response = requestHandler(request, options);
   });
 
   then('the response is info logged', () => {
