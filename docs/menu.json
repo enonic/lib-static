@@ -5,7 +5,7 @@
       "document": "concepts",
       "menuItems": [
         {
-          "title": "Why use lib-static instead of portal.assetUrl?",
+          "title": "Why use lib-static?",
           "document": "concepts/why"
         },
         {
