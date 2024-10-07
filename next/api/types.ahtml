@@ -449,7 +449,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#notfoundhandlerparams">NotFoundHandlerParams</a></li>
 <li><a href="#relativepathresolver">RelativePathResolver</a></li>
 <li><a href="#requesthandler">RequestHandler</a></li>
-<li><a href="#requesthandlerparams">RequestHandlerParams</a></li>
+<li><a href="#requesthandleroptions">RequestHandlerOptions</a></li>
 </ul>
 </div>
 </div>
@@ -546,18 +546,17 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="sectionbody">
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-typescript" data-lang="typescript">type RequestHandler = (params: RequestHandlerParams) =&amp;gt; Response</code></pre>
+<pre class="highlight"><code class="language-typescript" data-lang="typescript">type RequestHandler = (request: Request, options?: RequestHandlerOptions) =&amp;gt; Response</code></pre>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="requesthandlerparams"><a class="link" href="#requesthandlerparams">RequestHandlerParams</a></h2>
+<h2 id="requesthandleroptions"><a class="link" href="#requesthandleroptions">RequestHandlerOptions</a></h2>
 <div class="sectionbody">
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-typescript" data-lang="typescript">interface RequestHandlerParams {
-  request: Request
+<pre class="highlight"><code class="language-typescript" data-lang="typescript">interface RequestHandlerOptions {
   cacheControl?: CacheControlResolver
   contentType?: ContentTypeResolver
   etag?: boolean
@@ -575,7 +574,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-10-07 09:00:30 UTC
+Last updated 2024-10-07 09:07:32 UTC
 </div>
 </div>
 </body>
