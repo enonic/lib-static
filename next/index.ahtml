@@ -470,7 +470,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p><a href="https://enonic.com/developer-tour">Enonic XP</a> library for serving assets from a folder in the application resource structure. The aim is <em>"perfect client-side and network caching"</em> via response headers - with basic error handling included.</p>
 </div>
 <div class="paragraph">
-<p>Intended for setting up XP endpoints that serve static files in a cache-optimized way. Optimally, these should be <strong>immutable files</strong> (files whose content aren&#8217;t meant to change, that is, can be trusted to never change without changing the file name), but lib-static also handles ETags which provide caching with dynamic files too (<a href="concepts/mutability#">more about handling mutability</a>).</p>
+<p>Intended for setting up XP endpoints that serve static files in a cache-optimized way. Optimally, these should be <strong>immutable files</strong> (files whose content aren&#8217;t meant to change, that is, can be trusted to never change without changing the file name), but lib-static also handles ETags which provide caching with dynamic files too (<a href="concepts/mutability.ahtml">more about handling mutability</a>).</p>
 </div>
 <div class="paragraph">
 <p>&#8203;<br></p>
@@ -562,7 +562,7 @@ repositories {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-10-07 11:18:28 UTC
+Last updated 2024-10-07 11:21:13 UTC
 </div>
 </div>
 </body>
