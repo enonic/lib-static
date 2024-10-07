@@ -8,7 +8,7 @@ import {
 } from '/lib/enonic/static/constants';
 
 
-export const webAppCacheControl: CacheControlResolver = ({
+export const defaultCacheControl: CacheControlResolver = ({
   contentType,
   path,
   resource: _resource,
