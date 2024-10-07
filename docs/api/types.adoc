@@ -1,0 +1,92 @@
+= types
+
+== CacheControlResolver
+
+[source,typescript,subs="macros+"]
+----
+type CacheControlResolver = (params: link:#CacheControlResolverParams[CacheControlResolverParams]) =&gt; string | null
+----
+
+== CacheControlResolverParams
+
+[source,typescript]
+----
+interface CacheControlResolverParams {
+  contentType?: string
+  path?: string
+  resource?: Resource
+}
+----
+
+== ContentTypeResolver
+
+[source,typescript]
+----
+type ContentTypeResolver = (params: ContentTypeResolverParams) =&gt; string | null
+----
+
+== ContentTypeResolverParams
+
+[source,typescript]
+----
+interface ContentTypeResolverParams {
+  path?: string
+  resource?: Resource
+}
+----
+
+== NotFoundHandler
+
+[source,typescript]
+----
+type NotFoundHandler = (params: NotFoundHandlerParams) =&gt; Response
+----
+
+== NotFoundHandlerParams
+
+[source,typescript]
+----
+interface NotFoundHandlerParams {
+  path: string
+  request: Request
+  cacheControl?: CacheControlResolver
+  contentType?: ContentTypeResolver
+  etag?: boolean
+  index?: string|false
+  root?: string
+  staticCompress?: boolean
+  throwErrors?: boolean
+}
+----
+
+== RelativePathResolver
+
+[source,typescript]
+----
+type RelativePathResolver = (req: Request) =&gt; string
+----
+
+== RequestHandler
+
+[source,typescript]
+----
+type RequestHandler = (params: RequestHandlerParams) =&gt; Response
+----
+
+== RequestHandlerParams
+
+[source,typescript]
+----
+interface RequestHandlerParams {
+  request: Request
+  cacheControl?: CacheControlResolver
+  contentType?: ContentTypeResolver
+  etag?: boolean
+  index?: string|false
+  notFound?: NotFoundHandler
+  relativePath?: RelativePathResolver
+  root?: string
+  staticCompress?: boolean
+  throwErrors?: boolean
+}
+----

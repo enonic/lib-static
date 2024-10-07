@@ -19,12 +19,14 @@ This function
 !===
 ! Name         ! Type    ! Attributes ! Default ! Description
 ! request      ! Request ! <required> ! null ! The request object
-! cacheControl ! ({contentType?: string, path?: string, resource?: Resource}) => string \| null ! webAppCacheControl ! <optional> ! Function that returns the cache control header value
-! contentType  ! (path?: string, resource?: Resource) => string \| null ! <optional> ! getMimeType()  ! Function that returns the content type header value
+! cacheControl ! CacheControlResolver ! webAppCacheControl ! <optional> ! Function that returns the cache control header value
+! contentType  ! ContentTypeResolver ! <optional> ! getMimeType()  ! Function that returns the content type header value
 ! etag ! boolean ! <optional> ! true ! Whether to include ETag header
 ! index ! string ! <optional> ! 'index.html' ! Default file to serve when requesting a directory
-! relativePath ! (Request) => string ! <optional> ! getRelativeResourcePath() ! Function that returns the relative path to the resource
+! notFound ! NotFoundHandler ! <optional> ! notFoundResponse ! Function that returns the response object when the resource is not found
+! relativePath ! RelativePathResolver ! <optional> ! getRelativeResourcePath() ! Function that returns the relative path to the resource
 ! root ! string ! <optional> ! '/static' ! Root path to serve files from
+! staticCompress ! boolean ! <optional> ! true ! Whether to serve precompressed files (*.br, *.gz) if available and supported by the browser
 ! throwErrors ! boolean ! <optional> ! true ! Whether to throw errors or return a response object
 !===
 |===

@@ -52,6 +52,7 @@ const libStatic = require('/lib/enonic/static');
 == API
 
 * <<api/requestHandler#, requestHandler>>
+* <<api/types#, types>>
 
 == Examples
 
