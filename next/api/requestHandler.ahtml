@@ -507,7 +507,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">cacheControl</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">({contentType?: string, path?: string, resource?: Resource}) &#8658; string | null</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CacheControlResolver</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">webAppCacheControl</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&lt;optional&gt;</p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
@@ -516,7 +516,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">contentType</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">(path?: string, resource?: Resource) &#8658; string | null</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ContentTypeResolver</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&lt;optional&gt;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">getMimeType()</p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
@@ -542,8 +542,17 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div></div></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">notFound</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NotFoundHandler</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;optional&gt;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">notFoundResponse</p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Function that returns the response object when the resource is not found</p>
+</div></div></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">relativePath</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">(Request) &#8658; string</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RelativePathResolver</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&lt;optional&gt;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">getRelativeResourcePath()</p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
@@ -557,6 +566,15 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <td class="tableblock halign-left valign-top"><p class="tableblock">'/static'</p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>Root path to serve files from</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">staticCompress</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;optional&gt;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Whether to serve precompressed files (*.br, *.gz) if available and supported by the browser</p>
 </div></div></td>
 </tr>
 <tr>
@@ -653,7 +671,7 @@ export const all = (request: Request) =&gt; router.dispatch(request);</code></pr
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-10-07 07:00:02 UTC
+Last updated 2024-10-07 07:41:51 UTC
 </div>
 </div>
 </body>

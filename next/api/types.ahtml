@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.23">
-<title>Custom service</title>
+<title>types</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -437,398 +437,136 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="article toc2 toc-right">
 <div id="header">
-<h1>Custom service</h1>
+<h1>types</h1>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#parameters">Parameters</a>
-<ul class="sectlevel2">
-<li><a href="#common">common</a></li>
-<li><a href="#etagrequesthandler">etagRequestHandler</a></li>
-<li><a href="#immutablerequesthandler">immutableRequestHandler</a></li>
-<li><a href="#requesthandler">requestHandler</a></li>
-</ul>
-</li>
-<li><a href="#example">Example</a></li>
+<li><a href="#cachecontrolresolver">CacheControlResolver</a></li>
+<li><a href="#cachecontrolresolverparams">CacheControlResolverParams</a></li>
+<li><a href="#contenttyperesolver">ContentTypeResolver</a></li>
+<li><a href="#contenttyperesolverparams">ContentTypeResolverParams</a></li>
+<li><a href="#notfoundhandler">NotFoundHandler</a></li>
+<li><a href="#notfoundhandlerparams">NotFoundHandlerParams</a></li>
+<li><a href="#relativepathresolver">RelativePathResolver</a></li>
+<li><a href="#requesthandler">RequestHandler</a></li>
+<li><a href="#requesthandlerparams">RequestHandlerParams</a></li>
 </ul>
 </div>
 </div>
 <div id="content">
-<div id="preamble">
+<div class="sect1">
+<h2 id="cachecontrolresolver"><a class="link" href="#cachecontrolresolver">CacheControlResolver</a></h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p>The standard service is a good starting point, but sometimes you need more control over how static resources are served. This is where a custom service comes in.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-typescript" data-lang="typescript">type CacheControlResolver = (params: &lt;a href="#CacheControlResolverParams"&gt;CacheControlResolverParams&lt;/a&gt;) =&amp;gt; string | null</code></pre>
 </div>
-<div class="paragraph">
-<p>The static library currently provides these main functions that can be imported to create a custom service:</p>
-</div>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p><code>requestHandler</code></p>
-</li>
-<li>
-<p><code>etagRequestHandler</code></p>
-</li>
-<li>
-<p><code>immutableRequestHandler</code></p>
-</li>
-</ol>
-</div>
-<div class="paragraph">
-<p>requestHandler is simply a wrapper around etagRequestHandler and immutableRequestHandler. It uses the configured cacheStrategy to determine which of those to call.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="parameters"><a class="link" href="#parameters">Parameters</a></h2>
+<h2 id="cachecontrolresolverparams"><a class="link" href="#cachecontrolresolverparams">CacheControlResolverParams</a></h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p>The requestHandler function has the combined parameters of both etagRequestHandler and immutableRequestHandler. In addition one can pass a cacheStrategy parameter to "hardcode" which strategy to use, regardless of the configured cacheStrategy.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-typescript" data-lang="typescript">interface CacheControlResolverParams {
+  contentType?: string
+  path?: string
+  resource?: Resource
+}</code></pre>
 </div>
-<div class="paragraph">
-<p>The immutableRequestHandler has all the same parameters as etagRequestHandler, since it by default fallsback to etag for html files. In addition it takes a <code>useEtagWhen</code> callback that can be used to determine if etag strategy should be used for a specific resource.</p>
-</div>
-<div class="sect2">
-<h3 id="common"><a class="link" href="#common">common</a></h3>
-<table class="tableblock frame-none grid-none stretch">
-<colgroup>
-<col style="width: 1%;">
-<col style="width: 1%;">
-<col style="width: 98%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Name</th>
-<th class="tableblock halign-left valign-top">Type</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">params</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">object</p></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Input parameters as JSON</p>
-</div>
-<table class="tableblock frame-ends grid-none stretch">
-<caption class="title">Properties</caption>
-<colgroup>
-<col style="width: 1%;">
-<col style="width: 1%;">
-<col style="width: 1%;">
-<col style="width: 1%;">
-<col style="width: 96%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Name</th>
-<th class="tableblock halign-left valign-top">Type</th>
-<th class="tableblock halign-left valign-top">Attributes</th>
-<th class="tableblock halign-left valign-top">Default</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">request</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">object</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>required</strong></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>The request object</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">getContentType</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">function</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">optional</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Used to override the default content type processing</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">root</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">string</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">optional</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">static</p></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>The root folder to serve files from</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">throwErrors</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">optional</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>If true, throw instead of returning a 500 response</p>
-</div></div></td>
-</tr>
-</tbody>
-</table></div></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="sect2">
-<h3 id="etagrequesthandler"><a class="link" href="#etagrequesthandler">etagRequestHandler</a></h3>
-<table class="tableblock frame-none grid-none stretch">
-<colgroup>
-<col style="width: 1%;">
-<col style="width: 1%;">
-<col style="width: 98%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Name</th>
-<th class="tableblock halign-left valign-top">Type</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">params</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">object</p></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Input parameters as JSON</p>
-</div>
-<table class="tableblock frame-ends grid-none stretch">
-<caption class="title">Properties</caption>
-<colgroup>
-<col style="width: 1%;">
-<col style="width: 1%;">
-<col style="width: 1%;">
-<col style="width: 1%;">
-<col style="width: 96%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Name</th>
-<th class="tableblock halign-left valign-top">Type</th>
-<th class="tableblock halign-left valign-top">Attributes</th>
-<th class="tableblock halign-left valign-top">Default</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">etagCacheControlHeader</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">string</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">optional</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">max-age=3600</p></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Used to override what is configured</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">etagProcessing</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">string</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">optional</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">auto</p></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Used to override what is configured</p>
-</div></div></td>
-</tr>
-</tbody>
-</table></div></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="sect2">
-<h3 id="immutablerequesthandler"><a class="link" href="#immutablerequesthandler">immutableRequestHandler</a></h3>
-<table class="tableblock frame-none grid-none stretch">
-<colgroup>
-<col style="width: 1%;">
-<col style="width: 1%;">
-<col style="width: 98%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Name</th>
-<th class="tableblock halign-left valign-top">Type</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">params</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">object</p></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Input parameters as JSON</p>
-</div>
-<table class="tableblock frame-ends grid-none stretch">
-<caption class="title">Properties</caption>
-<colgroup>
-<col style="width: 1%;">
-<col style="width: 1%;">
-<col style="width: 1%;">
-<col style="width: 1%;">
-<col style="width: 96%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Name</th>
-<th class="tableblock halign-left valign-top">Type</th>
-<th class="tableblock halign-left valign-top">Attributes</th>
-<th class="tableblock halign-left valign-top">Default</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">getImmutableCacheControlHeader</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">string</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">optional</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">public, max-age=31536000, immutable</p></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Used to override what is configured</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">useEtagWhen</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">function</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">optional</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Callback which is passed {contentType}. Uses etag strategy when it returns true, otherwise immutable strategy.</p>
-</div></div></td>
-</tr>
-</tbody>
-</table></div></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="sect2">
-<h3 id="requesthandler"><a class="link" href="#requesthandler">requestHandler</a></h3>
-<table class="tableblock frame-none grid-none stretch">
-<colgroup>
-<col style="width: 1%;">
-<col style="width: 1%;">
-<col style="width: 98%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Name</th>
-<th class="tableblock halign-left valign-top">Type</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">params</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">object</p></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Input parameters as JSON</p>
-</div>
-<table class="tableblock frame-ends grid-none stretch">
-<caption class="title">Properties</caption>
-<colgroup>
-<col style="width: 1%;">
-<col style="width: 1%;">
-<col style="width: 1%;">
-<col style="width: 1%;">
-<col style="width: 96%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Name</th>
-<th class="tableblock halign-left valign-top">Type</th>
-<th class="tableblock halign-left valign-top">Attributes</th>
-<th class="tableblock halign-left valign-top">Default</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">cacheStrategy</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">string</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">optional</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">undefined</p></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Used to override what is configured</p>
-</div></div></td>
-</tr>
-</tbody>
-</table></div></td>
-</tr>
-</tbody>
-</table>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="example"><a class="link" href="#example">Example</a></h2>
+<h2 id="contenttyperesolver"><a class="link" href="#contenttyperesolver">ContentTypeResolver</a></h2>
 <div class="sectionbody">
 <div class="listingblock">
-<div class="title">/src/main/resources/services/mycustomstaticservice/mycustomstaticservice.ts</div>
 <div class="content">
-<pre class="highlight"><code class="language-TypeScript" data-lang="TypeScript">import type {
-  Request,
-  Response,
-} from '/lib/enonic/static'; // Requires installation of @enonic-types/lib-static
-
-import Router from '/lib/router';
-import { requestHandler } from '/lib/enonic/static/service/requestHandler';
-
-
-const router = Router();
-
-router.get('{path:.*}', (request: Request): Response =&gt; {
-  return requestHandler({
-    // Required
-    request,
-    // Optional
-    cacheStrategy: 'immutable',
-    etagCacheControlHeader: 'no-cache
-    etagProcessing: 'always',
-    getContentType:(path, resource) =&gt; {
-      log.debug('getContentType path:%s', path, resource);
-      return 'text/plain';
-    },
-    getImmutableCacheControlHeader: (path, resource, contentType) =&gt; {
-      log.debug('getImmutableCacheControlHeader path:%s', path, resource, contentType);
-      return 'public, max-age=2147483647, immutable';
-    },
-    root: 'mystaticfolder',
-    throwErrors: true,
-    useEtagWhen: (contentType) =&gt; {
-      return contentType === 'text/html';
-    }
-  });
-});
-
-export const all = (request: Request) =&gt; router.dispatch(request);</code></pre>
+<pre class="highlight"><code class="language-typescript" data-lang="typescript">type ContentTypeResolver = (params: ContentTypeResolverParams) =&amp;gt; string | null</code></pre>
 </div>
 </div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="contenttyperesolverparams"><a class="link" href="#contenttyperesolverparams">ContentTypeResolverParams</a></h2>
+<div class="sectionbody">
 <div class="listingblock">
-<div class="title">/src/main/resources/site/pages/mypage/mypage.ts</div>
 <div class="content">
-<pre class="highlight"><code class="language-TypeScript" data-lang="TypeScript">import { getStaticUrl } from '/lib/enonic/static';
-
-export function get(_request) {
-
-  const url = getStaticUrl({
-    path: 'styles/main.css',
-    service: 'mycustomstaticservice'
-  });
-
-  return {
-    body: `
-&lt;html&gt;
-  &lt;head&gt;
-    &lt;link rel="stylesheet" href="${url}"&gt;
-  &lt;/head&gt;
-  &lt;body&gt;
-    &lt;h1&gt;Hello, world!&lt;/h1&gt;
-  &lt;/body&gt;
-&lt;/html&gt;
-`,
-    contentType: 'text/html'
-  };
+<pre class="highlight"><code class="language-typescript" data-lang="typescript">interface ContentTypeResolverParams {
+  path?: string
+  resource?: Resource
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="notfoundhandler"><a class="link" href="#notfoundhandler">NotFoundHandler</a></h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-typescript" data-lang="typescript">type NotFoundHandler = (params: NotFoundHandlerParams) =&amp;gt; Response</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="notfoundhandlerparams"><a class="link" href="#notfoundhandlerparams">NotFoundHandlerParams</a></h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-typescript" data-lang="typescript">interface NotFoundHandlerParams {
+  path: string
+  request: Request
+  cacheControl?: CacheControlResolver
+  contentType?: ContentTypeResolver
+  etag?: boolean
+  index?: string|false
+  root?: string
+  staticCompress?: boolean
+  throwErrors?: boolean
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="relativepathresolver"><a class="link" href="#relativepathresolver">RelativePathResolver</a></h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-typescript" data-lang="typescript">type RelativePathResolver = (req: Request) =&amp;gt; string</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="requesthandler"><a class="link" href="#requesthandler">RequestHandler</a></h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-typescript" data-lang="typescript">type RequestHandler = (params: RequestHandlerParams) =&amp;gt; Response</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="requesthandlerparams"><a class="link" href="#requesthandlerparams">RequestHandlerParams</a></h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-typescript" data-lang="typescript">interface RequestHandlerParams {
+  request: Request
+  cacheControl?: CacheControlResolver
+  contentType?: ContentTypeResolver
+  etag?: boolean
+  index?: string|false
+  notFound?: NotFoundHandler
+  relativePath?: RelativePathResolver
+  root?: string
+  staticCompress?: boolean
+  throwErrors?: boolean
 }</code></pre>
 </div>
 </div>
