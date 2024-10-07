@@ -2,9 +2,9 @@
 
 == CacheControlResolver
 
-[source,typescript,subs="macros+"]
+[source,typescript]
 ----
-type CacheControlResolver = (params: link:#CacheControlResolverParams[CacheControlResolverParams]) =&gt; string | null
+type CacheControlResolver = (params: CacheControlResolverParams) => string | null
 ----
 
 == CacheControlResolverParams
@@ -22,7 +22,7 @@ interface CacheControlResolverParams {
 
 [source,typescript]
 ----
-type ContentTypeResolver = (params: ContentTypeResolverParams) =&gt; string | null
+type ContentTypeResolver = (params: ContentTypeResolverParams) => string | null
 ----
 
 == ContentTypeResolverParams
@@ -39,7 +39,7 @@ interface ContentTypeResolverParams {
 
 [source,typescript]
 ----
-type NotFoundHandler = (params: NotFoundHandlerParams) =&gt; Response
+type NotFoundHandler = (params: NotFoundHandlerParams) => Response
 ----
 
 == NotFoundHandlerParams
@@ -63,14 +63,14 @@ interface NotFoundHandlerParams {
 
 [source,typescript]
 ----
-type RelativePathResolver = (req: Request) =&gt; string
+type RelativePathResolver = (req: Request) => string
 ----
 
 == RequestHandler
 
 [source,typescript]
 ----
-type RequestHandler = (request: Request, options?: RequestHandlerOptions) =&gt; Response
+type RequestHandler = (request: Request, options?: RequestHandlerOptions) => Response
 ----
 
 == RequestHandlerOptions
