@@ -10,7 +10,7 @@
 
 link:https://enonic.com/developer-tour[Enonic XP] library for serving assets from a folder in the application resource structure. The aim is _"perfect client-side and network caching"_ via response headers - with basic error handling included.
 
-Intended for setting up XP endpoints that serve static files in a cache-optimized way. Optimally, these should be **immutable files** (files whose content aren't meant to change, that is, can be trusted to never change without changing the file name), but lib-static also handles ETags which provide caching with dynamic files too (link:concepts/mutability#[more about handling mutability]).
+Intended for setting up XP endpoints that serve static files in a cache-optimized way. Optimally, these should be **immutable files** (files whose content aren't meant to change, that is, can be trusted to never change without changing the file name), but lib-static also handles ETags which provide caching with dynamic files too (<<concepts/mutability#,more about handling mutability>>).
 
 {zwsp} +
 
