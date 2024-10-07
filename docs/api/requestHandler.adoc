@@ -1,6 +1,6 @@
 = requestHandler
 
-This function
+This function handles requests for static resources.
 
 == Parameters
 
@@ -10,25 +10,26 @@ This function
 |===
 | Name    | Type    | Attributes | Description
 | request | Request | <required> | The request object
-| options | object  | <optional> | Options Object
+| options | object  | <optional> | Options object
+|===
+
+=== Options
 
 [%header,cols="1%,1%,1%,1%,96%a"]
-[frame="topbot"]
+[frame="none"]
 [grid="none"]
 [caption=""]
-.Properties
-!===
-! Name         ! Type    ! Attributes ! Default ! Description
-! cacheControl ! CacheControlResolver ! defaultCacheControl ! <optional> ! Function that returns the cache control header value
-! contentType  ! ContentTypeResolver ! <optional> ! getMimeType()  ! Function that returns the content type header value
-! etag ! boolean ! <optional> ! true ! Whether to include ETag header
-! index ! string ! <optional> ! 'index.html' ! Default file to serve when requesting a directory
-! notFound ! NotFoundHandler ! <optional> ! notFoundResponse ! Function that returns the response object when the resource is not found
-! relativePath ! RelativePathResolver ! <optional> ! getRelativeResourcePath() ! Function that returns the relative path to the resource
-! root ! string ! <optional> ! '/static' ! Root path to serve files from
-! staticCompress ! boolean ! <optional> ! true ! Whether to serve precompressed files (*.br, *.gz) if available and supported by the browser
-! throwErrors ! boolean ! <optional> ! true ! Whether to throw errors or return a response object
-!===
+|===
+| Name         | Type    | Attributes | Default | Description
+| cacheControl | CacheControlResolver | defaultCacheControl | <optional> | Function that returns the cache control header value
+| contentType  | ContentTypeResolver | <optional> | getMimeType()  | Function that returns the content type header value
+| etag | boolean | <optional> | true | Whether to include ETag header
+| index | string | <optional> | 'index.html' | Default file to serve when requesting a directory
+| notFound | NotFoundHandler | <optional> | notFoundResponse | Function that returns the response object when the resource is not found
+| relativePath | RelativePathResolver | <optional> | getRelativeResourcePath() | Function that returns the relative path to the resource
+| root | string | <optional> | '/static' | Root path to serve files from
+| staticCompress | boolean | <optional> | true | Whether to serve precompressed files (*.br, *.gz) if available and supported by the browser
+| throwErrors | boolean | <optional> | true | Whether to throw errors or return a response object
 |===
 
 [.lead]
@@ -36,8 +37,9 @@ Returns
 
 *Response* : The response object.
 
-[.lead]
-Example without options
+== Examples
+
+=== Example without options
 
 .src/main/resources/webapp/webapp.ts
 [source, TypeScript]
@@ -53,7 +55,7 @@ router.get('{path:.*}', requestHandler);
 export const all = (request: Request) => router.dispatch(request);
 ----
 
-== Example with options
+=== Example with options
 .src/main/resources/webapp/webapp.ts
 [source, TypeScript]
 ----
