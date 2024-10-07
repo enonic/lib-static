@@ -640,3 +640,46 @@ Scenario: mappedRelativePath base can't be trimmed to empty
     | status      | 500                       |
     | contentType | text/plain; charset=utf-8 |
   And the response body should start with "Server error (logged with error ID:"
+
+Scenario: Handles request to mappedRelativePath without trailing slash
+  Given enonic xp is running in production mode
+  And the following resources:
+    | path               | exist | type     | etag            | content |
+    | /static            | false |          |                 |         |
+    | /static/index.html | true  | text/css | etag-index-html | <html/> |
+  And the following request:
+    | property    | value                                                                     |
+    | contextPath | /admin/site/preview/my-project/draft/my-site                              |
+    | path        | /admin/site/preview/my-project/draft/my-site/_static                      |
+    | rawPath     | /admin/site/preview/my-project/draft/my-site/_static                      |
+    | url         | http://localhost:8080/admin/site/preview/my-project/draft/my-site/_static |
+  When requestHandler is called with mappedRelativePath "_static"
+  Then the response should have the following properties:
+    | property    | value                    |
+    | status      | 301                      |
+  And the response should have the following headers:
+    | header   | value                                                 |
+    | location | /admin/site/preview/my-project/draft/my-site/_static/ |
+
+Scenario: Handles request to mappedRelativePath with trailing slash
+  Given enonic xp is running in production mode
+  And the following resources:
+    | path               | exist | type      | etag            | content |
+    | /static            | false |           |                 |         |
+    | /static/index.html | true  | text/html | etag-index-html | <html/> |
+  And the following request:
+    | property    | value                                                                      |
+    | contextPath | /admin/site/preview/my-project/draft/my-site                               |
+    | path        | /admin/site/preview/my-project/draft/my-site/_static/                      |
+    | rawPath     | /admin/site/preview/my-project/draft/my-site/_static/                      |
+    | url         | http://localhost:8080/admin/site/preview/my-project/draft/my-site/_static/ |
+  When requestHandler is called with mappedRelativePath "_static"
+  Then the response should have the following properties:
+    | property    | value     |
+    | body        | <html/>   |
+    | status      | 200       |
+    | contentType | text/html |
+  And the response should have the following headers:
+    | header        | value                              |
+    | etag          | "etag-index-html"                  |
+    | cache-control | public, max-age=0, must-revalidate |
