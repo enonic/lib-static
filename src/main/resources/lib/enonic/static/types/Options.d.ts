@@ -37,10 +37,7 @@ export interface NotFoundHandlerParams {
 
 export type NotFoundHandler = (params: NotFoundHandlerParams) => Response;
 
-export interface RequestHandlerParams {
-  // Required
-  request: Request
-  // Optional
+export interface RequestHandlerOptions {
   cacheControl?: CacheControlResolver
   contentType?: ContentTypeResolver
   etag?: boolean
@@ -52,4 +49,4 @@ export interface RequestHandlerParams {
   throwErrors?: boolean
 }
 
-export type RequestHandler = (params: RequestHandlerParams) => Response;
+export type RequestHandler = (request: Request, options?: RequestHandlerOptions) => Response;

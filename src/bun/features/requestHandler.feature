@@ -1,7 +1,8 @@
 Feature: requestHandler
 
 Background: State is reset before each test
-  Given the parameters are reset
+  Given the request is reset
+  Given the options are reset
   And loglevel is set to "silent"
 
 Scenario: Responds with 200 ok when resource found
@@ -148,8 +149,8 @@ Scenario: Does NOT set vary when staticCompress = false
   And the following request headers:
     | header           | value                          |
     | accept-encoding  | br, gzip, deflate, identity, * |
-  When requestHandler is called with the following parameters:
-    | param          | value |
+  When requestHandler is called with the following options:
+    | option         | value |
     | staticCompress | false |
   Then the response should have the following properties:
     | property    | value                 |
@@ -580,12 +581,19 @@ Scenario: Responds with safe cache-control when resource path starts with /.well
     | cache-control | public, max-age=10, s-maxage=3600, stale-while-revalidate=50 |
     | etag          | "etag-whatever"                                              |
 
-Scenario: Responds with 500 internal server error when root parameter is empty
+Scenario: Responds with 500 internal server error when root option is empty
   Given enonic xp is running in production mode
-  When requestHandler is called with the following parameters:
-    | param | value |
-    | root  |       |
-  # Then the response is info logged
+  And the following resources:
+    | path                        | exist | type     | etag           | content               |
+    | /static/index.css           | true  | text/css | etag-index-css | body { color: green } |
+  And the following request:
+    | property    | value                                                                                               |
+    | contextPath | /webapp/com.example.myproject/_/service/com.example.myproject/static                                |
+    | rawPath     | /webapp/com.example.myproject/_/service/com.example.myproject/static/index.css                      |
+    | url         | http://localhost:8080/webapp/com.example.myproject/_/service/com.example.myproject/static/index.css |
+  When requestHandler is called with the following options:
+    | option | value |
+    | root   |       |
   Then the response should have the following properties:
     | property    | value                     |
     | status      | 500                       |
