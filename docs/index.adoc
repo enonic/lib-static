@@ -49,14 +49,14 @@ const libStatic = require('/lib/enonic/static');
 ----
 
 
+== Concepts
+
+* <<concepts/why#, Why use lib-static instead of portal.assetUrl?>>
+* <<concepts/mutability#, Assets and mutability>>
+
 == API
 
 * <<api/requestHandler#, requestHandler>>
 * <<api/types#, types>>
 
 == Examples
-
-== Concepts
-
-* <<concepts/why#, Why use lib-static instead of portal.assetUrl?>>
-* <<concepts/mutability#, Assets and mutability>>

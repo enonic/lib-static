@@ -1,5 +1,5 @@
 [[why]]
-=== Why use lib-static instead of portal.assetUrl?
+= Why use lib-static instead of portal.assetUrl?
 
 Enonic XP already comes with an link:https://developer.enonic.com/docs/xp/stable/runtime/engines/asset-service[asset service], where you can just put resources in the _/assets_ root folder and use `portal.assetUrl(resourcePath)` to generate URLs from where to fetch them. Lib-static basically does the same thing, but with more features and control:
 
