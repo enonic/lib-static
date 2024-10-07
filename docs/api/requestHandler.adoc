@@ -15,7 +15,7 @@ This function handles requests for static resources.
 
 === Options
 
-[%header,cols="1%,1%,1%,1%,96%a"]
+[%header,cols="1%,1%,1%,96%a"]
 [frame="none"]
 [grid="none"]
 [caption=""]
