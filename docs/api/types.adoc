@@ -70,15 +70,14 @@ type RelativePathResolver = (req: Request) =&gt; string
 
 [source,typescript]
 ----
-type RequestHandler = (params: RequestHandlerParams) =&gt; Response
+type RequestHandler = (request: Request, options?: RequestHandlerOptions) =&gt; Response
 ----
 
-== RequestHandlerParams
+== RequestHandlerOptions
 
 [source,typescript]
 ----
-interface RequestHandlerParams {
-  request: Request
+interface RequestHandlerOptions {
   cacheControl?: CacheControlResolver
   contentType?: ContentTypeResolver
   etag?: boolean

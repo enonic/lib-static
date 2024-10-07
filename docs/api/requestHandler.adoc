@@ -8,8 +8,9 @@ This function
 [frame="none"]
 [grid="none"]
 |===
-| Name   | Type   | Description
-| params | object | Input parameters as JSON
+| Name    | Type    | Attributes | Description
+| request | Request | <required> | The request object
+| options | object  | <optional> | Options Object
 
 [%header,cols="1%,1%,1%,1%,96%a"]
 [frame="topbot"]
@@ -18,8 +19,7 @@ This function
 .Properties
 !===
 ! Name         ! Type    ! Attributes ! Default ! Description
-! request      ! Request ! <required> ! null ! The request object
-! cacheControl ! CacheControlResolver ! webAppCacheControl ! <optional> ! Function that returns the cache control header value
+! cacheControl ! CacheControlResolver ! defaultCacheControl ! <optional> ! Function that returns the cache control header value
 ! contentType  ! ContentTypeResolver ! <optional> ! getMimeType()  ! Function that returns the content type header value
 ! etag ! boolean ! <optional> ! true ! Whether to include ETag header
 ! index ! string ! <optional> ! 'index.html' ! Default file to serve when requesting a directory
@@ -37,7 +37,7 @@ Returns
 *Response* : The response object.
 
 [.lead]
-Example
+Example without options
 
 .src/main/resources/webapp/webapp.ts
 [source, TypeScript]
@@ -48,12 +48,12 @@ import {requestHandler} from '/lib/enonic/static';
 import Router from '/lib/router';
 const router = Router();
 
-router.get('{path:.*}', (request: Request): Response => requestHandler({request}));
+router.get('{path:.*}', requestHandler);
 
 export const all = (request: Request) => router.dispatch(request);
 ----
 
-== Full example
+== Example with options
 .src/main/resources/webapp/webapp.ts
 [source, TypeScript]
 ----
@@ -61,42 +61,44 @@ import type {Request, Response} from '/lib/enonic/static';
 import {
   RESPONSE_CACHE_CONTROL,
   requestHandler,
-  webAppCacheControl
+  defaultCacheControl
   } from '/lib/enonic/static';
 
 import Router from '/lib/router';
 const router = Router();
 
-router.get('{path:.*}', (request: Request): Response => requestHandler({
+router.get('{path:.*}', (request: Request): Response => requestHandler(
   request,
-  cacheControl: ({contentType, path, resource}) => {
-    // First do custom cache control:
-    if (path.startsWith('/favicon')) {
-      // Currently: public, max-age=10, s-maxage=3600, stale-while-revalidate=50
-      return RESPONSE_CACHE_CONTROL.SAFE;
-    }
-    // Then fallback to the default cache control
-    return webAppCacheControl({
-      contentType,
-      path,
-      resource
-    });
-  },
-  contentType: ({path, resource: _resource}) => {
-    if (path.endsWith('.css')) {
-      return 'text/css';
-    }
-    return 'application/octet-stream';
-  },
-  etag: true, // This is the default
-  index: 'index.html', // This is the default
-  relativePath: (request) => {
-    // Simplification of the default implementation:
-    return request.rawPath.substring(request.contextPath.length);
-  },
-  root: '/static',
-  throwErrors: true
-}));
+  {
+    cacheControl: ({contentType, path, resource}) => {
+      // First do custom cache control:
+      if (path.startsWith('/favicon')) {
+        // Currently: public, max-age=10, s-maxage=3600, stale-while-revalidate=50
+        return RESPONSE_CACHE_CONTROL.SAFE;
+      }
+      // Then fallback to the default cache control
+      return defaultCacheControl({
+        contentType,
+        path,
+        resource
+      });
+    },
+    contentType: ({path, resource: _resource}) => {
+      if (path.endsWith('.css')) {
+        return 'text/css';
+      }
+      return 'application/octet-stream';
+    },
+    etag: true, // This is the default
+    index: 'index.html', // This is the default
+    relativePath: (request) => {
+      // Simplification of the default implementation:
+      return request.rawPath.substring(request.contextPath.length);
+    },
+    root: '/static',
+    throwErrors: true
+  }
+));
 
 export const all = (request: Request) => router.dispatch(request);
 ----
