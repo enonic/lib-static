@@ -514,43 +514,34 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <tr>
 <th class="tableblock halign-left valign-top">Name</th>
 <th class="tableblock halign-left valign-top">Type</th>
-<th class="tableblock halign-left valign-top">Attributes</th>
 <th class="tableblock halign-left valign-top">Default</th>
 <th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">cacheControl</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">cacheControl</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">CacheControlResolver</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">defaultCacheControl</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;optional&gt;</p></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Function that returns the cache control header value</p>
-</div></div></td>
-</tr>
-<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Function that returns the cache control header value</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">contentType</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ContentTypeResolver</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;optional&gt;</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">getMimeType()</p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Function that returns the content type header value</p>
+<p>ContentTypeResolver</p>
 </div></div></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">getMimeType</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Function that returns the content type header value</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">etag</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;optional&gt;</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Whether to include ETag header</p>
+<p>true</p>
 </div></div></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Whether to include ETag header</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">index</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">string</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;optional&gt;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">'index.html'</p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>Default file to serve when requesting a directory</p>
@@ -559,43 +550,34 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">notFound</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">NotFoundHandler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;optional&gt;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">notFoundResponse</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Function that returns the response object when the resource is not found</p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Function that returns the response object when the resource is not found</p>
+<p>relativePath</p>
 </div></div></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">relativePath</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">RelativePathResolver</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;optional&gt;</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">getRelativeResourcePath()</p></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Function that returns the relative path to the resource</p>
-</div></div></td>
-</tr>
-<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">getRelativeResourcePath</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Function that returns the relative path to the resource</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">root</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">string</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;optional&gt;</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">'/static'</p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Root path to serve files from</p>
+<p>string</p>
 </div></div></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">'/static'</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Root path to serve files from</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">staticCompress</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;optional&gt;</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Whether to serve precompressed files (*.br, *.gz) if available and supported by the browser</p>
+<p>true</p>
 </div></div></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Whether to serve precompressed files (*.br, *.gz) if available and supported by the browser</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">throwErrors</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;optional&gt;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>Whether to throw errors or return a response object</p>
@@ -689,7 +671,7 @@ export const all = (request: Request) =&gt; router.dispatch(request);</code></pr
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-10-07 11:09:56 UTC
+Last updated 2024-10-07 11:13:38 UTC
 </div>
 </div>
 </body>
