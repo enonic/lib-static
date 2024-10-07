@@ -1,20 +1,6 @@
 {
   "menuItems": [
     {
-      "title": "Service",
-      "document": "service/index",
-      "menuItems": [
-        {
-          "title": "Standard service",
-          "document": "service/standard"
-        },
-        {
-          "title": "Custom service",
-          "document": "service/custom"
-        }
-      ]
-    },
-    {
       "title": "Examples",
       "document": "examples"
     },
