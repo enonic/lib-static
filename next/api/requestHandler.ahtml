@@ -441,8 +441,17 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#parameters">Parameters</a></li>
+<li><a href="#parameters">Parameters</a>
+<ul class="sectlevel2">
+<li><a href="#options">Options</a></li>
+</ul>
+</li>
+<li><a href="#examples">Examples</a>
+<ul class="sectlevel2">
+<li><a href="#example_without_options">Example without options</a></li>
 <li><a href="#example_with_options">Example with options</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -450,7 +459,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>This function</p>
+<p>This function handles requests for static resources.</p>
 </div>
 </div>
 </div>
@@ -486,10 +495,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <td class="tableblock halign-left valign-top"><p class="tableblock">object</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&lt;optional&gt;</p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Options Object</p>
-</div>
-<table class="tableblock frame-ends grid-none stretch">
-<caption class="title">Properties</caption>
+<p>Options object</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+<div class="sect2">
+<h3 id="options"><a class="link" href="#options">Options</a></h3>
+<table class="tableblock frame-none grid-none stretch">
 <colgroup>
 <col style="width: 1%;">
 <col style="width: 1%;">
@@ -589,9 +602,6 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div></div></td>
 </tr>
 </tbody>
-</table></div></td>
-</tr>
-</tbody>
 </table>
 <div class="paragraph lead">
 <p>Returns</p>
@@ -599,9 +609,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="paragraph">
 <p><strong>Response</strong> : The response object.</p>
 </div>
-<div class="paragraph lead">
-<p>Example without options</p>
 </div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="examples"><a class="link" href="#examples">Examples</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="example_without_options"><a class="link" href="#example_without_options">Example without options</a></h3>
 <div class="listingblock">
 <div class="title">src/main/resources/webapp/webapp.ts</div>
 <div class="content">
@@ -617,10 +632,8 @@ export const all = (request: Request) =&gt; router.dispatch(request);</code></pr
 </div>
 </div>
 </div>
-</div>
-<div class="sect1">
-<h2 id="example_with_options"><a class="link" href="#example_with_options">Example with options</a></h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="example_with_options"><a class="link" href="#example_with_options">Example with options</a></h3>
 <div class="listingblock">
 <div class="title">src/main/resources/webapp/webapp.ts</div>
 <div class="content">
@@ -673,9 +686,10 @@ export const all = (request: Request) =&gt; router.dispatch(request);</code></pr
 </div>
 </div>
 </div>
+</div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-10-07 11:09:10 UTC
+Last updated 2024-10-07 11:09:56 UTC
 </div>
 </div>
 </body>
