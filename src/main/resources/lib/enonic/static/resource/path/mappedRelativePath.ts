@@ -14,10 +14,10 @@ export const mappedRelativePath =
     if (!baseWithoutSurroundingSlashes) {
       throw new Error(`mappedRelativePath: Base path can't be empty! base: "${base}"`);
     }
-    const baseWithSurroundingSlashes = `/${baseWithoutSurroundingSlashes}/`;
+    const slashBase = `/${baseWithoutSurroundingSlashes}`;
     const rel = getRelative(request);
-    if (!stringStartsWith(rel, baseWithSurroundingSlashes)) {
-      throw new Error(`mappedRelativePath: Relative path does not start with base path: ${rel} vs ${baseWithSurroundingSlashes}`);
+    if (!stringStartsWith(rel, slashBase)) {
+      throw new Error(`mappedRelativePath: Relative path does not start with base path: ${rel} vs ${slashBase}`);
     }
-    return `/${rel.substring(baseWithSurroundingSlashes.length)}`;
+    return `${rel.substring(slashBase.length)}/`;
   }
