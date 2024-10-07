@@ -459,33 +459,30 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="sectionbody">
 <table class="tableblock frame-none grid-none stretch">
 <colgroup>
-<col style="width: 1%;">
-<col style="width: 1%;">
-<col style="width: 98%;">
+<col style="width: 0.99%;">
+<col style="width: 0.99%;">
+<col style="width: 0.99%;">
+<col style="width: 97.03%;">
 </colgroup>
 <thead>
 <tr>
 <th class="tableblock halign-left valign-top">Name</th>
 <th class="tableblock halign-left valign-top">Type</th>
 <th class="tableblock halign-left valign-top">Attributes</th>
+<th class="tableblock halign-left valign-top">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">request</p></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Request</p>
-</div></div></td>
-</tr>
-<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Request</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&lt;required&gt;</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The request object</p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>options</p>
+<p>The request object</p>
 </div></div></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">options</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">object</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&lt;optional&gt;</p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
@@ -678,7 +675,7 @@ export const all = (request: Request) =&gt; router.dispatch(request);</code></pr
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-10-07 10:09:31 UTC
+Last updated 2024-10-07 10:10:20 UTC
 </div>
 </div>
 </body>
