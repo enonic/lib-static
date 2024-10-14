@@ -2,7 +2,7 @@ import type {
   ByteSource,
   ResourceKey,
 } from '/lib/xp/io';
-import type {LibStaticResourceInterface} from '/lib/enonic/static/types';
+import type {LibStaticResourceInterface} from './types'; // Keep this relative for @enonic-types/lib-static to be correct.
 
 
 export class LibStaticResource implements LibStaticResourceInterface {

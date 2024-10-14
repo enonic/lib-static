@@ -1,4 +1,4 @@
-import type {Request} from '/lib/enonic/static/types';
+import type {Request} from '../../types'; // Keep this relative for @enonic-types/lib-static to be correct.
 
 import {getRelative} from '/lib/enonic/static/resource/path/getRelative';
 import {isStringLiteral} from '/lib/enonic/static/util/isStringLiteral';

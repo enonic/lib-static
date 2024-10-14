@@ -1,5 +1,5 @@
 import {ByteSource} from '@enonic-types/core';
-import type {PageContributions} from '/lib/enonic/static/types/PageContributions';
+import type {PageContributions} from './PageContributions'; // Keep this relative for @enonic-types/lib-static to be correct.
 
 // https://developer.enonic.com/docs/xp/stable/framework/http#http-response
 export interface ComplexCookie {

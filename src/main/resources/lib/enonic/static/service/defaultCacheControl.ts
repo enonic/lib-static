@@ -1,6 +1,4 @@
-import type {
-  CacheControlResolver,
-} from '/lib/enonic/static/types';
+import type {CacheControlResolver} from '../types'; // Keep this relative for @enonic-types/lib-static to be correct.
 
 import {
   CONTENT_TYPE,

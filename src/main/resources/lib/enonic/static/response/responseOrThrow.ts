@@ -1,5 +1,5 @@
 import type {ByteSource} from '/lib/xp/io';
-import type {Response} from '/lib/enonic/static/types';
+import type {Response} from '../types'; // Keep this relative for @enonic-types/lib-static to be correct.
 
 import {generateErrorId} from '/lib/enonic/static/response/generateErrorId';
 import {internalServerErrorResponse} from '/lib/enonic/static/response/responses';

@@ -1,4 +1,4 @@
-import type {RequestHandler} from '/lib/enonic/static/types';
+import type {RequestHandler} from '../types'; // Keep this relative for @enonic-types/lib-static to be correct.
 
 import {
   CONTENT_CODING,

@@ -1,12 +1,12 @@
 export type {Resource} from '@enonic-types/lib-io';
 
-export type {LibStaticResourceInterface} from '/lib/enonic/static/types/Io';
+export type {LibStaticResourceInterface} from './Io'; // Keep this relative for @enonic-types/lib-static to be correct.
 export type {
   CacheControlResolver,
   ContentTypeResolver,
   NotFoundHandler,
   RequestHandler,
   RequestHandlerOptions,
-} from '/lib/enonic/static/types/Options';
-export type {Request} from '/lib/enonic/static/types/Request';
-export type {Response} from '/lib/enonic/static/types/Response';
+} from './Options'; // Keep this relative for @enonic-types/lib-static to be correct.
+export type {Request} from './Request'; // Keep this relative for @enonic-types/lib-static to be correct.
+export type {Response} from './Response'; // Keep this relative for @enonic-types/lib-static to be correct.

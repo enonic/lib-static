@@ -1,4 +1,4 @@
-import type {NotFoundHandler} from '/lib/enonic/static/types';
+import type {NotFoundHandler} from '../types'; // Keep this relative for @enonic-types/lib-static to be correct.
 
 import {requestHandler} from '/lib/enonic/static/service/requestHandler';
 import {notFoundResponse} from '/lib/enonic/static/response/responses';
