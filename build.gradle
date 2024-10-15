@@ -5,8 +5,6 @@ plugins {
     id 'com.enonic.defaults' version '2.1.5'
     id 'com.enonic.xp.base' version '3.5.2'
     id 'com.github.node-gradle.node' version '7.1.0'
-    id 'org.asciidoctor.jvm.convert' version '4.0.3'
-    id "org.aim42.htmlSanityCheck" version '1.1.6'
 }
 
 sourceCompatibility = JavaVersion.VERSION_11
@@ -90,26 +88,6 @@ tasks.register('npmBuild', NpmTask) {
 }
 jar.dependsOn npmBuild
 
-asciidoctor {
-    sourceDir = file('docs')
-    outputDir = file('build/docs')
-
-    attributes 'source-highlighter': 'coderay'
-
-    resources {
-        from(sourceDir) {
-            include '**/images/**'
-            include '**/media/**'
-        }
-    }
-}
-
-htmlSanityCheck {
-    dependsOn asciidoctor
-
-    sourceDir = tasks.asciidoctor.outputDir
-}
-
 tasks.register('npmCheck', NpmTask) {
 	dependsOn npmInstall
 	args = [
@@ -152,3 +130,12 @@ jacocoTestReport {
 }
 
 check.dependsOn jacocoTestReport
+
+tasks.register('publishToNpm', NpmTask ) {
+  onlyIf { !version.endsWith( '-SNAPSHOT' ) }
+  args = ['publish']
+  dependsOn npmBuild
+  workingDir = file('build/types')
+}
+
+publish.dependsOn publishToNpm
