@@ -27,7 +27,7 @@
   "bugs": {
     "url": "https://github.com/enonic/lib-static/issues"
   },
-  "homepage": "https://github.com/enonic/lib-static#readme",
+  "homepage": "https://developer.enonic.com/docs/lib-static",
   "devDependencies": {
     "@enonic-types/core": "^7.14.2",
     "@enonic-types/global": "^7.14.4",

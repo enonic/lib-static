@@ -27,3 +27,7 @@ import {requestHandler} from '/lib/enonic/static';
 ```
 
 All imports from /lib/enonic/static should now be typed.
+
+## Documentation
+
+[Static asset library](https://developer.enonic.com/docs/lib-static)

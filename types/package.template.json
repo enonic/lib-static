@@ -10,11 +10,12 @@
   "files": [
     "*"
   ],
-  "homepage": "https://github.com/enonic/lib-static#readme",
+  "homepage": "https://developer.enonic.com/docs/lib-static",
   "keywords": [
     "enonic",
     "enonic-xp",
     "lib-static",
+    "assets",
     "static",
     "types",
     "typescript"
