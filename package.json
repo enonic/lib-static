@@ -12,7 +12,7 @@
     "check:types:jest": "npx tsc --noEmit -p tsconfig.jest.json",
     "check:types:server": "npx tsc --noEmit -p tsconfig.xp.json",
     "cov": "jest --no-cache --coverage",
-    "lint": "eslint --cache",
+    "lint": "eslint --cache --quiet",
     "test": "jest --no-cache"
   },
   "repository": {
