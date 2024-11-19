@@ -34,7 +34,7 @@
     "@enonic-types/lib-io": "^7.14.4",
     "@enonic-types/lib-portal": "^7.14.4",
     "@enonic-types/lib-vhost": "^7.14.4",
-    "@enonic/eslint-config": "^2.0.0",
+    "@enonic/eslint-config": "^2.0.1",
     "@eslint/js": "^9.14.0",
     "@item-enonic-types/lib-router": "^3.0.0",
     "@swc/core": "^1.9.2",
