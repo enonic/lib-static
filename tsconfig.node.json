@@ -21,14 +21,16 @@
   // It is not a mechanism that prevents a file from being included in the
   // codebase - it simply changes what the include setting finds.
   "exclude": [
-    "bin/**/*.*", // Avoid compiled files
-    "src/**/*.*", // Avoid Enonic XP source files
-    "**/*.d.ts",
+    "./bin/**/*.*", // Avoid compiled files
+    "./src/**/*.*", // Avoid Enonic XP source files
+    "./**/*.d.ts",
+    "./types/**/*.ts", // Avoid bun files
   ],
 
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
-    "composite": true,
+    "composite": false,
+    "declaration": false,
     // Do NOT add this as it will resolve tsup to the local tsup folder, rather
     // than the tsup node_module.
     // "baseUrl": ".",
@@ -41,6 +43,7 @@
     "paths": {
       "/lib/enonic/static/*": ["./src/main/resources/lib/enonic/static/*"]
     },
+    "resolveJsonModule": true,
     "strict": false, // TODO
     "target": "ESNext",
 

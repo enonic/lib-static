@@ -1,4 +1,4 @@
-import type {Response} from '../../types'; // Keep this relative for @enonic-types/lib-static to be correct.
+import type {Response} from '@enonic-types/core';
 
 import {getPathError} from '/lib/enonic/static/path/getPathError';
 import {isDev} from '/lib/enonic/static/runMode';

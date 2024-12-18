@@ -1,6 +1,17 @@
 {
+  "files": [
+    "./src/bun/setup.ts",
+    "./src/bun/features/requestHandler.feature.test.ts",
+    "./types/process.ts",
+  ],
+  "include": [
+    "./src/bun/**/*.ts",
+    "./types/**/*.ts",
+  ],
   "compilerOptions": {
-    "composite": true,
+    "allowSyntheticDefaultImports": true,
+    "composite": false,
+    "declaration": false,
     "module": "ESNext",
     "moduleResolution": "Node",
     "paths": {
@@ -9,17 +20,12 @@
       "/lib/enonic/static/*": ["./src/main/resources/lib/enonic/static/*"],
       "/lib/xp/*": ["./node_modules/@enonic-types/lib-*"],
     },
+    "resolveJsonModule": true,
     "skipLibCheck": true,
     // "strict": true, // TODO
     "target": "ESNext",
     "types": [
-      // "bun", // TS2300: Duplicate identifier 'fetch'
-      "node",
+      "bun",
     ]
-  },
-  "include": [
-    "src/main/resources/**/*.ts", // TS6307 Projects must list all files or use an 'include' pattern.
-    "src/jest/**/*.ts", // TS6307 Projects must list all files or use an 'include' pattern.
-    "src/bun/**/*.ts"
-  ]
+  }
 }

@@ -5,7 +5,7 @@
   // These filenames are resolved relative to the directory containing the
   // tsconfig.json file.
   "include": [
-    "src/main/resources/**/*.ts", // TS6307 Projects must list all files or use an 'include' pattern.
+    "./src/main/resources/**/*.ts", // TS6307 Projects must list all files or use an 'include' pattern.
     // "../main/resources/types/**/*.d.ts",
     "./src/jest/**/*.ts",
   ],
@@ -14,7 +14,8 @@
 
   "compilerOptions": {
     // "allowJs": true, // node_modules/jest-runner/build/index.js
-    "composite": true,
+    "composite": false,
+    "declaration": false,
     "esModuleInterop": true,
     "lib": [
       "DOM", // console used in setupFile

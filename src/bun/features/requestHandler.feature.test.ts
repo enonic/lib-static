@@ -1,8 +1,10 @@
 import type {StepDefinitions} from 'jest-cucumber';
 import type {
 	Request,
-  RequestHandlerOptions,
 	Response,
+} from '@enonic-types/core';
+import type {
+  RequestHandlerOptions,
 } from '../../main/resources/lib/enonic/static/types';
 import type {App, DoubleUnderscore, Log} from '../../jest/global.d';
 
@@ -10,7 +12,6 @@ import {describe} from '@jest/globals';
 import {
   expect,
   test,
-  // @ts-expect-error Not using types: bun to avoid Duplicate identifier 'fetch'
 } from 'bun:test';
 import {
   autoBindSteps,
@@ -189,7 +190,7 @@ export const steps: StepDefinitions = ({
       // if (value === 'null') {
       //   value = null;
       // }
-      expect(response.headers[header]).toStrictEqual(v);
+      expect(response.headers[header]).toStrictEqual(v as string | number | (string | number)[]);
     });
 	});
 
