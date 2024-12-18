@@ -1,4 +1,4 @@
-import type {Request} from '/lib/enonic/static/types';
+import type {Request} from '@enonic-types/core';
 
 import {
   describe,

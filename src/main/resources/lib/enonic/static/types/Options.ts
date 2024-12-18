@@ -1,6 +1,8 @@
+import type {
+  Request,
+  Response,
+} from '@enonic-types/core';
 import type {Resource} from '@enonic-types/lib-io';
-import type {Request} from './Request'; // Keep this relative for @enonic-types/lib-static to be correct.
-import type {Response} from './Response'; // Keep this relative for @enonic-types/lib-static to be correct.
 
 export interface CacheControlResolverParams {
   contentType?: string

@@ -1,3 +1,4 @@
+import type {ScriptValue} from '@enonic-types/core';
 import type {AssetUrlParams} from '@enonic-types/lib-portal';
 import type {App, DoubleUnderscore, Log} from '../jest/global.d';
 
@@ -6,7 +7,6 @@ import {
   // jest,
   mock,
   // test as it
-  // @ts-expect-error Not using types: bun to avoid Duplicate identifier 'fetch'
 } from 'bun:test';
 import {stringify} from 'q-i';
 import {isObject} from '../jest/isObject';

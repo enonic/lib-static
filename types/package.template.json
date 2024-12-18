@@ -4,7 +4,7 @@
     "url": "https://github.com/enonic/lib-static/issues"
   },
   "dependencies": {
-    "@enonic-types/core": "^%XP_VERSION%"
+    "@enonic-types/core": "%ENONIC_TYPES_CORE_VERSION%"
   },
   "description": "Type definition for the Enonic XP library for serving static assets",
   "files": [

@@ -2,7 +2,7 @@ import type {Log} from './global.d';
 import type {
   Request,
   Response
-} from '../main/resources/lib/enonic/static/types';
+} from '@enonic-types/core';
 
 import {
   expect,
