@@ -8,16 +8,16 @@
   },
   "references": [
     {
-      "path": "tsconfig.node.json"
+      "path": "./tsconfig.node.json"
     },
     {
-      "path": "tsconfig.bun.json"
+      "path": "./tsconfig.bun.json"
     },
     {
-      "path": "tsconfig.jest.json"
+      "path": "./tsconfig.jest.json"
     },
     {
-      "path": "tsconfig.xp.json"
+      "path": "./tsconfig.xp.json"
     }
   ]
 }

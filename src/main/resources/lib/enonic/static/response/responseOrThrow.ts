@@ -1,5 +1,4 @@
-import type {ByteSource} from '/lib/xp/io';
-import type {Response} from '../types'; // Keep this relative for @enonic-types/lib-static to be correct.
+import type {Response} from '@enonic-types/core';
 
 import {generateErrorId} from '/lib/enonic/static/response/generateErrorId';
 import {internalServerErrorResponse} from '/lib/enonic/static/response/responses';
@@ -11,13 +10,7 @@ export function responseOrThrow({
 }: {
   fn: () => Response
   throwErrors?: boolean
-}): Response<string | ByteSource, {
-  'content-type'?: string;
-  'cache-control'?: string;
-  'content-security-policy'?: string;
-  etag?: string | number;
-  location?: string;
-}> {
+}): Response {
   try {
     return fn();
   } catch (e) {

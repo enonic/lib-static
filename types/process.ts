@@ -7,6 +7,13 @@ import {
 import {join} from 'path';
 import {exit} from 'process';
 import propertiesReader from 'properties-reader';
+import packageLockJson from '../package-lock.json';
+
+let ENONIC_TYPES_CORE_VERSION = packageLockJson.packages['node_modules/@enonic-types/core'].version;
+if (!ENONIC_TYPES_CORE_VERSION.startsWith('^')) {
+  ENONIC_TYPES_CORE_VERSION = `^${ENONIC_TYPES_CORE_VERSION}`;
+}
+console.info('@enonic-types/core', ENONIC_TYPES_CORE_VERSION);
 
 function readGradleProperty(filePath: string, propertyName: string): string | null | undefined {
   try {
@@ -79,11 +86,10 @@ if (version) {
   exit(1);
 }
 
-const xpVersion = readGradleProperty('gradle.properties', 'xpVersion');
-if (xpVersion) {
-  copyReplaceAndRename('build/types/package.json', 'build/types/package.json', '%XP_VERSION%', xpVersion);
+if (ENONIC_TYPES_CORE_VERSION) {
+  copyReplaceAndRename('build/types/package.json', 'build/types/package.json', '%ENONIC_TYPES_CORE_VERSION%', ENONIC_TYPES_CORE_VERSION);
 } else {
-  console.error('Unable to read version from gradle.properties!!!');
+  console.error('Unable to read @enonic-types/core from package-lock.json!!!');
   exit(1);
 }
 
