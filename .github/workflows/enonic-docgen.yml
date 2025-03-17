@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - "master"
-      - "322-simplify-the-documentation"
     paths:
       - 'docs/**'
   workflow_dispatch:
