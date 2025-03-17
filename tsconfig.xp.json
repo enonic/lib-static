@@ -3,7 +3,7 @@
   // These filenames are resolved relative to the directory containing the
   // tsconfig.json file.
   "include": [
-    "src/main/resources/**/*.ts",
+    "./src/main/resources/**/*.ts",
   ],
 
   // Specifies an array of filenames or patterns that should be skipped when
@@ -15,13 +15,14 @@
   // It is not a mechanism that prevents a file from being included in the
   // codebase - it simply changes what the include setting finds.
   "exclude": [
-    "src/main/resources/**/*.d.ts",
+    "./src/main/resources/**/*.d.ts",
   ],
 
   "compilerOptions": {
-    "composite": true,
+    "composite": false,
     // "allowJs": true,
     // "checkJs": false,
+    "declaration": false,
     "esModuleInterop": true,
     // "declaration": false, // error TS6304: Composite projects may not disable declaration emit.
 

@@ -1,4 +1,4 @@
-import type {Response} from '../types'; // Keep this relative for @enonic-types/lib-static to be correct.
+import type {Response} from '@enonic-types/core';
 
 
 export function okResponse({
