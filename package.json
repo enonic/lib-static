@@ -33,7 +33,7 @@
     "@enonic-types/global": "7.15.1",
     "@enonic-types/lib-io": "7.15.1",
     "@enonic-types/lib-portal": "7.15.0",
-    "@enonic-types/lib-vhost": "^7.15.0",
+    "@enonic-types/lib-vhost": "^7.15.1",
     "@enonic/eslint-config": "^2.0.1",
     "@eslint/js": "^9.23.0",
     "@item-enonic-types/lib-router": "^3.1.0",
