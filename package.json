@@ -37,7 +37,7 @@
     "@enonic/eslint-config": "^2.0.1",
     "@eslint/js": "^9.22.0",
     "@item-enonic-types/lib-router": "^3.1.0",
-    "@swc/core": "^1.11.11",
+    "@swc/core": "^1.11.13",
     "@types/bun": "^1.2.5",
     "@types/node": "^22.13.10",
     "@types/properties-reader": "^2.1.3",
