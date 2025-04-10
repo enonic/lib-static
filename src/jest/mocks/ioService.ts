@@ -1,7 +1,7 @@
 import type {
   ByteSource,
   ResourceKey
-} from '@enonic-types/lib-io';
+} from '@enonic-types/core';
 import type {Log} from '../global.d';
 
 import {Resource} from '../Resource';

@@ -1,8 +1,3 @@
-import type {
-  ByteSource,
-  // getResource as getResourceValue,
-  ResourceKey
-} from '@enonic-types/lib-io';
 import type {App, DoubleUnderscore, Log} from './global.d';
 
 import {jest} from '@jest/globals';

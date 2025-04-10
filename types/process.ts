@@ -61,8 +61,6 @@ function copyReplaceAndRename(from: string, to: string, searchValue: string, rep
 }
 
 replaceInDir('./build/types', '/lib/enonic/static', '.');
-replaceInDir('./build/types', '/lib/xp/io', '@enonic-types/lib-io');
-replaceInDir('./build/types', '/lib/xp/portal', '@enonic-types/lib-portal');
 
 // This must come after the replaceInDir calls, or /lib/enonic/static will be replaced with . in the README.md file
 copyFile('types/README.md', 'build/types/README.md');
