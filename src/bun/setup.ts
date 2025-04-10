@@ -1,5 +1,4 @@
 import type {ScriptValue} from '@enonic-types/core';
-import type {AssetUrlParams} from '@enonic-types/lib-portal';
 import type {App, DoubleUnderscore, Log} from '../jest/global.d';
 
 import {
@@ -238,19 +237,3 @@ globalThis.__ = {
     return v as ScriptValue;
   },
 };
-
-const BASEURL_WEBAPP = `/webapp/${app.name}`;
-const BASEURL = BASEURL_WEBAPP;
-
-try {
-  await mock.module('/lib/xp/portal', () => ({
-    assetUrl: (({
-      params,
-    }: AssetUrlParams) => {
-      const query = params ? `?${new URLSearchParams(params as Record<string,string>).toString()}` : '';
-      return `${BASEURL}/_/asset/${app.name}:1234567890123456${query}`;
-    }),
-  }));
-} catch (error) {
-  console.error('Error when mocking /lib/xp/portal:', error);
-}

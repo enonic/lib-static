@@ -1,9 +1,5 @@
-import type {
-  ByteSource,
-  ResourceKey,
-} from '/lib/xp/io';
-import type {LibStaticResourceInterface} from './types'; // Keep this relative for @enonic-types/lib-static to be correct.
-
+import {ByteSource, ResourceKey} from '@enonic-types/core';
+import type {LibStaticResourceInterface} from './types';
 
 export class LibStaticResource implements LibStaticResourceInterface {
   private readonly native: LibStaticResourceInterface;

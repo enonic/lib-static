@@ -2,7 +2,7 @@ import type {
   ByteSource,
   Resource as ResourceInterface,
   ResourceKey,
-} from '@enonic-types/lib-io';
+} from '@enonic-types/core';
 
 
 export interface LibStaticResourceInterface extends ResourceInterface {
