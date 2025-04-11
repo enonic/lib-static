@@ -33,7 +33,7 @@ dependencies {
   // dependency while compiling and when the final application runs.
   implementation 'com.enonic.lib:lib-router:3.1.0'
 
-  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.12.1'
   testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.11.4'
   testImplementation 'org.junit.vintage:junit-vintage-engine:5.11.4'
   testImplementation "com.enonic.xp:testing:${xpVersion}"
