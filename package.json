@@ -42,7 +42,7 @@
     "bun": "^1.2.10",
     "concurrently": "^9.1.2",
     "eslint": "^9.25.1",
-    "glob": "^11.0.1",
+    "glob": "^11.0.2",
     "jest-cucumber": "^4.5.0",
     "jest-environment-jsdom": "^29.7.0",
     "properties-reader": "^2.3.0",
