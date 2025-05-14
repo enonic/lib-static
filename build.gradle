@@ -33,11 +33,12 @@ dependencies {
   // dependency while compiling and when the final application runs.
   implementation 'com.enonic.lib:lib-router:3.1.0'
 
-  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
-  testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.11.4'
-  testImplementation 'org.junit.vintage:junit-vintage-engine:5.11.4'
+  testImplementation( platform( "org.junit:junit-bom:5.12.2" ) )
+  testImplementation( platform( "org.mockito:mockito-bom:5.17.0" ) )
+  testImplementation 'org.junit.jupiter:junit-jupiter'
+  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+  testImplementation 'org.mockito:mockito-junit-jupiter'
   testImplementation "com.enonic.xp:testing:${xpVersion}"
-  testImplementation "org.mockito:mockito-core:5.17.0"
 }
 
 processResources {
