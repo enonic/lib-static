@@ -5,4 +5,4 @@
 
 ### Development
 
-[Types for Static asset library](https://www.npmjs.com/package/@enonic-types/lib-asset)
+[Types for Static asset library](https://www.npmjs.com/package/@enonic-types/lib-static)
