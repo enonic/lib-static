@@ -7,8 +7,10 @@ plugins {
     id 'com.github.node-gradle.node' version '7.1.0'
 }
 
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = sourceCompatibility
+java {
+  sourceCompatibility = JavaVersion.VERSION_11
+  targetCompatibility = sourceCompatibility
+}
 
 def defaultEncoding = 'UTF-8'
 
