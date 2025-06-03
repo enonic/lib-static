@@ -1,5 +1,5 @@
 import {GETTER_ROOT} from '/lib/enonic/static/constants';
-
+import {stringStartsWith} from '/lib/enonic/static/util/stringStartsWith';
 
 export function prefixWithRoot({
   root = GETTER_ROOT,
@@ -15,7 +15,7 @@ export function prefixWithRoot({
     log.error(errorMessage);
     throw new Error(errorMessage);
   }
-  const slashRoot = root.startsWith('/') ? root : `/${root}`;
+  const slashRoot = stringStartsWith(root, '/') ? root : `/${root}`;
   return `${slashRoot}${path}`
     .replace(/\/$/, ''); // Remove trailing slash
 }
