@@ -5,6 +5,7 @@ import {
   RESPONSE_CACHE_CONTROL,
 } from '/lib/enonic/static/constants';
 
+import {stringStartsWith} from '/lib/enonic/static/util/stringStartsWith';
 
 export const defaultCacheControl: CacheControlResolver = ({
   contentType,
@@ -29,8 +30,8 @@ export const defaultCacheControl: CacheControlResolver = ({
       return RESPONSE_CACHE_CONTROL.PREVENT;
   }
 
-  if (path && path.startsWith('/')) {
-    if (path.startsWith('/.well-known/')) {
+  if (path && stringStartsWith(path, '/')) {
+    if (stringStartsWith(path, '/.well-known/')) {
       return RESPONSE_CACHE_CONTROL.SAFE;
     }
   }
