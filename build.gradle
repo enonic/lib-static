@@ -33,7 +33,7 @@ dependencies {
   // Libraries included with implementation are available during both compile
   // time and runtime. This means your code can use the functionality of the
   // dependency while compiling and when the final application runs.
-  implementation 'com.enonic.lib:lib-router:3.1.0'
+  implementation 'com.enonic.lib:lib-router:3.2.0'
 
   testImplementation( platform( "org.junit:junit-bom:5.13.1" ) )
   testImplementation( platform( "org.mockito:mockito-bom:5.18.0" ) )
