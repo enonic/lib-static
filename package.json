@@ -41,7 +41,7 @@
     "@typescript-eslint/parser": "^8.44.0",
     "bun": "^1.2.22",
     "concurrently": "^9.2.1",
-    "eslint": "^9.35.0",
+    "eslint": "^9.36.0",
     "glob": "^11.0.3",
     "jest-cucumber": "^4.5.0",
     "jest-environment-jsdom": "^30.1.2",
