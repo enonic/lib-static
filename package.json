@@ -36,7 +36,7 @@
     "@item-enonic-types/lib-router": "^3.1.0",
     "@swc/core": "^1.15.3",
     "@types/bun": "^1.3.3",
-    "@types/node": "^24.10.1",
+    "@types/node": "^24.10.2",
     "@types/properties-reader": "^2.1.3",
     "@typescript-eslint/parser": "^8.48.0",
     "bun": "^1.3.3",
