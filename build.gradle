@@ -36,7 +36,7 @@ dependencies {
   implementation 'com.enonic.lib:lib-router:3.2.0'
 
   testImplementation( platform( "org.junit:junit-bom:5.13.4" ) )
-  testImplementation( platform( "org.mockito:mockito-bom:5.20.0" ) )
+  testImplementation( platform( "org.mockito:mockito-bom:5.21.0" ) )
   testImplementation 'org.junit.jupiter:junit-jupiter'
   testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
   testImplementation 'org.mockito:mockito-junit-jupiter'
