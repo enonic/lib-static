@@ -45,7 +45,7 @@
     "glob": "^13.0.6",
     "jest-cucumber": "^4.5.0",
     "jest-environment-jsdom": "^30.2.0",
-    "properties-reader": "^2.3.0",
+    "properties-reader": "^3.0.1",
     "q-i": "^2.0.1",
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
