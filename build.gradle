@@ -3,13 +3,8 @@ plugins {
     id 'jacoco'
     id 'maven-publish'
     id 'com.enonic.defaults' version '2.1.6'
-    id 'com.enonic.xp.base' version '3.6.2'
+    id 'com.enonic.xp.base'
     id 'com.github.node-gradle.node' version '7.1.0'
-}
-
-java {
-  sourceCompatibility = JavaVersion.VERSION_11
-  targetCompatibility = sourceCompatibility
 }
 
 def defaultEncoding = 'UTF-8'
@@ -26,8 +21,8 @@ dependencies {
    // compileOnly: This is used for dependencies that are only needed during
    // compilation. The library itself is not included in the final application
    // build.
-  compileOnly "com.enonic.xp:core-api:${xpVersion}"
-  compileOnly "com.enonic.xp:script-api:${xpVersion}"
+  compileOnly xplibs.api.core
+  compileOnly xplibs.api.script
 
   // implementation: This is the most common way to specify a dependency.
   // Libraries included with implementation are available during both compile
