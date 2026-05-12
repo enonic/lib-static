@@ -44,7 +44,7 @@
     "eslint": "^10.3.0",
     "glob": "^13.0.6",
     "jest-cucumber": "^4.5.0",
-    "jest-environment-jsdom": "^30.3.0",
+    "jest-environment-jsdom": "^30.4.1",
     "properties-reader": "^2.3.0",
     "q-i": "^2.0.1",
     "ts-jest": "^29.4.9",
