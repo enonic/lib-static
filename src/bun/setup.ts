@@ -218,9 +218,9 @@ globalThis.__ = {
     }
     throw new Error(`Unmocked bean:${bean}!`);
   },
-  nullOrValue: <T>(v: T): T => {
+  nullOrValue: <T>(v: T) => {
     log.debug(`nullOrValue value:${JSON.stringify(v, null, 4)}`);
-    return v;
+    return v as T extends null | undefined ? null : T;
   },
   toNativeObject: <T>(v: T): T => {
     // log.debug(`toNativeObject value:${JSON.stringify(v, null, 4)}`);
@@ -232,8 +232,8 @@ globalThis.__ = {
     }
     throw new Error(`toNativeObject: Unmocked value:${JSON.stringify(v, null, 4)}!`);
   },
-  toScriptValue: <T>(v: T): ScriptValue => {
+  toScriptValue: <T>(v: T) => {
     log.debug(`toScriptValue value:${JSON.stringify(v, null, 4)}`);
-    return v as ScriptValue;
+    return v as T extends null | undefined ? null : ScriptValue;
   },
 };
