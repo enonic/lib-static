@@ -5,13 +5,14 @@ import {stringStartsWith} from '/lib/enonic/static/util/stringStartsWith';
  * Joins a static-resource `root` with a `path` to produce an absolute
  * resource path that always starts with `/` and has no trailing slash.
  *
- * `path` may be given in any of the following forms; all four resolve
- * identically:
+ * Canonical form for `path` has no leading slash: `'styles.css'`,
+ * `'css/main.css'`. A leading slash is accepted but redundant — both
+ * forms resolve identically:
  *
+ *   - `'styles.css'`   → `<root>/styles.css`   ← canonical
  *   - `'/styles.css'`  → `<root>/styles.css`
- *   - `'styles.css'`   → `<root>/styles.css`
- *   - `''`             → `<root>`         (root itself)
- *   - `'/'`            → `<root>`         (root itself)
+ *   - `''`             → `<root>`              (root itself)
+ *   - `'/'`            → `<root>`              (root itself)
  *
  * `root` is treated the same way: a missing leading `/` is added.
  *
