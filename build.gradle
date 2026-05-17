@@ -24,12 +24,6 @@ dependencies {
   compileOnly xplibs.api.core
   compileOnly xplibs.api.script
 
-  // implementation: This is the most common way to specify a dependency.
-  // Libraries included with implementation are available during both compile
-  // time and runtime. This means your code can use the functionality of the
-  // dependency while compiling and when the final application runs.
-  implementation libs.lib.router
-
   testImplementation( platform( libs.junit.bom ) )
   testImplementation( platform( libs.mockito.bom ) )
   testImplementation libs.junit.jupiter
