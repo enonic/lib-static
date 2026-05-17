@@ -1,11 +1,28 @@
 import {GETTER_ROOT} from '/lib/enonic/static/constants';
 import {stringStartsWith} from '/lib/enonic/static/util/stringStartsWith';
 
+/**
+ * Joins a static-resource `root` with a `path` to produce an absolute
+ * resource path that always starts with `/` and has no trailing slash.
+ *
+ * `path` may be given in any of the following forms; all four resolve
+ * identically:
+ *
+ *   - `'/styles.css'`  → `<root>/styles.css`
+ *   - `'styles.css'`   → `<root>/styles.css`
+ *   - `''`             → `<root>`         (root itself)
+ *   - `'/'`            → `<root>`         (root itself)
+ *
+ * `root` is treated the same way: a missing leading `/` is added.
+ *
+ * Throws if `root` is empty or consists only of slashes — for security
+ * (see GETTER_ROOT comment below).
+ */
 export function prefixWithRoot({
   root = GETTER_ROOT,
   path,
 }: {
-  path: string, // Empty, a slash, or a path with or without a leading slash — all accepted.
+  path: string,
   root?: string
 }): string {
   // NOTE: For security reasons it's very important that GETTER_ROOT is the root
