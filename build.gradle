@@ -28,13 +28,13 @@ dependencies {
   // Libraries included with implementation are available during both compile
   // time and runtime. This means your code can use the functionality of the
   // dependency while compiling and when the final application runs.
-  implementation 'com.enonic.lib:lib-router:4.0.0-SNAPSHOT'
+  implementation libs.lib.router
 
-  testImplementation( platform( "org.junit:junit-bom:6.0.3" ) )
-  testImplementation( platform( "org.mockito:mockito-bom:5.23.0" ) )
-  testImplementation 'org.junit.jupiter:junit-jupiter'
-  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-  testImplementation 'org.mockito:mockito-junit-jupiter'
+  testImplementation( platform( libs.junit.bom ) )
+  testImplementation( platform( libs.mockito.bom ) )
+  testImplementation libs.junit.jupiter
+  testRuntimeOnly libs.junit.platform.launcher
+  testImplementation libs.mockito.junit.jupiter
   testImplementation "com.enonic.xp:testing:${xpVersion}"
 }
 
