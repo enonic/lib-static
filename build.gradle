@@ -120,12 +120,3 @@ jacocoTestReport {
 }
 
 check.dependsOn jacocoTestReport
-
-tasks.register('publishToNpm', NpmTask ) {
-  onlyIf { !version.endsWith( '-SNAPSHOT' ) }
-  args = ['publish']
-  dependsOn npmBuild
-  workingDir = file('build/types')
-}
-
-publish.dependsOn publishToNpm
