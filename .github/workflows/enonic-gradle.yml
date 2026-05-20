@@ -16,7 +16,7 @@ jobs:
           codecovToken: ${{ secrets.CODECOV_TOKEN }}
           npmToken: ${{ secrets.NPM_TOKEN }}
           releaseBranch: |
-            master
+            3.x
             2.x
 
   release:
