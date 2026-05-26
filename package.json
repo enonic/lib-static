@@ -47,7 +47,7 @@
     "jest-environment-jsdom": "^30.4.1",
     "properties-reader": "^2.3.0",
     "q-i": "^2.0.1",
-    "ts-jest": "^29.4.10",
+    "ts-jest": "^29.4.11",
     "ts-node": "^10.9.2",
     "tsup": "^8.5.0",
     "typescript": "^5.9.3",
