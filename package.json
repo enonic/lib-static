@@ -30,7 +30,7 @@
   "homepage": "https://developer.enonic.com/docs/lib-static",
   "devDependencies": {
     "@enonic-types/core": "^8.0.0-B4",
-    "@enonic-types/global": "^8.0.0-B5",
+    "@enonic-types/global": "^8.0.0",
     "@enonic/eslint-config": "^2.3.0",
     "@eslint/js": "^10.0.1",
     "@item-enonic-types/lib-router": "^3.1.0",
