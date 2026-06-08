@@ -29,8 +29,8 @@
   },
   "homepage": "https://developer.enonic.com/docs/lib-static",
   "devDependencies": {
-    "@enonic-types/core": "^8.0.0",
-    "@enonic-types/global": "^8.0.0",
+    "@enonic-types/core": "^8",
+    "@enonic-types/global": "^8",
     "@enonic/eslint-config": "^2.3.0",
     "@eslint/js": "^10.0.1",
     "@item-enonic-types/lib-router": "^3.1.0",
@@ -49,7 +49,7 @@
     "q-i": "^2.0.1",
     "ts-jest": "^29.4.11",
     "ts-node": "^10.9.2",
-    "tsup": "^8.5.0",
+    "tsup": "8.5.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.58.2"
   },
