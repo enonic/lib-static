@@ -1,6 +1,6 @@
 name: Gradle Build
 
-on: [ push ]
+on: [ push, workflow_dispatch ]
 
 permissions:
   id-token: write  # Required for npm OIDC / trusted publishing
