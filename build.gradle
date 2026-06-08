@@ -29,7 +29,6 @@ dependencies {
   testImplementation libs.junit.jupiter
   testRuntimeOnly libs.junit.platform.launcher
   testImplementation libs.mockito.junit.jupiter
-  testImplementation "com.enonic.xp:testing:${xpVersion}"
 }
 
 processResources {
