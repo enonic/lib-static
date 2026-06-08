@@ -29,7 +29,7 @@
   },
   "homepage": "https://developer.enonic.com/docs/lib-static",
   "devDependencies": {
-    "@enonic-types/core": "^8.0.0-B4",
+    "@enonic-types/core": "^8.0.0",
     "@enonic-types/global": "^8.0.0",
     "@enonic/eslint-config": "^2.3.0",
     "@eslint/js": "^10.0.1",
