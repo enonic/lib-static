@@ -31,7 +31,7 @@
   "devDependencies": {
     "@enonic-types/core": "^8",
     "@enonic-types/global": "^8",
-    "@enonic/eslint-config": "^2.3.0",
+    "@enonic/eslint-config": "^3.0.0",
     "@eslint/js": "^10.0.1",
     "@item-enonic-types/lib-router": "^4.0.0",
     "@swc/core": "^1.16.18",
